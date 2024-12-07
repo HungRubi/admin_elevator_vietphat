@@ -1,0 +1,38 @@
+{
+  "name": "admin_elevator_vietphat",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/server.js",
+  "scripts": {
+    "watch": "sass --watch src/resources/scss/app.scss src/public/css/app.css",
+    "start": "nodemon --inspect src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HungRubi/admin_elevator_vietphat.git"
+  },
+  "author": "huyhung",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HungRubi/admin_elevator_vietphat/issues"
+  },
+  "homepage": "https://github.com/HungRubi/admin_elevator_vietphat#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "express-handlebars": "^8.0.1",
+    "method-override": "^3.0.0",
+    "mongoose": "^8.8.4",
+    "mongoose-slug-generator": "^1.0.4",
+    "remove-diacritics": "^0.1.1"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.10",
+    "morgan": "^1.10.0",
+    "nodemon": "^3.1.7",
+    "prettier": "^3.4.2",
+    "sass": "^1.82.0"
+  }
+}

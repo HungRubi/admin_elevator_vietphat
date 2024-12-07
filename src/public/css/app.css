@@ -1,0 +1,179 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Slab:wght@100..900&family=Yuji+Mai&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Yuji+Mai&display=swap");
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  outline: none;
+}
+
+:root {
+  --bg-body: #f3f3f3;
+  --bg-circle: #c9c8c8;
+  --bg-div: #fff;
+  --text-hight: #2f904b;
+  --text-color: #393939;
+  --border-div: #cbd0dd;
+  --color-title: #000000c5;
+  --hover-bg: #eff2f6;
+}
+
+body {
+  width: 100%;
+  height: 100vh;
+  background: var(--bg-body);
+  position: relative;
+  display: flex;
+  font-family: "Poppins", sans-serif;
+}
+
+ul, li {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+img {
+  object-fit: cover;
+  width: 100%;
+}
+
+a {
+  text-decoration: none;
+  color: var(--text-color);
+}
+
+.circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-circle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.is-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.is-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title {
+  font-size: 15px;
+  color: var(--color-title);
+  font-weight: 500;
+}
+
+.menu {
+  position: absolute;
+  top: 45px;
+  right: 50%;
+  width: 290px;
+  background: var(--bg-div);
+  border: 1px solid var(--border-div);
+  border-radius: 8px;
+}
+.menu .infor_user {
+  width: 100%;
+  padding-top: 30px;
+}
+.menu .infor_user .circle {
+  width: 60px;
+  height: 60px;
+}
+.menu hr {
+  width: 100%;
+  border-top: 1px solid var(--border-div);
+  margin: 15px 0;
+  height: 1px;
+}
+.menu .list_menu {
+  width: 100%;
+}
+.menu .list_menu .item_menu {
+  width: 100%;
+}
+.menu .list_menu .item_menu a {
+  padding: 0.5rem 10px 0.5rem 10px;
+  justify-content: start;
+}
+.menu .list_menu .item_menu a i {
+  font-size: 18px;
+  margin-right: 10px;
+  color: var(--text-color);
+}
+.menu .list_menu .item_menu:hover {
+  transition: 0.3s ease-in;
+  background: var(--hover-bg);
+}
+
+header {
+  width: 100%;
+  height: 70px;
+  position: fixed;
+  border: 1px solid #000;
+}
+header .logo {
+  width: 240px;
+  height: 100%;
+  text-align: center;
+}
+header .logo h1 {
+  font-family: "Yuji Mai", serif;
+  font-size: 30px;
+  color: var(--text-hight);
+}
+header .search {
+  width: 30%;
+  max-width: 40%;
+  position: relative;
+}
+header .search input {
+  border: 1px solid rgba(0, 0, 0, 0.3294117647);
+  border-radius: 20px;
+  padding: 10px 20px;
+  width: 100%;
+  height: 100%;
+  padding-left: 45px;
+}
+header .search i {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  font-size: 23px;
+  color: var(--text-color);
+}
+header .user {
+  height: 100%;
+  gap: 10px;
+  margin-right: 30px;
+}
+header .user .circle i {
+  font-size: 18px;
+  color: var(--text-color);
+}
+
+.wrapper {
+  display: flex;
+  width: 100%;
+}
+.wrapper nav {
+  width: 240px;
+  height: 100%;
+  border: 1px solid #000;
+}
+.wrapper main {
+  width: calc(100% - 240px);
+  height: 100%;
+}
+
+/*# sourceMappingURL=app.css.map */
