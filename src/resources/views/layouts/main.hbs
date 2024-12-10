@@ -17,11 +17,11 @@
             <input type="text" placeholder="Search...">
         </div>
         <div class="user is-center">
-            <div class="circle">
-                <i class="bi bi-bell"></i>
+            <div class="circle" style="background: rgba(255, 204, 133, 0.24);color:#e5780b;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun icon"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
             </div>
             <div class="circle">
-                <i class="bi bi-three-dots"></i>
+                <i class="bi bi-bell"></i>
             </div>
             <div class="circle" style="position: relative;">
                 <img src="/img/user.jpg" alt="" style="border-radius: 50%;">
@@ -34,7 +34,7 @@
                     <div class="infor_user is-center" style="padding-bottom: 15px; padding-top: 10px">
                         <h3 class="title">Nguyễn Huy Hùng</h3>
                     </div>
-                    <hr>
+                    <div class="divider"></div>
                     <ul class="list_menu">
                         <li class="item_menu">
                             <a href="#" class="is-center">
@@ -50,19 +50,90 @@
                         </li>
                         <li class="item_menu">
                             <a href="#" class="is-center">
-                                <i class="bi bi-arrow-bar-right"></i>
-                                Logout
+                                <i class="bi bi-question-circle"></i>
+                                Help
+                                
                             </a>
                         </li>
                     </ul>
-                    <hr>
+                    <div class="divider"></div>
+                    <a href="#" class="wrapper is-center">
+                        <div class="btn-logout is-center">
+                            <i class="bi bi-arrow-bar-right"></i>
+                            Logout
+                        </div>
+                    </a>
                 </div>
             </div>
         </div>
     </header>
     <div class="wrapper" style="margin-top: 70px;">
         <nav>
-
+            <ul class="list">
+                <li class="tab_item">
+                    <a href="#" class="is-center link_tab">
+                        <i class="bi bi-house"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="tab_item">
+                    <a href="#" class="is-center link_tab">
+                        <i class="bi bi-person"></i>
+                        Employees
+                    </a>
+                </li>
+                <li class="tab_item">
+                    <a href="#" class="is-center link_tab">
+                        <i class="bi bi-people"></i>
+                        Custumors
+                    </a>
+                </li>
+                <li class="tab_item">
+                    <a href="#" class="is-center link_tab">
+                        <i class="bi bi-box"></i>
+                        Products
+                    </a>
+                </li>
+                <li class="tab_item">
+                    <a href="#" class="is-center link_tab">
+                        <i class="bi bi-bar-chart"></i>
+                        Sales report
+                    </a>
+                </li>
+                <li class="tab_item">
+                    <a href="#" class="is-center link_tab">
+                        <i class="bi bi-journal-text"></i>
+                        Article
+                    </a>
+                </li>
+                <li class="tab_item btn_drop_down" style="position: relative;">
+                    <a href="#" class="is-center link_tab">
+                        <i class="bi bi-caret-down-fill icon"></i>
+                        Category
+                    </a>
+                    <ul class="drop_down">
+                        <li class="tab_drop">
+                            <a  href="#" class="is-center">
+                                Category products
+                            </a>
+                        </li>
+                        <li class="tab_drop">
+                            <a  href="#" class="is-center">
+                                Category price
+                            </a>
+                        </li>
+                        <li class="tab_drop">
+                            <a  href="#" class="is-center">
+                                Authorization
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="bottom is-center">
+                <i class="bi bi-arrow-bar-left"></i>
+                Collapsed View
+            </div>
         </nav>
         <main>
             {{{body}}}
@@ -71,5 +142,6 @@
     <footer>
 
     </footer>
+    <script src="/js/app.js"></script>
 </body>
 </html>

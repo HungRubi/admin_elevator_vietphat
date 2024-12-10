@@ -9,13 +9,17 @@
 
 :root {
   --bg-body: #f3f3f3;
-  --bg-circle: #c9c8c8;
+  --bg-circle: #e3e6edce;
   --bg-div: #fff;
   --text-hight: #2f904b;
-  --text-color: #393939;
+  --text-color: #393939d2;
   --border-div: #cbd0dd;
   --color-title: #000000c5;
   --hover-bg: #eff2f6;
+  --btn-bg: #e3e6ed;
+  --btn-hover-bg: #8a94ad;
+  --hover-bg-tab: #eff2f6;
+  --text-heading: #141824;
 }
 
 body {
@@ -54,6 +58,11 @@ a {
   cursor: pointer;
 }
 
+.circle:hover {
+  background: var(--btn-bg);
+  transition: 0.3s linear;
+}
+
 .is-between {
   display: flex;
   align-items: center;
@@ -73,13 +82,14 @@ a {
 }
 
 .menu {
+  display: none;
   position: absolute;
   top: 45px;
   right: 50%;
   width: 290px;
   background: var(--bg-div);
-  border: 1px solid var(--border-div);
   border-radius: 8px;
+  border: 1px solid var(--border-div);
 }
 .menu .infor_user {
   width: 100%;
@@ -89,7 +99,7 @@ a {
   width: 60px;
   height: 60px;
 }
-.menu hr {
+.menu .divider {
   width: 100%;
   border-top: 1px solid var(--border-div);
   margin: 15px 0;
@@ -104,9 +114,10 @@ a {
 .menu .list_menu .item_menu a {
   padding: 0.5rem 10px 0.5rem 10px;
   justify-content: start;
+  font-size: 14px;
 }
 .menu .list_menu .item_menu a i {
-  font-size: 18px;
+  font-size: 15px;
   margin-right: 10px;
   color: var(--text-color);
 }
@@ -114,12 +125,29 @@ a {
   transition: 0.3s ease-in;
   background: var(--hover-bg);
 }
+.menu .btn-logout {
+  width: 90%;
+  background: var(--btn-bg);
+  border: 1px solid var(--border-div);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  padding: 7px 0;
+  opacity: 0.7;
+}
+.menu .btn-logout i {
+  margin-right: 10px;
+}
+.menu .btn-logout:hover {
+  transition: 0.3s linear;
+  opacity: 1;
+}
 
 header {
   width: 100%;
   height: 70px;
   position: fixed;
-  border: 1px solid #000;
+  border-bottom: 1px solid var(--border-div);
+  background: var(--bg-div);
 }
 header .logo {
   width: 240px;
@@ -168,12 +196,105 @@ header .user .circle i {
 }
 .wrapper nav {
   width: 240px;
+  position: relative;
   height: 100%;
-  border: 1px solid #000;
+  border-right: 1px solid var(--border-div);
+  background: var(--bg-div);
+}
+.wrapper nav .list {
+  width: 100%;
+  margin-top: 20px;
+  position: relative;
+}
+.wrapper nav .list .tab_item {
+  margin: 5px 0;
+  width: 100%;
+  padding: 0 15px;
+}
+.wrapper nav .list .tab_item .link_tab {
+  font-size: 14px;
+  padding: 5px 10px;
+  color: var(--text-color);
+  border-radius: 10px;
+  width: 100%;
+  justify-content: start;
+}
+.wrapper nav .list .tab_item .link_tab i {
+  font-size: 15px;
+  margin-right: 8px;
+  line-height: 1.6;
+}
+.wrapper nav .list .tab_item .drop_down {
+  padding: 0 15px;
+  display: none;
+  width: 100%;
+  position: absolute;
+  left: 0;
+}
+.wrapper nav .list .tab_item .drop_down .tab_drop {
+  margin: 4px 0;
+  width: 100%;
+  border-radius: 10px;
+}
+.wrapper nav .list .tab_item .drop_down .tab_drop a {
+  width: 100%;
+  padding: 5px 30px;
+  font-size: 14px;
+  color: var(--text-color);
+  justify-content: start;
+}
+.wrapper nav .list .tab_item .drop_down .tab_drop:hover {
+  transition: 0.4s linear;
+  background: var(--hover-bg-tab);
+}
+.wrapper nav .list .tab_item .drop_down.click {
+  display: block;
+}
+.wrapper nav .list .tab_item:hover a {
+  transition: 0.4s linear;
+  background: var(--hover-bg-tab);
+}
+.wrapper nav .list .tab_item:last-child:hover .drop_down a {
+  background: none;
+  transition: none;
+}
+.wrapper nav .bottom {
+  position: absolute;
+  width: 100%;
+  height: 70px;
+  bottom: 0;
+  justify-content: start;
+  padding-left: 35px;
+  border-top: 1px solid var(--border-div);
+  font-size: 15px;
+}
+.wrapper nav .bottom i {
+  font-size: 16px;
+  margin-right: 10px;
+  line-height: 1.6;
 }
 .wrapper main {
   width: calc(100% - 240px);
+  margin-top: 20px;
   height: 100%;
+  padding: 0 30px;
+}
+.wrapper main .level {
+  width: 50%;
+  border: 1px solid #000;
+  position: relative;
+}
+.wrapper main .level .title {
+  width: 100%;
+}
+.wrapper main .level .title h2 {
+  font-size: 1.953125rem;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+.wrapper main .level .title h5 {
+  color: rgb(82, 91, 117);
+  font-size: 10px;
 }
 
 /*# sourceMappingURL=app.css.map */
