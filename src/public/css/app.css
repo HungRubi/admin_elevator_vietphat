@@ -330,21 +330,152 @@ header .user .circle i {
 }
 .wrapper main .comments {
   margin-top: 30px;
+  display: block;
   border-bottom: 1px solid var(--border-div);
   border-top: 1px solid var(--border-div);
 }
 .wrapper main .comments {
   width: 100%;
+  padding: 0 30px;
+  background: var(--bg-div);
+}
+.wrapper main .comments .title_table {
+  width: 100%;
+  align-items: center;
+}
+.wrapper main .comments .title_table .title {
+  width: 50%;
+}
+.wrapper main .comments .title_table .title h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-top: 20px;
+}
+.wrapper main .comments .title_table .title .sub_heading {
+  font-size: 12px;
+  color: var(--text-color);
+}
+.wrapper main .comments .title_table .search {
+  width: 50%;
+  justify-content: end;
+}
+.wrapper main .comments .title_table .search input {
+  border: 1px solid var(--border-div);
+  border-radius: 10px;
+  padding: 7px 10px;
+  padding-left: 30px;
+}
+.wrapper main .comments .title_table .search .wrapper_search {
+  position: relative;
+  margin-right: 15px;
+}
+.wrapper main .comments .title_table .search .wrapper_search .bi-search {
+  position: absolute;
+  top: 50%;
+  left: 5px;
+  color: var(--text-color);
+  transform: translateY(-50%);
 }
 .wrapper main .comments .table {
   width: 100%;
-  padding-left: 30px;
+  margin: 30px 0;
+  border-collapse: collapse;
+}
+.wrapper main .comments .table thead {
+  border-bottom: 1px solid var(--border-div);
+  border-top: 1px solid var(--border-div);
+}
+.wrapper main .comments .table tbody td {
+  border-bottom: 1px solid var(--border-div);
+}
+.wrapper main .comments .table tr th, .wrapper main .comments .table tr td {
+  text-align: left;
+  padding: 7px 0;
 }
 .wrapper main .comments .table tr th {
-  text-align: left;
+  font-size: 15px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+.wrapper main .comments .table tr td {
+  font-size: 14px;
+  font-weight: normal;
+}
+.wrapper main .comments .table tr td .wrapper {
+  align-items: center;
+}
+.wrapper main .comments .table tr td .wrapper .circle {
+  width: 45px;
+  height: 45px;
+  overflow: hidden;
+  margin-right: 15px;
+}
+.wrapper main .comments .table tr td .wrapper span {
+  font-size: 15px;
+  font-weight: 500;
+}
+.wrapper main .comments .table tr td span {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wrapper main .comments .table tr td .status_comment {
+  padding: 0 10px;
+  border-radius: 3px;
+  background: #d9fbd0;
+  border: 1px solid #90d67f;
+  color: #1c6c09;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+.wrapper main .comments .table tr td .status_comment i {
+  font-size: 14px;
+  margin-left: 5px;
+  line-height: 1.5;
+}
+.wrapper main .comments .table tr td .svg-inline--fa {
+  display: inline-block;
+  height: 1em;
+  overflow: visible;
+  vertical-align: -0.125em;
+  color: rgb(229, 120, 11);
+  font-size: 0.64rem !important;
+}
+.wrapper main .comments .table tr td p {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wrapper main .comments .table tr .col_product {
+  width: 20%;
+}
+.wrapper main .comments .table tr .col_custumer {
+  width: 15%;
+}
+.wrapper main .comments .table tr .col_star {
+  width: 8%;
+}
+.wrapper main .comments .table tr .col_review {
+  width: 40%;
 }
 .wrapper main .comments .table tr .column_checkbox {
   width: 30px;
+}
+.wrapper main .comments .table tr .wrapper_img_product {
+  width: 60px;
+  height: 60px;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid var(--border-div);
+}
+.wrapper main .comments .table tr .wrapper_img_product img {
+  width: 60px;
+  object-fit: cover;
 }
 
 /*# sourceMappingURL=app.css.map */
