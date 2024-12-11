@@ -275,26 +275,76 @@ header .user .circle i {
 }
 .wrapper main {
   width: calc(100% - 240px);
-  margin-top: 20px;
+  padding-top: 20px;
   height: 100%;
+  overflow: auto;
+}
+.wrapper main .chart {
   padding: 0 30px;
 }
-.wrapper main .level {
+.wrapper main .chart .level {
   width: 50%;
-  border: 1px solid #000;
   position: relative;
 }
-.wrapper main .level .title {
+.wrapper main .chart .level .title {
   width: 100%;
 }
-.wrapper main .level .title h2 {
+.wrapper main .chart .level .title h2 {
   font-size: 1.953125rem;
   font-weight: 600;
   color: var(--text-heading);
 }
-.wrapper main .level .title h5 {
+.wrapper main .chart .level .title h5 {
   color: rgb(82, 91, 117);
-  font-size: 10px;
+  font-size: 11px;
+}
+.wrapper main .chart .level .report_sale {
+  width: 100%;
+  justify-content: start;
+  margin-top: 20px;
+  gap: 20px;
+}
+.wrapper main .chart .level .report_sale .item_roport {
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  padding: 10px 15px;
+  border-radius: 7px;
+  border: 1px solid var(--border-div);
+  background: var(--bg-div);
+  box-shadow: -1px 4px 5px 0px rgba(144, 111, 111, 0.75);
+  -webkit-box-shadow: -1px 4px 5px 0px rgba(144, 111, 111, 0.75);
+  -moz-box-shadow: -1px 4px 5px 0px rgba(144, 111, 111, 0.75);
+}
+.wrapper main .chart .level .report_sale .item_roport .parameter {
+  width: 100%;
+}
+.wrapper main .chart .level .report_sale .item_roport .parameter h3 {
+  font-size: 19px;
+  font-weight: 600;
+}
+.wrapper main .chart .level .report_sale .item_roport .parameter h5 {
+  color: rgb(82, 91, 117);
+  font-size: 11px;
+  font-weight: 500;
+}
+.wrapper main .comments {
+  margin-top: 30px;
+  border-bottom: 1px solid var(--border-div);
+  border-top: 1px solid var(--border-div);
+}
+.wrapper main .comments {
+  width: 100%;
+}
+.wrapper main .comments .table {
+  width: 100%;
+  padding-left: 30px;
+}
+.wrapper main .comments .table tr th {
+  text-align: left;
+}
+.wrapper main .comments .table tr .column_checkbox {
+  width: 30px;
 }
 
 /*# sourceMappingURL=app.css.map */
