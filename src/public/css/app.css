@@ -369,6 +369,7 @@ header .user .circle i {
 .wrapper main .comments .title_table .search .wrapper_search {
   position: relative;
   margin-right: 15px;
+  width: 50%;
 }
 .wrapper main .comments .title_table .search .wrapper_search .bi-search {
   position: absolute;
@@ -376,6 +377,9 @@ header .user .circle i {
   left: 5px;
   color: var(--text-color);
   transform: translateY(-50%);
+}
+.wrapper main .comments .title_table .search .wrapper_search input {
+  width: 100%;
 }
 .wrapper main .comments .table {
   width: 100%;
@@ -451,6 +455,12 @@ header .user .circle i {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.wrapper main .comments .table tr .column_checkbox {
+  width: 3%;
+}
+.wrapper main .comments .table tr .col_product_img {
+  width: 7%;
+}
 .wrapper main .comments .table tr .col_product {
   width: 20%;
 }
@@ -461,10 +471,13 @@ header .user .circle i {
   width: 8%;
 }
 .wrapper main .comments .table tr .col_review {
-  width: 40%;
+  width: 35%;
 }
-.wrapper main .comments .table tr .column_checkbox {
-  width: 30px;
+.wrapper main .comments .table tr .col_status {
+  width: 5%;
+}
+.wrapper main .comments .table tr .col_time {
+  width: 5%;
 }
 .wrapper main .comments .table tr .wrapper_img_product {
   width: 60px;
@@ -476,6 +489,10 @@ header .user .circle i {
 .wrapper main .comments .table tr .wrapper_img_product img {
   width: 60px;
   object-fit: cover;
+}
+.wrapper main .footer {
+  padding: 0 30px;
+  width: 100%;
 }
 
 /*# sourceMappingURL=app.css.map */
