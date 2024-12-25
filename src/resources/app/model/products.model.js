@@ -3,12 +3,12 @@ const Schema = mongoose.Schema;
 
 const products = new Schema(
     {
-        name: { type: String, unique: true },
-        description: String,
-        img: String,
-        slug: String,
-        price: String,
-        type: String,
+        name: { type: String, required: true }, 
+        slug: { type: String, unique: true }, 
+        price: { type: Number, index: true }, 
+        description: { type: String },
+        stock: { type: Number, index: true },
+        unit: String,
     },
     {
         timestamps: true,

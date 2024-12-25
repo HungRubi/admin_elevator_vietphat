@@ -7,6 +7,15 @@
   outline: none;
 }
 
+ul {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+a {
+  text-decoration: none !important;
+}
+
 :root {
   --bg-body: #f3f3f3;
   --bg-circle: #e3e6edce;
@@ -16,6 +25,7 @@
   --border-div: #cbd0dd;
   --color-title: #000000c5;
   --hover-bg: #eff2f6;
+  --hover-btn: #e3e6ed;
   --btn-bg: #e3e6ed;
   --btn-hover-bg: #8a94ad;
   --hover-bg-tab: #eff2f6;
@@ -25,7 +35,7 @@
 body {
   width: 100%;
   height: 100vh;
-  background: var(--bg-body);
+  background: var(--bg-body) !important;
   position: relative;
   display: flex;
   font-family: "Poppins", sans-serif;
@@ -47,6 +57,15 @@ a {
   color: var(--text-color);
 }
 
+input {
+  border: 1px solid rgba(0, 0, 0, 0.3294117647);
+  border-radius: 20px;
+  padding: 10px 20px;
+  width: 100%;
+  height: 100%;
+  padding-left: 45px;
+}
+
 .circle {
   width: 40px;
   height: 40px;
@@ -55,18 +74,6 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-}
-
-.btn {
-  padding: 8px 15px;
-  font-size: 14px;
-  text-align: center;
-  border: none;
-  border-radius: 5px;
-  background: #3874ff;
-  color: var(--bg-div);
-  font-weight: 500;
   cursor: pointer;
 }
 
@@ -98,13 +105,18 @@ a {
   font-weight: 500;
 }
 
+.mt-3 {
+  margin-top: 15px;
+}
+
 .menu {
   display: none;
   position: absolute;
   top: 45px;
   right: 50%;
+  z-index: 99999999999;
   width: 290px;
-  background: var(--bg-div);
+  background: white;
   border-radius: 8px;
   border: 1px solid var(--border-div);
 }
@@ -159,6 +171,10 @@ a {
   opacity: 1;
 }
 
+.menu.active {
+  display: block;
+}
+
 header {
   width: 100%;
   height: 70px;
@@ -181,14 +197,6 @@ header .search {
   max-width: 40%;
   position: relative;
 }
-header .search input {
-  border: 1px solid rgba(0, 0, 0, 0.3294117647);
-  border-radius: 20px;
-  padding: 10px 20px;
-  width: 100%;
-  height: 100%;
-  padding-left: 45px;
-}
 header .search i {
   position: absolute;
   top: 50%;
@@ -207,24 +215,24 @@ header .user .circle i {
   color: var(--text-color);
 }
 
-.wrapper {
+.layout {
   display: flex;
   position: relative;
   width: 100%;
 }
-.wrapper .menu_bar_collap {
+.layout .menu_bar_collap {
   position: absolute;
   bottom: 1.7%;
   left: 30px;
   display: none;
 }
-.wrapper .menu_bar_collap i {
+.layout .menu_bar_collap i {
   color: var(--color-title);
 }
-.wrapper .menu_bar_collap.collap {
+.layout .menu_bar_collap.collap {
   display: flex;
 }
-.wrapper nav {
+.layout nav {
   width: 240px;
   position: relative;
   transition: width 0.5s ease-in-out;
@@ -232,17 +240,17 @@ header .user .circle i {
   border-right: 1px solid var(--border-div);
   background: var(--bg-div);
 }
-.wrapper nav .list {
+.layout nav .list {
   width: 100%;
   margin-top: 20px;
   position: relative;
 }
-.wrapper nav .list .tab_item {
+.layout nav .list .tab_item {
   margin: 5px 0;
   width: 100%;
   padding: 0 15px;
 }
-.wrapper nav .list .tab_item .link_tab {
+.layout nav .list .tab_item .link_tab {
   font-size: 14px;
   padding: 5px 10px;
   color: var(--text-color);
@@ -250,46 +258,46 @@ header .user .circle i {
   width: 100%;
   justify-content: start;
 }
-.wrapper nav .list .tab_item .link_tab i {
+.layout nav .list .tab_item .link_tab i {
   font-size: 15px;
   margin-right: 8px;
   line-height: 1.6;
 }
-.wrapper nav .list .tab_item .drop_down {
-  padding: 0 15px;
+.layout nav .list .tab_item .drop_down {
+  padding: 0 15px !important;
   display: none;
   width: 100%;
   position: absolute;
   left: 0;
 }
-.wrapper nav .list .tab_item .drop_down .tab_drop {
+.layout nav .list .tab_item .drop_down .tab_drop {
   margin: 5px 0;
   width: 100%;
   border-radius: 10px;
 }
-.wrapper nav .list .tab_item .drop_down .tab_drop a {
+.layout nav .list .tab_item .drop_down .tab_drop a {
   width: 100%;
   padding: 7px 30px;
   font-size: 14px;
   color: var(--text-color);
   justify-content: start;
 }
-.wrapper nav .list .tab_item .drop_down .tab_drop:hover {
+.layout nav .list .tab_item .drop_down .tab_drop:hover {
   transition: 0.4s linear;
   background: var(--hover-bg-tab);
 }
-.wrapper nav .list .tab_item .drop_down.click {
+.layout nav .list .tab_item .drop_down.click {
   display: block;
 }
-.wrapper nav .list .tab_item:hover a {
+.layout nav .list .tab_item:hover a {
   transition: 0.4s linear;
   background: var(--hover-bg-tab);
 }
-.wrapper nav .list .tab_item:last-child:hover .drop_down a {
+.layout nav .list .tab_item:last-child:hover .drop_down a {
   background: none;
   transition: none;
 }
-.wrapper nav .bottom {
+.layout nav .bottom {
   position: absolute;
   width: 100%;
   height: 70px;
@@ -300,51 +308,51 @@ header .user .circle i {
   border-top: 1px solid var(--border-div);
   font-size: 15px;
 }
-.wrapper nav .bottom i {
+.layout nav .bottom i {
   font-size: 16px;
   margin-right: 10px;
   line-height: 1.6;
 }
-.wrapper nav.collap {
+.layout nav.collap {
   width: 0%;
   transition: width 0.5s ease-in-out;
 }
-.wrapper nav.collap .list, .wrapper nav.collap .bottom {
+.layout nav.collap .list, .layout nav.collap .bottom {
   display: none;
 }
-.wrapper main {
+.layout main {
   width: calc(100% - 240px);
   transition: width 0.5s ease-in-out;
   padding-top: 20px;
   height: 100%;
   overflow: auto;
 }
-.wrapper main .chart {
+.layout main .chart {
   padding: 0 30px;
 }
-.wrapper main .chart .level {
+.layout main .chart .level {
   width: 50%;
   position: relative;
 }
-.wrapper main .chart .level .title {
+.layout main .chart .level .title {
   width: 100%;
 }
-.wrapper main .chart .level .title h2 {
+.layout main .chart .level .title h2 {
   font-size: 1.953125rem;
   font-weight: 600;
   color: var(--text-heading);
 }
-.wrapper main .chart .level .title h5 {
+.layout main .chart .level .title h5 {
   color: rgb(82, 91, 117);
   font-size: 11px;
 }
-.wrapper main .chart .level .report_sale {
+.layout main .chart .level .report_sale {
   width: 100%;
   justify-content: start;
   margin-top: 20px;
   gap: 20px;
 }
-.wrapper main .chart .level .report_sale .item_roport {
+.layout main .chart .level .report_sale .item_roport {
   display: flex;
   cursor: pointer;
   align-items: center;
@@ -356,101 +364,109 @@ header .user .circle i {
   -webkit-box-shadow: -1px 4px 5px 0px rgba(144, 111, 111, 0.75);
   -moz-box-shadow: -1px 4px 5px 0px rgba(144, 111, 111, 0.75);
 }
-.wrapper main .chart .level .report_sale .item_roport .parameter {
+.layout main .chart .level .report_sale .item_roport .parameter {
   width: 100%;
   display: flex;
   align-items: center;
 }
-.wrapper main .chart .level .report_sale .item_roport .parameter .number_parater {
+.layout main .chart .level .report_sale .item_roport .parameter .number_parater {
   margin-right: 10px;
 }
-.wrapper main .chart .level .report_sale .item_roport .parameter .number_parater h2 {
+.layout main .chart .level .report_sale .item_roport .parameter .number_parater h2 {
   margin-top: 5px;
   font-size: 47px;
 }
-.wrapper main .chart .level .report_sale .item_roport .parameter h3 {
+.layout main .chart .level .report_sale .item_roport .parameter h3 {
   font-size: 16px;
   font-weight: 500;
 }
-.wrapper main .chart .level .report_sale .item_roport .parameter h5 {
+.layout main .chart .level .report_sale .item_roport .parameter h5 {
   color: rgb(82, 91, 117);
   font-size: 11px;
   font-weight: 500;
 }
-.wrapper main .comments {
+.layout main .comments {
   margin-top: 30px;
   display: block;
   border-bottom: 1px solid var(--border-div);
   border-top: 1px solid var(--border-div);
 }
-.wrapper main .comments {
+.layout main .comments {
   width: 100%;
   padding: 0 30px;
   background: var(--bg-div);
 }
-.wrapper main .comments .title_table {
+.layout main .comments .title_table {
   width: 100%;
   align-items: center;
 }
-.wrapper main .comments .title_table .title {
+.layout main .comments .title_table .title {
   width: 50%;
 }
-.wrapper main .comments .title_table .title h3 {
+.layout main .comments .title_table .title h3 {
   font-size: 1.4rem;
   font-weight: 600;
   color: var(--text-heading);
   margin-top: 20px;
 }
-.wrapper main .comments .title_table .title .sub_heading {
+.layout main .comments .title_table .title .sub_heading {
   font-size: 12px;
   color: var(--text-color);
 }
-.wrapper main .table {
+.layout main .table {
   width: 100%;
+  z-index: 0;
   margin: 30px 0;
   border-collapse: collapse;
 }
-.wrapper main .table thead {
+.layout main .table thead {
   border-bottom: 1px solid var(--border-div);
   border-top: 1px solid var(--border-div);
 }
-.wrapper main .table tbody td {
+.layout main .table tbody td {
   border-bottom: 1px solid var(--border-div);
 }
-.wrapper main .table tr th, .wrapper main .table tr td {
+.layout main .table tbody tr:hover td .layout {
+  display: flex;
+  transition: 0.3s linear;
+}
+.layout main .table tbody tr:hover .col_time p {
+  display: none;
+}
+.layout main .table tr th, .layout main .table tr td {
   text-align: left;
   padding: 7px 0;
 }
-.wrapper main .table tr th {
+.layout main .table tr th {
   font-size: 14px;
   font-weight: 550;
   text-transform: uppercase;
 }
-.wrapper main .table tr td {
+.layout main .table tr td {
   font-size: 14px;
   font-weight: normal;
 }
-.wrapper main .table tr td .wrapper {
+.layout main .table tr td .layout {
   align-items: center;
 }
-.wrapper main .table tr td .wrapper .circle {
+.layout main .table tr td .layout .circle {
   width: 45px;
   height: 45px;
   overflow: hidden;
   margin-right: 15px;
 }
-.wrapper main .table tr td .wrapper span {
+.layout main .table tr td .layout span {
   font-size: 14px;
   font-weight: 500;
 }
-.wrapper main .table tr td span {
+.layout main .table tr td span {
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.wrapper main .table tr td .svg-inline--fa {
+.layout main .table tr td .svg-inline--fa {
   display: inline-block;
   height: 1em;
   overflow: visible;
@@ -458,133 +474,163 @@ header .user .circle i {
   color: rgb(229, 120, 11);
   font-size: 0.64rem !important;
 }
-.wrapper main .table tr td p {
+.layout main .table tr td p {
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.wrapper main .table tr .column_checkbox {
+.layout main .table tr .column_checkbox {
   width: 3%;
 }
-.wrapper main .table tr .col_product_img {
+.layout main .table tr .col_product_img {
   width: 7%;
 }
-.wrapper main .table tr .col_product {
+.layout main .table tr .col_product {
   width: 18%;
 }
-.wrapper main .table tr .col_custumer {
+.layout main .table tr .col_custumer {
   width: 15%;
 }
-.wrapper main .table tr .col_star {
+.layout main .table tr .col_star {
   width: 7%;
 }
-.wrapper main .table tr .col_review {
+.layout main .table tr .col_review {
   width: 30%;
 }
-.wrapper main .table tr .col_status {
+.layout main .table tr .col_status {
   width: 10%;
   padding-left: 15px;
 }
-.wrapper main .table tr .col_status .status_comment {
-  padding: 0 10px;
+.layout main .table tr .col_status .status_comment {
   border-radius: 3px;
+  max-width: 90%;
   background: #d9fbd0;
   border: 1px solid #90d67f;
   color: #1c6c09;
   font-size: 12px;
   text-transform: uppercase;
 }
-.wrapper main .table tr .col_status .status_comment i {
+.layout main .table tr .col_status .status_comment i {
   font-size: 14px;
   margin-left: 5px;
   line-height: 1.5;
 }
-.wrapper main .table tr .col_time {
+.layout main .table tr .col_status .status_comment_pending {
+  color: #bc3803;
+  background: #ffefca;
+  border: 1px solid #ffcc85;
+}
+.layout main .table tr .col_time {
   width: 10%;
   text-align: center;
+  padding-left: 10px;
 }
-.wrapper main .table tr .wrapper_img_product {
+.layout main .table tr .col_time .layout {
+  display: none;
+}
+.layout main .table tr .col_time .layout .circle {
+  background: var(--hover-btn);
+  border: 1px solid var(--border-div);
+  border-radius: 5px;
+  width: 35px;
+  height: 35px;
+}
+.layout main .table tr .wrapper_img_product {
   width: 60px;
   height: 60px;
   overflow: hidden;
   border-radius: 8px;
   border: 1px solid var(--border-div);
 }
-.wrapper main .table tr .wrapper_img_product img {
+.layout main .table tr .wrapper_img_product img {
   width: 60px;
   object-fit: cover;
 }
-.wrapper main .footer {
+.layout main .footer {
   padding: 15px 0;
   width: 100%;
   text-align: center;
 }
-.wrapper main .heading_page {
+.layout main .heading_page {
   padding: 0 30px;
   width: 100%;
 }
-.wrapper main .heading_page h5 {
+.layout main .heading_page h5 {
   font-size: 12px;
   font-weight: 500;
 }
-.wrapper main .heading_page h2 {
+.layout main .heading_page h2 {
   margin: 10px 0;
   font-size: 35px;
 }
-.wrapper main .heading_page .option_table {
+.layout main .heading_page .option_table {
   width: 100%;
 }
-.wrapper main .heading_page .option_table .search_right {
+.layout main .heading_page .option_table .search_right {
   gap: 30px;
 }
-.wrapper main .heading_page .option_table .search_right .export_btn {
+.layout main .heading_page .option_table .search_right .export_btn {
   font-size: 13px;
   font-weight: 500;
 }
-.wrapper main .heading_page .option_table .search_right .export_btn i {
+.layout main .heading_page .option_table .search_right .export_btn i {
   font-size: 16px;
 }
-.wrapper main .heading_page .option_table .search_right .export_btn:hover {
+.layout main .heading_page .option_table .search_right .add_btn a {
+  width: 100%;
+  color: var(--bg-div);
+}
+.layout main .heading_page .option_table .search_right .export_btn:hover {
   text-decoration: underline;
   cursor: pointer;
 }
-.wrapper main.collap {
+.layout main.collap {
   width: 100%;
   transition: width 0.5s ease-in-out;
 }
-.wrapper .search {
+.layout .search {
   width: 50%;
   justify-content: end;
   gap: 15px;
 }
-.wrapper .search input {
+.layout .search input {
   border: 1px solid var(--border-div);
   border-radius: 5px;
   padding: 8px 15px;
   padding-left: 30px;
 }
-.wrapper .search .wrapper_search {
+.layout .search .wrapper_search {
   position: relative;
   width: 50%;
 }
-.wrapper .search .wrapper_search .bi-search {
+.layout .search .wrapper_search .bi-search {
   position: absolute;
   top: 50%;
   left: 5px;
   color: var(--text-color);
   transform: translateY(-50%);
 }
-.wrapper .search .wrapper_search input {
+.layout .search .wrapper_search input {
   width: 100%;
 }
-.wrapper .search .seleted, .wrapper .search .selection {
+.layout .search .seleted, .layout .search .selection {
   border: 1px solid var(--border-div);
   border-radius: 5px;
   padding: 5px 10px;
   font-size: 14px;
   cursor: pointer;
+}
+
+.add_page {
+  margin-top: 50px;
+  background: var(--bg-div);
+  padding: 15px 30px;
+}
+.add_page form {
+  max-width: 90%;
+  width: 90%;
 }
 
 /*# sourceMappingURL=app.css.map */

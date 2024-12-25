@@ -29,3 +29,16 @@ btnUnCollap.addEventListener('click', () => {
     main.classList.remove('collap');
     btnUnCollap.classList.remove('collap');
 })
+
+const menu = document.querySelectorAll('.menu');
+const btnToggleMenu = document.querySelectorAll('.btn_menu');
+
+btnToggleMenu.forEach((btn, index) => {
+    btn.addEventListener('click', () => {
+        menu.forEach((div, idx) => {
+            if(index === idx){
+                div.classList.toggle('active');
+            }
+        })
+    })
+})

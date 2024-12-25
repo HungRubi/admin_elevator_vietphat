@@ -7,7 +7,13 @@
     box-sizing: border-box;
     outline: none;
 }
-
+ul{
+    padding: 0 !important;
+    margin: 0 !important;
+}
+a{
+    text-decoration: none !important;
+}
 :root{
     --bg-body: #f3f3f3;
     --bg-circle: #e3e6edce;
@@ -17,6 +23,7 @@
     --border-div: #cbd0dd;
     --color-title: #000000c5;
     --hover-bg: #eff2f6;
+    --hover-btn: #e3e6ed;
     --btn-bg: #e3e6ed;
     --btn-hover-bg: #8a94ad;
     --hover-bg-tab: #eff2f6;
@@ -26,7 +33,7 @@
 body{
     width: 100%;
     height: 100vh;
-    background: var(--bg-body);
+    background: var(--bg-body) !important;
     position: relative;
     display: flex;
     font-family: 'Poppins', sans-serif;
@@ -45,6 +52,14 @@ a{
     text-decoration: none;
     color: var(--text-color);
 }
+input{
+    border: 1px solid #00000054;
+    border-radius: 20px;
+    padding: 10px 20px;
+    width: 100%;
+    height: 100%;
+    padding-left: 45px;
+}
 .circle{
     width: 40px;
     height: 40px;
@@ -55,17 +70,7 @@ a{
     justify-content: center;
     cursor: pointer;
 }
-.btn{
-    padding: 8px 15px;
-    font-size: 14px;
-    text-align: center;
-    border: none;
-    border-radius: 5px;
-    background: #3874ff;
-    color: var(--bg-div);
-    font-weight: 500;
-    cursor: pointer;
-}
+
 .btn:hover{
     background: #3874ffe7;
     transition: .3s linear;
@@ -89,13 +94,17 @@ a{
     color: var(--color-title);
     font-weight: 500;
 }
+.mt-3{
+    margin-top: 15px;
+}
 .menu{
     display: none;
     position: absolute;
     top: 45px;
     right: 50%;
+    z-index: 99999999999;
     width: 290px;
-    background: var(--bg-div);
+    background: white;
     border-radius: 8px;
     border: 1px solid var(--border-div);
     .infor_user{
@@ -150,6 +159,9 @@ a{
     }
 }
 
+.menu.active{
+    display: block;
+}
 
 header{
     width: 100%;
@@ -171,14 +183,6 @@ header{
         width: 30%;
         max-width: 40%;
         position: relative;
-        input{
-            border: 1px solid #00000054;
-            border-radius: 20px;
-            padding: 10px 20px;
-            width: 100%;
-            height: 100%;
-            padding-left: 45px;
-        }
         i{
             position: absolute;
             top: 50%;
@@ -201,7 +205,7 @@ header{
     }
 }
 
-.wrapper{
+.layout{
     display: flex;
     position: relative;
     width: 100%;
@@ -246,7 +250,7 @@ header{
                     }
                 }
                 .drop_down{
-                    padding: 0 15px;
+                    padding: 0 15px !important;
                     display: none;
                     width: 100%;
                     position: absolute;
@@ -400,6 +404,7 @@ header{
         }
         .table{
             width: 100%;
+            z-index: 0;
             margin: 30px 0;
             border-collapse: collapse;
             thead{
@@ -410,7 +415,19 @@ header{
                 td{
                     border-bottom: 1px solid var(--border-div);
                 }
-                
+                tr:hover{
+                    td{
+                        .layout{
+                            display: flex;
+                            transition: .3s linear;
+                        }
+                    }
+                    .col_time{
+                        p{
+                            display: none;
+                        }
+                    }
+                }
             }
             tr{
                 th, td{
@@ -425,7 +442,7 @@ header{
                 td{
                     font-size: 14px;
                     font-weight: normal;
-                    .wrapper{
+                    .layout{
                         align-items: center;
                         .circle{
                             width: 45px;
@@ -486,9 +503,8 @@ header{
                     width: 10%;
                     padding-left: 15px;
                     .status_comment{
-                        padding: 0 10px;
                         border-radius: 3px;
-                        // max-width: 80%;
+                        max-width: 90%;
                         background: #d9fbd0;
                         border: 1px solid #90d67f;
                         color: #1c6c09;
@@ -500,10 +516,26 @@ header{
                             line-height: 1.5;
                         }
                     }
+                    .status_comment_pending{
+                        color:#bc3803;
+                        background: #ffefca;
+                        border: 1px solid #ffcc85;
+                    }
                 }
                 .col_time{
                     width: 10%;
                     text-align: center;
+                    padding-left: 10px;
+                    .layout{
+                        display: none;
+                        .circle{
+                            background: var(--hover-btn);
+                            border: 1px solid var(--border-div);
+                            border-radius: 5px;
+                            width: 35px;
+                            height: 35px;
+                        }
+                    }
                 }
                 .wrapper_img_product{
                     width: 60px;
@@ -544,6 +576,12 @@ header{
                         font-weight: 500;
                         i{
                             font-size: 16px;
+                        }
+                    }
+                    .add_btn{
+                        a{
+                            width: 100%;
+                            color: var(--bg-div);
                         }
                     }
                     .export_btn:hover{
@@ -590,5 +628,15 @@ header{
             font-size: 14px;
             cursor: pointer;
         }
+    }
+}
+
+.add_page{
+    margin-top: 50px;
+    background: var(--bg-div);
+    padding: 15px 30px;
+    form{
+        max-width: 90%;
+        width: 90%;
     }
 }
