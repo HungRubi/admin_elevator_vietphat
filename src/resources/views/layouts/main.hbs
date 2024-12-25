@@ -9,6 +9,7 @@
 </head>
 <body>
     <header class="is-between">
+        
         <div class="logo is-center">
             <h1>Viet Phat</h1>
         </div>
@@ -68,40 +69,46 @@
         </div>
     </header>
     <div class="wrapper" style="margin-top: 70px;">
-        <nav>
+        <nav class="nav_bar">
             <ul class="list">
                 <li class="tab_item">
-                    <a href="#" class="is-center link_tab">
+                    <a href="/" class="is-center link_tab">
                         <i class="bi bi-house"></i>
                         Dashboard
                     </a>
                 </li>
                 <li class="tab_item">
-                    <a href="#" class="is-center link_tab">
+                    <a href="/orders" class="is-center link_tab">
+                        <i class="bi bi-cart"></i>
+                        Orders
+                    </a>
+                </li>
+                <li class="tab_item">
+                    <a href="/employee" class="is-center link_tab">
                         <i class="bi bi-person"></i>
                         Employees
                     </a>
                 </li>
                 <li class="tab_item">
-                    <a href="#" class="is-center link_tab">
+                    <a href="/custumers" class="is-center link_tab">
                         <i class="bi bi-people"></i>
                         Custumors
                     </a>
                 </li>
                 <li class="tab_item">
-                    <a href="#" class="is-center link_tab">
+                    <a href="/products" class="is-center link_tab">
                         <i class="bi bi-box"></i>
                         Products
                     </a>
                 </li>
                 <li class="tab_item">
-                    <a href="#" class="is-center link_tab">
+                    <a href="/report" class="is-center link_tab">
                         <i class="bi bi-bar-chart"></i>
                         Sales report
                     </a>
                 </li>
                 <li class="tab_item">
-                    <a href="#" class="is-center link_tab">
+                    <a href="/article" class="is-center link_tab">
                         <i class="bi bi-journal-text"></i>
                         Article
                     </a>
@@ -130,15 +137,20 @@
                     </ul>
                 </li>
             </ul>
-            <div class="bottom is-center">
+            <div class="bottom is-center btn-collap">
                 <i class="bi bi-arrow-bar-left"></i>
                 Collapsed View
             </div>
+            
         </nav>
-        <main>
+        <main class="main_page">
             {{{body}}}
         </main>
+        <div class="menu_bar_collap circle">
+            <i class="bi bi-arrow-bar-right"></i>
+        </div>
     </div>
+    
     <footer>
 
     </footer>

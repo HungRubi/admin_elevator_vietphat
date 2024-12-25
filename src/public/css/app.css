@@ -58,6 +58,23 @@ a {
   cursor: pointer;
 }
 
+.btn {
+  padding: 8px 15px;
+  font-size: 14px;
+  text-align: center;
+  border: none;
+  border-radius: 5px;
+  background: #3874ff;
+  color: var(--bg-div);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: rgba(56, 116, 255, 0.9058823529);
+  transition: 0.3s linear;
+}
+
 .circle:hover {
   background: var(--btn-bg);
   transition: 0.3s linear;
@@ -192,11 +209,25 @@ header .user .circle i {
 
 .wrapper {
   display: flex;
+  position: relative;
   width: 100%;
+}
+.wrapper .menu_bar_collap {
+  position: absolute;
+  bottom: 1.7%;
+  left: 30px;
+  display: none;
+}
+.wrapper .menu_bar_collap i {
+  color: var(--color-title);
+}
+.wrapper .menu_bar_collap.collap {
+  display: flex;
 }
 .wrapper nav {
   width: 240px;
   position: relative;
+  transition: width 0.5s ease-in-out;
   height: 100%;
   border-right: 1px solid var(--border-div);
   background: var(--bg-div);
@@ -232,13 +263,13 @@ header .user .circle i {
   left: 0;
 }
 .wrapper nav .list .tab_item .drop_down .tab_drop {
-  margin: 4px 0;
+  margin: 5px 0;
   width: 100%;
   border-radius: 10px;
 }
 .wrapper nav .list .tab_item .drop_down .tab_drop a {
   width: 100%;
-  padding: 5px 30px;
+  padding: 7px 30px;
   font-size: 14px;
   color: var(--text-color);
   justify-content: start;
@@ -263,6 +294,7 @@ header .user .circle i {
   width: 100%;
   height: 70px;
   bottom: 0;
+  cursor: pointer;
   justify-content: start;
   padding-left: 35px;
   border-top: 1px solid var(--border-div);
@@ -273,8 +305,16 @@ header .user .circle i {
   margin-right: 10px;
   line-height: 1.6;
 }
+.wrapper nav.collap {
+  width: 0%;
+  transition: width 0.5s ease-in-out;
+}
+.wrapper nav.collap .list, .wrapper nav.collap .bottom {
+  display: none;
+}
 .wrapper main {
   width: calc(100% - 240px);
+  transition: width 0.5s ease-in-out;
   padding-top: 20px;
   height: 100%;
   overflow: auto;
@@ -318,10 +358,19 @@ header .user .circle i {
 }
 .wrapper main .chart .level .report_sale .item_roport .parameter {
   width: 100%;
+  display: flex;
+  align-items: center;
+}
+.wrapper main .chart .level .report_sale .item_roport .parameter .number_parater {
+  margin-right: 10px;
+}
+.wrapper main .chart .level .report_sale .item_roport .parameter .number_parater h2 {
+  margin-top: 5px;
+  font-size: 47px;
 }
 .wrapper main .chart .level .report_sale .item_roport .parameter h3 {
-  font-size: 19px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 500;
 }
 .wrapper main .chart .level .report_sale .item_roport .parameter h5 {
   color: rgb(82, 91, 117);
@@ -356,77 +405,89 @@ header .user .circle i {
   font-size: 12px;
   color: var(--text-color);
 }
-.wrapper main .comments .title_table .search {
-  width: 50%;
-  justify-content: end;
-}
-.wrapper main .comments .title_table .search input {
-  border: 1px solid var(--border-div);
-  border-radius: 10px;
-  padding: 7px 10px;
-  padding-left: 30px;
-}
-.wrapper main .comments .title_table .search .wrapper_search {
-  position: relative;
-  margin-right: 15px;
-  width: 50%;
-}
-.wrapper main .comments .title_table .search .wrapper_search .bi-search {
-  position: absolute;
-  top: 50%;
-  left: 5px;
-  color: var(--text-color);
-  transform: translateY(-50%);
-}
-.wrapper main .comments .title_table .search .wrapper_search input {
-  width: 100%;
-}
-.wrapper main .comments .table {
+.wrapper main .table {
   width: 100%;
   margin: 30px 0;
   border-collapse: collapse;
 }
-.wrapper main .comments .table thead {
+.wrapper main .table thead {
   border-bottom: 1px solid var(--border-div);
   border-top: 1px solid var(--border-div);
 }
-.wrapper main .comments .table tbody td {
+.wrapper main .table tbody td {
   border-bottom: 1px solid var(--border-div);
 }
-.wrapper main .comments .table tr th, .wrapper main .comments .table tr td {
+.wrapper main .table tr th, .wrapper main .table tr td {
   text-align: left;
   padding: 7px 0;
 }
-.wrapper main .comments .table tr th {
-  font-size: 15px;
-  font-weight: 500;
+.wrapper main .table tr th {
+  font-size: 14px;
+  font-weight: 550;
   text-transform: uppercase;
 }
-.wrapper main .comments .table tr td {
+.wrapper main .table tr td {
   font-size: 14px;
   font-weight: normal;
 }
-.wrapper main .comments .table tr td .wrapper {
+.wrapper main .table tr td .wrapper {
   align-items: center;
 }
-.wrapper main .comments .table tr td .wrapper .circle {
+.wrapper main .table tr td .wrapper .circle {
   width: 45px;
   height: 45px;
   overflow: hidden;
   margin-right: 15px;
 }
-.wrapper main .comments .table tr td .wrapper span {
-  font-size: 15px;
+.wrapper main .table tr td .wrapper span {
+  font-size: 14px;
   font-weight: 500;
 }
-.wrapper main .comments .table tr td span {
+.wrapper main .table tr td span {
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.wrapper main .comments .table tr td .status_comment {
+.wrapper main .table tr td .svg-inline--fa {
+  display: inline-block;
+  height: 1em;
+  overflow: visible;
+  vertical-align: -0.125em;
+  color: rgb(229, 120, 11);
+  font-size: 0.64rem !important;
+}
+.wrapper main .table tr td p {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wrapper main .table tr .column_checkbox {
+  width: 3%;
+}
+.wrapper main .table tr .col_product_img {
+  width: 7%;
+}
+.wrapper main .table tr .col_product {
+  width: 18%;
+}
+.wrapper main .table tr .col_custumer {
+  width: 15%;
+}
+.wrapper main .table tr .col_star {
+  width: 7%;
+}
+.wrapper main .table tr .col_review {
+  width: 30%;
+}
+.wrapper main .table tr .col_status {
+  width: 10%;
+  padding-left: 15px;
+}
+.wrapper main .table tr .col_status .status_comment {
   padding: 0 10px;
   border-radius: 3px;
   background: #d9fbd0;
@@ -435,64 +496,95 @@ header .user .circle i {
   font-size: 12px;
   text-transform: uppercase;
 }
-.wrapper main .comments .table tr td .status_comment i {
+.wrapper main .table tr .col_status .status_comment i {
   font-size: 14px;
   margin-left: 5px;
   line-height: 1.5;
 }
-.wrapper main .comments .table tr td .svg-inline--fa {
-  display: inline-block;
-  height: 1em;
-  overflow: visible;
-  vertical-align: -0.125em;
-  color: rgb(229, 120, 11);
-  font-size: 0.64rem !important;
+.wrapper main .table tr .col_time {
+  width: 10%;
+  text-align: center;
 }
-.wrapper main .comments .table tr td p {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.wrapper main .comments .table tr .column_checkbox {
-  width: 3%;
-}
-.wrapper main .comments .table tr .col_product_img {
-  width: 7%;
-}
-.wrapper main .comments .table tr .col_product {
-  width: 20%;
-}
-.wrapper main .comments .table tr .col_custumer {
-  width: 15%;
-}
-.wrapper main .comments .table tr .col_star {
-  width: 8%;
-}
-.wrapper main .comments .table tr .col_review {
-  width: 35%;
-}
-.wrapper main .comments .table tr .col_status {
-  width: 5%;
-}
-.wrapper main .comments .table tr .col_time {
-  width: 5%;
-}
-.wrapper main .comments .table tr .wrapper_img_product {
+.wrapper main .table tr .wrapper_img_product {
   width: 60px;
   height: 60px;
   overflow: hidden;
   border-radius: 8px;
   border: 1px solid var(--border-div);
 }
-.wrapper main .comments .table tr .wrapper_img_product img {
+.wrapper main .table tr .wrapper_img_product img {
   width: 60px;
   object-fit: cover;
 }
 .wrapper main .footer {
+  padding: 15px 0;
+  width: 100%;
+  text-align: center;
+}
+.wrapper main .heading_page {
   padding: 0 30px;
   width: 100%;
+}
+.wrapper main .heading_page h5 {
+  font-size: 12px;
+  font-weight: 500;
+}
+.wrapper main .heading_page h2 {
+  margin: 10px 0;
+  font-size: 35px;
+}
+.wrapper main .heading_page .option_table {
+  width: 100%;
+}
+.wrapper main .heading_page .option_table .search_right {
+  gap: 30px;
+}
+.wrapper main .heading_page .option_table .search_right .export_btn {
+  font-size: 13px;
+  font-weight: 500;
+}
+.wrapper main .heading_page .option_table .search_right .export_btn i {
+  font-size: 16px;
+}
+.wrapper main .heading_page .option_table .search_right .export_btn:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+.wrapper main.collap {
+  width: 100%;
+  transition: width 0.5s ease-in-out;
+}
+.wrapper .search {
+  width: 50%;
+  justify-content: end;
+  gap: 15px;
+}
+.wrapper .search input {
+  border: 1px solid var(--border-div);
+  border-radius: 5px;
+  padding: 8px 15px;
+  padding-left: 30px;
+}
+.wrapper .search .wrapper_search {
+  position: relative;
+  width: 50%;
+}
+.wrapper .search .wrapper_search .bi-search {
+  position: absolute;
+  top: 50%;
+  left: 5px;
+  color: var(--text-color);
+  transform: translateY(-50%);
+}
+.wrapper .search .wrapper_search input {
+  width: 100%;
+}
+.wrapper .search .seleted, .wrapper .search .selection {
+  border: 1px solid var(--border-div);
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 14px;
+  cursor: pointer;
 }
 
 /*# sourceMappingURL=app.css.map */
