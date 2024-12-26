@@ -10,7 +10,6 @@ const custumers = new Schema(
         address: String,
         phone: String,
         email: String,
-        birth: Date,
     },
     {
         timestamps: true,

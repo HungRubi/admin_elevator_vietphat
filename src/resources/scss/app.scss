@@ -7,7 +7,7 @@
     box-sizing: border-box;
     outline: none;
 }
-ul{
+ul,p{
     padding: 0 !important;
     margin: 0 !important;
 }
@@ -500,6 +500,9 @@ header{
                 }
                 .col_custumer{
                     width: 10%;
+                    .layout{
+                        justify-content: start;
+                    }
                 }
                 
                 .col_star{

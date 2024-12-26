@@ -5,7 +5,9 @@ const employees = new Schema(
     {
         account: { type: String, unique: true },
         password: String,
-        img: String,
+        isVerified: { type: Boolean, default: false },
+        googleId: { type: String, unique: true },
+        avatar: String,
         name : String,
         address: String,
         phone: String,

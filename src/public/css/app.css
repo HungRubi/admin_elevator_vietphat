@@ -7,7 +7,7 @@
   outline: none;
 }
 
-ul {
+ul, p {
   padding: 0 !important;
   margin: 0 !important;
 }
@@ -503,6 +503,9 @@ header .user .circle i {
 }
 .layout main .table tr .col_custumer {
   width: 10%;
+}
+.layout main .table tr .col_custumer .layout {
+  justify-content: start;
 }
 .layout main .table tr .col_star {
   width: 7%;
