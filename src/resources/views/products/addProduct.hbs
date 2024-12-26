@@ -1,40 +1,165 @@
 <div class="heading_page">
     <h5>Dashboard <i class="bi bi-chevron-right"></i> Products <i class="bi bi-chevron-right"></i> Add product</h5>
     <h2>Add Products</h2>
+    <h5>Add a new product to your store</h5>
 </div>
 
 <div class="layout add_page ">
     <form action="/products/store" method="post">
-        <div class="form-group mt-3">
-            <label>Name product</label>
-            <input type="text" class="form-control mt-2" name="name"  placeholder="Name product...">    
+        <div class="col-6 level-left">
+            <div class="level-top">
+                <div class="heading">
+                    <h2>Name and Description</h2>
+                </div>
+                <div class="layout">
+                    <div class="form-group mt-3">
+                        <label>Product Name</label>
+                        <input type="text" class="form-control mt-2" name="name"  placeholder="Name product...">    
+                    </div>
+                    <div class="form-group mt-3">
+                        <label>Product Description</label>
+                        <textarea class="form-control mt-2 mb-3" name="description" rows="5" placeholder="Description..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="level-top mt-4">
+                <div class="heading">
+                    <h2>Product Pricing</h2>
+                </div>
+                <div class="layout">
+                    <div class="form-group mt-3">
+                        <div class="input-group mb-3" style="width:100%;">
+                            <div class="input-group mb-3 d-flex" style="gap:31px;">
+                                <div class="col-50">
+                                    <label for="product1" class="form-label">Original Price</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text" style="width:42px"><i class="bi bi-currency-dollar"></i></span>
+                                        <input type="number" class="form-control" id="product1" placeholder="Price" aria-label="Server">
+                                    </div>
+                                </div>
+
+                                <div class="col-50">
+                                    <label for="product2" class="form-label">Discounted Price</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text" style="width:42px"><i class="bi bi-currency-dollar"></i></span>
+                                        <input type="number" disabled class="form-control" id="product2" placeholder="Price" aria-label="Server">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-group mb-3" style="width:100%;">
+                            <div class="input-group mb-3 d-flex" style="gap:31px;">
+                                <div class="col-50">
+                                    <label>Discount</label>
+                                    <select class="form-select mt-2" aria-label="Default select example" name="unit">
+                                        <option selected>Choice</option>
+                                        <option value="5%">5%</option>
+                                        <option value="10%">10%</option>
+                                        <option value="15%">15%</option>
+                                        <option value="20%">20%</option>
+                                        <option value="25%">25%</option>
+                                        <option value="30%">30%</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-50">
+                                    <label for="product2" class="form-label">Discounted Price</label>
+                                    <div class="input-group">
+                                        <input type="number" disabled class="form-control" id="product2" placeholder="Price" aria-label="Server">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="level-top mt-4">
+                <div class="heading">
+                    <h2>Manage Stock</h2>
+                </div>
+                <div class="layout">
+                    <div class="form-group mt-3">
+                        <label>Stock Keeping Unit</label>
+                        <select class="form-select mt-2" aria-label="Default select example" name="unit">
+                            <option selected>Select unit of products</option>
+                            <option value="Meter(m)">Meter(m)</option>
+                            <option value="Kilogam(kg)">Kilogam(kg)</option>
+                            <option value="Piece(pcs)">Piece(pcs)</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group mb-3 mt-3" style="width:100%;">
+                            <div class="input-group mb-3 d-flex" style="gap:31px;">
+                                <div class="col-50">
+                                    <label>Quantity</label>
+                                    <input type="number" class="mt-2 form-control" id="product2" placeholder="Number quantity" aria-label="Server">
+                                </div>
+
+                                <div class="col-50">
+                                    <label for="product2" class="form-label">Minimum Stock</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="product2" placeholder="Number minimum stock" aria-label="Server">
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="form-group mt-3">
-            <label>Description</label>
-            <textarea class="form-control" name="description" rows="5" placeholder="Description..."></textarea>
+        <div class="col-6 level-right">
+            <div class="level-top">
+                <div class="heading">
+                    <h2>Product Details</h2>
+                </div>
+                <div class="layout">
+                    <div class="input-group mb-3 d-flex" style="gap:31px;">
+                        <div class="col-50 mt-2">
+                            <label>Quantity</label>
+                            <input type="number" class="mt-2 form-control" id="product2" placeholder="Number quantity" aria-label="Server">
+                        </div>
+
+                        <div class="col-50 mt-2">
+                            <label>Material</label>
+                            <select class="form-select mt-2" aria-label="Default select example" name="Material">
+                                <option selected>Choice</option>
+                                <option value="Inox">Inox</option>
+                                <option value="Sắt">Sắt</option>
+                                <option value="Kẽm">Kẽm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="level-top mt-4">
+                <div class="heading">
+                    <h2>Product Image</h2>
+                </div>
+                <div class="layout" >
+                    <div class="wrapper_product d-flex flex-wrap gap-3" style="gap: 20px;">
+                        <div class="frame_image is-center">
+                            <div class="btn_add_image text-center">
+                                <i class="bi bi-image"></i>
+                                <h4>Click to upload</h4>
+                                <input type="file" id="inputFile" accept=".jpg, .jpeg, .png" style="display: none;" />
+                            </div>
+                        </div>
+                        <div class="frame_image image">
+                            <img src="https://down-vn.img.susercontent.com/file/vn-11134201-23020-40ygyw4jbznve9" alt="" srcset="">
+                            <div class="btn btn-danger btn-me">
+                                Remove
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin: 70px 0px 20px ;">
+                <i class="bi bi-plus"></i>
+                Add Product
+            </button>  
         </div>
-        <div class="form-group mt-3">
-            <label>Price</label>
-            <input type="number" class="form-control mt-2" name="price" placeholder="Price product...">    
-        </div>
-        <div class="form-group mt-3">
-            <label>Image</label>
-            <input type="text" class="form-control mt-2" name="img" placeholder="Link Image...">    
-        </div>
-        <div class="form-group mt-3">
-            <label>Unit</label>
-            <select class="form-select" aria-label="Default select example" name="unit">
-                <option selected>Select unit of products</option>
-                <option value="Meter(m)">Meter(m)</option>
-                <option value="Kilogam(kg)">Kilogam(kg)</option>
-                <option value="Piece(pcs)">Piece(pcs)</option>
-            </select>
-        </div>
-        <div class="form-group mt-3">
-            <label>Stock</label>
-            <input type="number" class="form-control mt-2" name="stock" placeholder="Number stock...">    
-        </div>
-        <button type="submit" class="mt-3 btn btn-primary">Add new product</button>
     </form>
 </div>
 <div class="footer">

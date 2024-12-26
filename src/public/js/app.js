@@ -42,3 +42,43 @@ btnToggleMenu.forEach((btn, index) => {
         })
     })
 })
+
+const btnAddImage = document.querySelector('.btn_add_image');
+
+btnAddImage.addEventListener('click', () => {
+    const inputFile = document.getElementById("inputFile");
+    inputFile.click();
+
+    inputFile.addEventListener('change', () => {
+        const file = inputFile.files[0];
+        if (file) {
+            const validTypes = ["image/jpeg", "image/png"];
+            if (validTypes.includes(file.type)) {
+                renderImage(URL.createObjectURL(file));
+                inputFile.value = ""; 
+            } else {
+                alert("Vui lòng chọn file ảnh hợp lệ (.jpg, .jpeg, .png)!");
+                inputFile.value = "";
+            }
+        }
+    })
+})
+function renderImage(src){
+    const wrapper = document.querySelector('.wrapper_product');
+    const html = `<div class="frame_image image">
+                    <img src="${src}">
+                    <div class="btn btn-danger btn-me">
+                        Remove
+                    </div>
+                  </div>`;
+    wrapper.insertAdjacentHTML('beforeend', html);
+
+    const frame = document.querySelectorAll('.image');
+    frame.forEach(fr => {
+        const btnRemove = fr.querySelector('.btn-danger');
+        btnRemove.onclick = () => {
+            btnRemove.closest('.frame_image').remove();
+        }
+    })
+
+}

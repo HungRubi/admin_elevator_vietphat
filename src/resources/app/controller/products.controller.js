@@ -31,7 +31,8 @@ class ProductsController {
                 description,
                 stock,
                 unit,
-                slug
+                slug,
+                image
             })
             await product.save();
             res.redirect('/products')
@@ -39,6 +40,28 @@ class ProductsController {
         catch(error){
             next(error);
         };
+    }
+
+    edit(req, res, next){
+        Products.findById(req.params.id)
+        .then(product => {
+            res.render('products/editProduct', {
+                product: mongooseToObject(product),
+            })
+        })
+    }
+    
+    update(req, res, next) {
+        console.log(req.body);
+        Products.updateOne({_id: req.params.id}, req.body)
+        .then(() => res.redirect('/products'))
+        .catch(next);
+    }
+
+    delete(req, res, next) {
+        Products.deleteOne({_id: req.params.id})
+        .then(() => {res.redirect('back')})
+        .catch(next)
     }
 }
 

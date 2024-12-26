@@ -15,6 +15,7 @@ a{
     text-decoration: none !important;
 }
 :root{
+    --primary-color: #4d90fe;
     --bg-body: #f3f3f3;
     --bg-circle: #e3e6edce;
     --bg-div: #fff;
@@ -28,6 +29,7 @@ a{
     --btn-hover-bg: #8a94ad;
     --hover-bg-tab: #eff2f6;
     --text-heading: #141824;
+
 }
 
 body{
@@ -51,6 +53,9 @@ img{
 a{
     text-decoration: none;
     color: var(--text-color);
+}
+.col-50{
+    width: 48%;
 }
 input{
     border: 1px solid #00000054;
@@ -88,6 +93,9 @@ input{
     display: flex;
     align-items: center;
     justify-content: center;
+}
+.heading{
+    width: 100%;
 }
 .title{
     font-size: 15px;
@@ -231,7 +239,7 @@ header{
         .list{
             width: 100%;
             margin-top: 20px;
-            position: relative;
+            transition: .6s ease-in-out;
             .tab_item{
                 margin: 5px 0;
                 width: 100%;
@@ -307,6 +315,7 @@ header{
         transition:  width 0.5s ease-in-out;
         .list, .bottom{
             display: none;
+            transition: block 0.5s ease-in-out;
         }
     }
     main{
@@ -432,7 +441,6 @@ header{
             tr{
                 th, td{
                     text-align: left;
-                    padding: 7px 0;
                 }
                 th{
                     font-size: 14px;
@@ -444,6 +452,8 @@ header{
                     font-weight: normal;
                     .layout{
                         align-items: center;
+                        width: 100%;
+                        justify-content: center;
                         .circle{
                             width: 45px;
                             height: 45px;
@@ -482,14 +492,14 @@ header{
                 .column_checkbox{
                     width: 3%;
                 }
-                .col_product_img{
-                    width: 7%;
+                .col_image{
+                     width: 7%;
                 }
                 .col_product{
-                    width: 18%;
+                    width: 10%;
                 }
                 .col_custumer{
-                    width: 15%;
+                    width: 10%;
                 }
                 
                 .col_star{
@@ -523,7 +533,7 @@ header{
                     }
                 }
                 .col_time{
-                    width: 10%;
+                    width: 13%;
                     text-align: center;
                     padding-left: 10px;
                     .layout{
@@ -534,6 +544,21 @@ header{
                             border-radius: 5px;
                             width: 35px;
                             height: 35px;
+                            a{
+                                width: 100%;
+                                color: black;
+                            }
+                        }
+                        .circle:hover{
+                            transition: .3s linear;
+                            background: var(--primary-color);
+                            i{
+                                color: white;
+                                transition: .3s linear;
+                            }
+                        }
+                        .circle:nth-child(2):hover{
+                            background: #cc0033;
                         }
                     }
                 }
@@ -559,13 +584,15 @@ header{
         .heading_page{
             padding: 0 30px;
             width: 100%;
+            color: var(--text-color);
             h5{
                 font-size: 12px;
-                font-weight: 500;
             }
             h2{
-                margin: 10px 0;
+                margin-top: 30px;
+                margin-bottom: 10px;
                 font-size: 35px;
+                color: var(--text-heading);
             }
             .option_table{
                 width: 100%;
@@ -634,9 +661,81 @@ header{
 .add_page{
     margin-top: 50px;
     background: var(--bg-div);
-    padding: 15px 30px;
+    padding: 40px 30px;
     form{
-        max-width: 90%;
-        width: 90%;
+        width: 100%;
+        display: flex;
+        gap: 20px;
+        
+        .level-left, .level-right{
+            .level-top{
+                width: 100%;
+                border: 1px solid var(--border-div);
+                border-radius: 8px;
+                .heading{
+                    border-bottom: 1px solid var(--border-div);
+                    h2{
+                        margin-left: 20px;
+                        font-size: 27px;
+                        padding: 5px 0;
+                        color: var(--text-heading);
+                    }
+                }
+                label{
+                    font-weight: 500;
+                    color: var(--text-color);
+                }
+                input{
+                    height: auto;
+                }
+            }
+        }
+        .layout{
+            display: block;
+            padding: 0 20px;
+            .wrapper_product{
+                width: 100%;
+                margin: 20px 0;
+                .frame_image{
+                    width: calc(100% / 3 - 11px);
+                    border: 1px dashed var(--primary-color);
+                    border-radius: 6px;
+                    aspect-ratio: 1 / 1;
+                    cursor: pointer;
+                    h4{
+                        font-size: 16px;
+                        font-weight: 500;
+                        color: var(--primary-color);
+                    }
+                    i{
+                        color: var(--primary-color);
+                        font-size: 28px;
+                    }
+                }
+                .image{
+                    border: none;
+                    overflow: hidden;
+                    position: relative;
+                    .btn-me{
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        display: none;
+                    }
+                }
+                .image:hover img{
+                    transform: scale(1.1);
+                    transition: .4s linear;
+                    opacity: 0.8;
+                }
+                .image:hover .btn-me{
+                    transition: .4s linear;
+                    display: block;
+                }
+
+            }
+            
+        }
     }
 }

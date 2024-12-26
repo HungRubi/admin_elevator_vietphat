@@ -17,6 +17,7 @@ a {
 }
 
 :root {
+  --primary-color: #4d90fe;
   --bg-body: #f3f3f3;
   --bg-circle: #e3e6edce;
   --bg-div: #fff;
@@ -55,6 +56,10 @@ img {
 a {
   text-decoration: none;
   color: var(--text-color);
+}
+
+.col-50 {
+  width: 48%;
 }
 
 input {
@@ -97,6 +102,10 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.heading {
+  width: 100%;
 }
 
 .title {
@@ -243,7 +252,7 @@ header .user .circle i {
 .layout nav .list {
   width: 100%;
   margin-top: 20px;
-  position: relative;
+  transition: 0.6s ease-in-out;
 }
 .layout nav .list .tab_item {
   margin: 5px 0;
@@ -319,6 +328,7 @@ header .user .circle i {
 }
 .layout nav.collap .list, .layout nav.collap .bottom {
   display: none;
+  transition: block 0.5s ease-in-out;
 }
 .layout main {
   width: calc(100% - 240px);
@@ -435,7 +445,6 @@ header .user .circle i {
 }
 .layout main .table tr th, .layout main .table tr td {
   text-align: left;
-  padding: 7px 0;
 }
 .layout main .table tr th {
   font-size: 14px;
@@ -448,6 +457,8 @@ header .user .circle i {
 }
 .layout main .table tr td .layout {
   align-items: center;
+  width: 100%;
+  justify-content: center;
 }
 .layout main .table tr td .layout .circle {
   width: 45px;
@@ -484,14 +495,14 @@ header .user .circle i {
 .layout main .table tr .column_checkbox {
   width: 3%;
 }
-.layout main .table tr .col_product_img {
+.layout main .table tr .col_image {
   width: 7%;
 }
 .layout main .table tr .col_product {
-  width: 18%;
+  width: 10%;
 }
 .layout main .table tr .col_custumer {
-  width: 15%;
+  width: 10%;
 }
 .layout main .table tr .col_star {
   width: 7%;
@@ -523,7 +534,7 @@ header .user .circle i {
   border: 1px solid #ffcc85;
 }
 .layout main .table tr .col_time {
-  width: 10%;
+  width: 13%;
   text-align: center;
   padding-left: 10px;
 }
@@ -536,6 +547,21 @@ header .user .circle i {
   border-radius: 5px;
   width: 35px;
   height: 35px;
+}
+.layout main .table tr .col_time .layout .circle a {
+  width: 100%;
+  color: black;
+}
+.layout main .table tr .col_time .layout .circle:hover {
+  transition: 0.3s linear;
+  background: var(--primary-color);
+}
+.layout main .table tr .col_time .layout .circle:hover i {
+  color: white;
+  transition: 0.3s linear;
+}
+.layout main .table tr .col_time .layout .circle:nth-child(2):hover {
+  background: #cc0033;
 }
 .layout main .table tr .wrapper_img_product {
   width: 60px;
@@ -556,14 +582,16 @@ header .user .circle i {
 .layout main .heading_page {
   padding: 0 30px;
   width: 100%;
+  color: var(--text-color);
 }
 .layout main .heading_page h5 {
   font-size: 12px;
-  font-weight: 500;
 }
 .layout main .heading_page h2 {
-  margin: 10px 0;
+  margin-top: 30px;
+  margin-bottom: 10px;
   font-size: 35px;
+  color: var(--text-heading);
 }
 .layout main .heading_page .option_table {
   width: 100%;
@@ -626,11 +654,78 @@ header .user .circle i {
 .add_page {
   margin-top: 50px;
   background: var(--bg-div);
-  padding: 15px 30px;
+  padding: 40px 30px;
 }
 .add_page form {
-  max-width: 90%;
-  width: 90%;
+  width: 100%;
+  display: flex;
+  gap: 20px;
+}
+.add_page form .level-left .level-top, .add_page form .level-right .level-top {
+  width: 100%;
+  border: 1px solid var(--border-div);
+  border-radius: 8px;
+}
+.add_page form .level-left .level-top .heading, .add_page form .level-right .level-top .heading {
+  border-bottom: 1px solid var(--border-div);
+}
+.add_page form .level-left .level-top .heading h2, .add_page form .level-right .level-top .heading h2 {
+  margin-left: 20px;
+  font-size: 27px;
+  padding: 5px 0;
+  color: var(--text-heading);
+}
+.add_page form .level-left .level-top label, .add_page form .level-right .level-top label {
+  font-weight: 500;
+  color: var(--text-color);
+}
+.add_page form .level-left .level-top input, .add_page form .level-right .level-top input {
+  height: auto;
+}
+.add_page form .layout {
+  display: block;
+  padding: 0 20px;
+}
+.add_page form .layout .wrapper_product {
+  width: 100%;
+  margin: 20px 0;
+}
+.add_page form .layout .wrapper_product .frame_image {
+  width: calc(33.3333333333% - 11px);
+  border: 1px dashed var(--primary-color);
+  border-radius: 6px;
+  aspect-ratio: 1/1;
+  cursor: pointer;
+}
+.add_page form .layout .wrapper_product .frame_image h4 {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--primary-color);
+}
+.add_page form .layout .wrapper_product .frame_image i {
+  color: var(--primary-color);
+  font-size: 28px;
+}
+.add_page form .layout .wrapper_product .image {
+  border: none;
+  overflow: hidden;
+  position: relative;
+}
+.add_page form .layout .wrapper_product .image .btn-me {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+}
+.add_page form .layout .wrapper_product .image:hover img {
+  transform: scale(1.1);
+  transition: 0.4s linear;
+  opacity: 0.8;
+}
+.add_page form .layout .wrapper_product .image:hover .btn-me {
+  transition: 0.4s linear;
+  display: block;
 }
 
 /*# sourceMappingURL=app.css.map */
