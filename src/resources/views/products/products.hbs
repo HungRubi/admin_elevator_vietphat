@@ -41,19 +41,19 @@
                 <tr class="align-middle">
                     <td class="column_checkbox"><input type="checkbox" name="" id=""></th>
                     <td class="col_image text-center">
-                        <div class="wrapper_img_product">
+                        <div class="wrapper_img_product is-center">
                             <a href="#" class="is-center" style="width:100%;">
-                                <img src="{{this.image}}" alt="">
+                                <img src="{{this.thumbnail_main}}" alt="">
                             </a>
                         </div>
                     </td>
                     <td style="color: rgb(56, 116, 255);" class="col_product"><span>{{this.name}}</span></td>
-                    <td class="col_custumer">{{this.price}}</td>
-                    <td class="col_status" style="padding-left:40px">{{this.stock}}</td>
-                    <td class="col_star">{{this.unit}}</td>
-                    <td class="col_review"><p>{{this.description}}</p></td>
+                    <td class="col_custumer col-1">{{this.price}}</td>
+                    <td class="col_status col-1" style="padding-left:40px">{{this.stock}}</td>
+                    <td class="col_star col-1">{{this.unit}}</td>
+                    <td class="col_review col-4"><p>{{this.description}}</p></td>
                     <td class="col_time">
-                        <p>Just now</p>
+                        <p>{{this.formatedDate}}</p>
                         <div class="layout">
                             <div class="circle">
                                 <a href="/products/{{this._id}}/edit">

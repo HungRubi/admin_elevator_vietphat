@@ -12,8 +12,10 @@ const employees = new Schema(
         address: String,
         phone: String,
         email: String,
+        isWorking: {type: Boolean, default: true},
         birth: Date,
         authour: Boolean,
+        lastLogin: {type: Date, default: Date.now},
     },
     {
         timestamps: true,

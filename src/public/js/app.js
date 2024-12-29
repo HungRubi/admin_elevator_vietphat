@@ -43,42 +43,92 @@ btnToggleMenu.forEach((btn, index) => {
     })
 })
 
-const btnAddImage = document.querySelector('.btn_add_image');
+const oriPrice = document.querySelector('#original_price');
+const disPrice = document.querySelector('#discount_price');
+const seletedSale = document.querySelector("#sale");
+const priceHidden = document.querySelector('#price_hidden');
+let discount = 0;
 
-btnAddImage.addEventListener('click', () => {
-    const inputFile = document.getElementById("inputFile");
-    inputFile.click();
+if (oriPrice && disPrice) {
+    const originalValue = parseFloat(oriPrice.value);
+    if (!isNaN(originalValue)) {
+        disPrice.value = originalValue; 
+        priceHidden.value = disPrice.value; 
+    }
+}
 
-    inputFile.addEventListener('change', () => {
-        const file = inputFile.files[0];
-        if (file) {
-            const validTypes = ["image/jpeg", "image/png"];
-            if (validTypes.includes(file.type)) {
-                renderImage(URL.createObjectURL(file));
-                inputFile.value = ""; 
-            } else {
-                alert("Vui lòng chọn file ảnh hợp lệ (.jpg, .jpeg, .png)!");
-                inputFile.value = "";
+if (seletedSale) {
+    seletedSale.addEventListener('change', (event) => {
+        const value = event.target.value;
+        discount = parseFloat(value); 
+        if (oriPrice) {
+            const originalValue = parseFloat(oriPrice.value);
+            if (!isNaN(originalValue)) {
+                const discountedPrice = originalValue * (100 - discount) / 100;
+                disPrice.value = Math.trunc(discountedPrice);
+                priceHidden.value = disPrice.value; 
             }
         }
-    })
-})
-function renderImage(src){
-    const wrapper = document.querySelector('.wrapper_product');
-    const html = `<div class="frame_image image">
-                    <img src="${src}">
-                    <div class="btn btn-danger btn-me">
-                        Remove
-                    </div>
-                  </div>`;
-    wrapper.insertAdjacentHTML('beforeend', html);
-
-    const frame = document.querySelectorAll('.image');
-    frame.forEach(fr => {
-        const btnRemove = fr.querySelector('.btn-danger');
-        btnRemove.onclick = () => {
-            btnRemove.closest('.frame_image').remove();
-        }
-    })
-
+    });
 }
+
+if (oriPrice) {
+    oriPrice.addEventListener('input', (event) => {
+        const originalValue = parseFloat(event.target.value);
+        if (!isNaN(originalValue)) {
+            if (discount > 0) {
+                const discountedPrice = originalValue * (100 - discount) / 100;
+                disPrice.value = Math.trunc(discountedPrice);
+            } else {
+                disPrice.value = originalValue; 
+            }
+            priceHidden.value = disPrice.value; 
+        } else {
+            disPrice.value = '';
+            priceHidden.value = ''; 
+        }
+    });
+}
+
+
+
+
+
+// const btnAddImage = document.querySelector('.btn_add_image');
+
+// btnAddImage.addEventListener('click', () => {
+//     const inputFile = document.getElementById("inputFile");
+//     inputFile.click();
+
+//     inputFile.addEventListener('change', () => {
+//         const file = inputFile.files[0];
+//         if (file) {
+//             const validTypes = ["image/jpeg", "image/png"];
+//             if (validTypes.includes(file.type)) {
+//                 renderImage(URL.createObjectURL(file));
+//                 inputFile.value = ""; 
+//             } else {
+//                 alert("Vui lòng chọn file ảnh hợp lệ (.jpg, .jpeg, .png)!");
+//                 inputFile.value = "";
+//             }
+//         }
+//     })
+// })
+// function renderImage(src){
+//     const wrapper = document.querySelector('.wrapper_product');
+//     const html = `<div class="frame_image image">
+//                     <img src="${src}">
+//                     <div class="btn btn-danger btn-me">
+//                         Remove
+//                     </div>
+//                   </div>`;
+//     wrapper.insertAdjacentHTML('beforeend', html);
+
+//     const frame = document.querySelectorAll('.image');
+//     frame.forEach(fr => {
+//         const btnRemove = fr.querySelector('.btn-danger');
+//         btnRemove.onclick = () => {
+//             btnRemove.closest('.frame_image').remove();
+//         }
+//     })
+// }

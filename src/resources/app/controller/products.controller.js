@@ -2,14 +2,21 @@ const Products = require('../model/products.model');
 const {createSlug} = require('../../util/createSlug.util');
 const { mutipleMongooseoObject } = require('../../util/mongoose.util');
 const { mongooseToObject } = require('../../util/mongoose.util');
+const { formatDate } = require('../../util/formatDate.util')
 class ProductsController {
     
     /** [GET] /products */
     index(req, res, next) {
         Products.find()
         .then(product => {
+            const formatProducts = product.map(pro => {
+                return{
+                    ...pro.toObject(),
+                    formatedDate: formatDate(pro.updatedAt)
+                }
+            })
             res.render('products/products',{
-                product: mutipleMongooseoObject(product),
+                product: formatProducts,
             })
         })
         .catch(next);
@@ -22,18 +29,37 @@ class ProductsController {
 
     store = async (req, res, next) => {
         try{
-            const {name, price, description, stock, unit} = req.body;
+            const {
+                name,
+                description,
+                sale,
+                price,
+                unit,
+                minimum,
+                stock,
+                thumbnail_main,
+                thumbnail_1,
+                thumbnail_2,
+                thumbnail_3,
+            } = req.body;
             let slug = createSlug(name);
-
+            let discount = parseFloat(sale.replace('%', ''));
             const product = new Products({
                 name,
-                price,
                 description,
-                stock,
+                discount,
+                price,
                 unit,
+                minimum,
+                stock,
+                thumbnail_main,
+                thumbnail_1,
+                thumbnail_2,
+                thumbnail_3,
                 slug,
-                image
             })
+            console.log(`body: ${req.body}`);
+            console.log(`product: ${product}`);
             await product.save();
             res.redirect('/products')
         }

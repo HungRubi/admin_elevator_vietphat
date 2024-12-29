@@ -415,6 +415,7 @@ header{
             width: 100%;
             z-index: 0;
             margin: 30px 0;
+            min-width: 1400px;
             border-collapse: collapse;
             thead{
                 border-bottom: 1px solid var(--border-div);
@@ -453,7 +454,6 @@ header{
                     .layout{
                         align-items: center;
                         width: 100%;
-                        justify-content: center;
                         .circle{
                             width: 45px;
                             height: 45px;
@@ -541,6 +541,7 @@ header{
                     padding-left: 10px;
                     .layout{
                         display: none;
+                        justify-content: center;
                         .circle{
                             background: var(--hover-btn);
                             border: 1px solid var(--border-div);
@@ -566,13 +567,12 @@ header{
                     }
                 }
                 .wrapper_img_product{
-                    width: 60px;
-                    height: 60px;
-                    overflow: hidden;
-                    border-radius: 8px;
-                    border: 1px solid var(--border-div);
+                    width: 100%;
                     img{
                         width: 60px;
+                        height: 60px;
+                        border-radius: 8px;
+                        border: 1px solid var(--border-div);
                         object-fit: cover;
                     }
                 }
@@ -671,6 +671,7 @@ header{
         gap: 20px;
         
         .level-left, .level-right{
+            position: relative;
             .level-top{
                 width: 100%;
                 border: 1px solid var(--border-div);
@@ -731,7 +732,7 @@ header{
                     transform: scale(1.1);
                     transition: .4s linear;
                     opacity: 0.8;
-                }
+                }   
                 .image:hover .btn-me{
                     transition: .4s linear;
                     display: block;
@@ -741,4 +742,10 @@ header{
             
         }
     }
+}
+
+.btn-save{
+    position: absolute;
+    bottom: 0;
+    left:0;
 }
