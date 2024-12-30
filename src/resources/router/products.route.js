@@ -3,6 +3,10 @@ const route = express.Router();
 
 const productsController = require('../app/controller/products.controller');
 
+/** API */
+route.get('/api/getallproducts', productsController.getAllProducts);
+
+/** Route */
 route.post('/store', productsController.store);
 route.put('/:id', productsController.update);
 route.delete('/:id', productsController.delete)

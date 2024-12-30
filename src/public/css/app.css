@@ -740,4 +740,44 @@ header .user .circle i {
   left: 0;
 }
 
+.page_bar {
+  position: relative;
+  line-height: 31px;
+  height: 33px;
+  margin: 50px 0 30px;
+  text-align: center;
+  font-size: 14px;
+  gap: 10px;
+}
+.page_bar .next, .page_bar .next_all, .page_bar .current, .page_bar .number_page {
+  text-align: center;
+  padding: 0px 10px;
+  border: 1px solid #d2d2d2;
+  background: none;
+  color: #393939;
+  text-align: center;
+  border-radius: 5px;
+}
+.page_bar .number_page.active {
+  color: #fff;
+  background: #2f904b;
+  border: none;
+}
+.page_bar .number_page {
+  width: 33px;
+  padding: 0;
+}
+.page_bar .next:hover, .page_bar .next_all:hover, .page_bar .number_page:hover {
+  color: #fff;
+  background: #2f904b;
+  border: 1px solid #f3f3f3;
+  transition: 0.3s ease;
+}
+.page_bar .current {
+  cursor: unset;
+}
+.page_bar .previous {
+  display: none;
+}
+
 /*# sourceMappingURL=app.css.map */

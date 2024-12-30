@@ -7,26 +7,28 @@ class ProductsController {
     
     /** [GET] /products */
     index(req, res, next) {
-        Products.find()
-        .then(product => {
-            const formatProducts = product.map(pro => {
-                return{
-                    ...pro.toObject(),
-                    formatedDate: formatDate(pro.updatedAt)
-                }
-            })
-            res.render('products/products',{
-                product: formatProducts,
-            })
-        })
-        .catch(next);
+        res.render('products/products');
+        // Products.find()
+        // .then(product => {
+        //     const formatProducts = product.map(pro => {
+        //         return{
+        //             ...pro.toObject(),
+        //             formatedDate: formatDate(pro.updatedAt)
+        //         }
+        //     })
+        //     res.render('products/products',{
+        //         product: formatProducts,
+        //     })
+        // })
+        // .catch(next);
     }
     
-    /** GET /products/add */
+    /** [GET] /products/add */
     add(req, res, next){
         res.render('products/addProduct')
     }
 
+    /** [POST] /products/store */
     store = async (req, res, next) => {
         try{
             const {
@@ -68,6 +70,7 @@ class ProductsController {
         };
     }
 
+    /** [PUT] /products/edit */
     edit(req, res, next){
         Products.findById(req.params.id)
         .then(product => {
@@ -77,6 +80,7 @@ class ProductsController {
         })
     }
     
+    /** [PUT] /products/:id */
     update(req, res, next) {
         console.log(req.body);
         Products.updateOne({_id: req.params.id}, req.body)
@@ -84,10 +88,41 @@ class ProductsController {
         .catch(next);
     }
 
+    /** [DELETE] /products/:id */
     delete(req, res, next) {
         Products.deleteOne({_id: req.params.id})
         .then(() => {res.redirect('back')})
         .catch(next)
+    }
+
+    /** [GET] /products/api/getallproducts */
+    getAllProducts(req, res, next){
+        const {page = 1, limit = 10 } = req.query;
+        const pageNumber = parseInt(page);
+        const limitNumber = parseInt(limit);
+
+        const skip = (pageNumber - 1) * limitNumber;
+        Products.find()
+            .skip(skip)
+            .limit(limitNumber)
+            .then(product => {
+                const formatProducts = product.map(pro => {
+                    return{
+                        ...pro.toObject(),
+                        formatedDate: formatDate(pro.updatedAt)
+                    }
+                })
+                Products.countDocuments()
+                    .then(totalItem => {
+                        res.json({
+                            product: formatProducts,
+                            totalItem,
+                            currentPage: pageNumber,
+                            totalPage: Math.ceil(totalItem / limitNumber)
+                        })
+                    })
+            })
+            .catch(next)
     }
 }
 

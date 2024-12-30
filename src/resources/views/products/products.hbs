@@ -36,45 +36,19 @@
                 <th scope="col" class="col_time">Time <i class="bi bi-chevron-expand"></i></th>
             </tr>
         </thead>
-        <tbody>
-            {{#each product}}
-                <tr class="align-middle">
-                    <td class="column_checkbox"><input type="checkbox" name="" id=""></th>
-                    <td class="col_image text-center">
-                        <div class="wrapper_img_product is-center">
-                            <a href="#" class="is-center" style="width:100%;">
-                                <img src="{{this.thumbnail_main}}" alt="">
-                            </a>
-                        </div>
-                    </td>
-                    <td style="color: rgb(56, 116, 255);" class="col_product"><span>{{this.name}}</span></td>
-                    <td class="col_custumer col-1">{{this.price}}</td>
-                    <td class="col_status col-1" style="padding-left:40px">{{this.stock}}</td>
-                    <td class="col_star col-1">{{this.unit}}</td>
-                    <td class="col_review col-4"><p>{{this.description}}</p></td>
-                    <td class="col_time">
-                        <p>{{this.formatedDate}}</p>
-                        <div class="layout">
-                            <div class="circle">
-                                <a href="/products/{{this._id}}/edit">
-                                    <i class="bi bi-pencil-fill"></i>
-                                </a>
-                            </div>
-                            <div class="circle">
-                                <a href="/products/{{this._id}}/deleted" data-bs-toggle="modal" data-id="{{this._id}}" data-bs-target="#delete-product-model">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </div>
-                            <div class="circle"><i class="bi bi-three-dots"></i></div>
-                        </div>
-                    </td>
-                </tr>
-            {{else}}
-                
-                <p class="col-12 text-center mt-3">Chưa có sản phẩm nào được thêm, hãy thêm sản phẩm <a href="/products/add" style="font-size: 15px; font-weight:500;">ở đây</a></p>
-            {{/each}}
+        <tbody id="table_body">
         </tbody>
     </table>
+    <div class="page_bar is-center">
+        {{!-- <button class="number_page active">1</button>
+        <button class="number_page">2</button>
+        <button class="number_page">3</button>
+        <button class="number_page">4</button>
+        <button class="number_page">5</button>
+        <button class="number_page">6</button> --}}
+        
+
+    </div> 
 </div>
 
 <form method="POST" name="delete-product-form"></form>
@@ -97,6 +71,11 @@
     </div>
   </div>
 </div>
+
+<div class="footer">
+    Thank you for creating with HuyHung | 2024 © 
+</div>
+
 <script>
   const deleteSong = document.getElementById('delete-product-model')
   const btnDelete = document.getElementById('btn-delete');
