@@ -6,7 +6,6 @@ const employees = new Schema(
         account: { type: String, unique: true },
         password: String,
         isVerified: { type: Boolean, default: false },
-        googleId: { type: String, unique: true },
         avatar: String,
         name : String,
         address: String,
@@ -14,7 +13,7 @@ const employees = new Schema(
         email: String,
         isWorking: {type: Boolean, default: true},
         birth: Date,
-        authour: Boolean,
+        authour:  {type: Boolean, default: true},
         lastLogin: {type: Date, default: Date.now},
     },
     {

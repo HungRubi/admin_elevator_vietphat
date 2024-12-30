@@ -27,9 +27,10 @@
         <thead>
             <tr>
                 <th scope="col" class="column_checkbox"><input type="checkbox" name="" id=""></th>
-                <th scope="col" class="col-2 ps-4">Custumer <i class="bi bi-chevron-expand"></i></th>
+                <th scope="col" class="col-2 ps-5">Custumer <i class="bi bi-chevron-expand"></i></th>
                 <th scope="col">Account <i class="bi bi-chevron-expand"></i></th>
                 <th scope="col">Email <i class="bi bi-chevron-expand"></i></th>
+                <th scope="col">Birth <i class="bi bi-chevron-expand"></i></th>
                 <th scope="col">Phone <i class="bi bi-chevron-expand"></i></th>
                 <th scope="col">Address <i class="bi bi-chevron-expand"></i></th>
                 <th scope="col" class="col_status">Status <i class="bi bi-chevron-expand"></i></th>
@@ -37,43 +38,47 @@
             </tr>
         </thead>
         <tbody>
-            <tr class="align-middle">
-                <td class="column_checkbox"><input type="checkbox" name="" id=""></th>
-                <td class="col-2 ps-4">
-                    <div class="layout">
-                        <div class="circle">
-                            <img src="/img/user.jpg" alt="">
+            {{#each employee}}
+                <tr class="align-middle">
+                    <td class="column_checkbox"><input type="checkbox" name="" id=""></th>
+                    <td class="col-2 ps-5">
+                        <div class="layout">
+                            <div class="circle">
+                                <img src="{{this.avatar}}" alt="">
+                            </div>
+                            <span>{{this.name}}</span>
                         </div>
-                        <span>Nguyen Huy Hung</span>
-                    </div>
-                </td>
-                <td class="col_star col-1">
-                    <p>huyhung1804</p>
-                </td>
-                <td class="col_star col-2">
-                    <p>huyhung18042002@gmail.com</p>
-                </td>
-                <td class="col-1">
-                    <p>0704140714</p>
-                </td>
-                <td class="col-2">
-                    <p>Hưng Nhân - Vĩnh Bảo - Hải Phòng</p>
-                </td>
-                <td class="col_status col-1">
-                    <div class="status_comment_approved status_comment is-center">
-                        Active
-                        <i class="bi bi-check2" ></i>
-                    </div>
-                </td>
-                <td class="col_time col-2">
-                    <p>Just now</p>
-                    <div class="layout is-center">
-                        <div class="circle"><i class="bi bi-check-lg"></i></div>
-                        <div class="circle"><i class="bi bi-trash"></i></div>
-                        <div class="circle"><i class="bi bi-three-dots"></i></div>
-                    </div>
-                </td>
-            </tr>
+                    </td>
+                    <td class="col-1">
+                        <p>{{this.account}}</p>
+                    </td>
+                    <td class="col-2">
+                        <p>{{this.email}}</p>
+                    </td>
+                    <td class="col-1">
+                        <p>{{this.formatedBirth}}</p>
+                    </td><td class="col-1">
+                        <p>{{this.phone}}</p>
+                    </td>
+                    <td class="col-2">
+                        <p>{{this.address}}</p>
+                    </td>
+                    <td class="col_status col-1">
+                        <div class="status_comment_approved status_comment is-center">
+                            Active
+                            <i class="bi bi-check2" ></i>
+                        </div>
+                    </td>
+                    <td class="col_time col-2">
+                        <p>{{this.formatedDate}}</p>
+                        <div class="layout is-center">
+                            <div class="circle"><i class="bi bi-check-lg"></i></div>
+                            <div class="circle"><i class="bi bi-trash"></i></div>
+                            <div class="circle"><i class="bi bi-three-dots"></i></div>
+                        </div>
+                    </td>
+                </tr>
+            {{/each}}
         </tbody>
     </table>
 </div>
