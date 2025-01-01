@@ -2,6 +2,7 @@ const Employee = require('../model/employee.model');
 const { mutipleMongooseoObject } = require('../../util/mongoose.util');
 const { formatDate } = require('../../util/formatDate.util')
 const { mongooseToObject } = require('../../util/mongoose.util')
+const { importDate } = require('../../util/importDate.util'); 
 class EmployeeController {
     
     /** [GET] /employee */
@@ -56,6 +57,41 @@ class EmployeeController {
         }catch(error){
             next(error);
         }
+    }
+
+    /** [GET] /employee/:id/edit */
+    edit(req, res, next) {
+        Employee.findById(req.params.id)
+        .then(employee => {
+            const formatBirth = {
+                    ...employee.toObject(),
+                    birthFormated: importDate(employee.birth)
+                
+            }
+            res.render('employee/editEmployee', {
+                employee: formatBirth
+            })
+        })
+    }
+
+    /** [PUT] /employee/:id */
+    update(req, res, next) {
+        console.log('Request Params ID:', req.params.id);
+        console.log('Request Body:', req.body);
+        Employee.findById(req.params.id)
+            .then(employee => {
+                if (!employee) {
+                    return res.status(404).send('Employee not found');
+                }
+                if (employee.account === req.body.account) {
+                    delete req.body.account;
+                }
+                return Employee.updateOne({ _id: req.params.id }, req.body);
+            })
+            .then(() => {
+                res.redirect('/employee')
+            })
+            .catch(next)
     }
 }
 
