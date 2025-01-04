@@ -57,7 +57,34 @@ class CustomersController {
             next(error);
         }
     }
- 
+    
+    /** [GET] /custumers/:id/edit */
+    edit(req, res, next) {
+        Custumer.findById(req.params.id)
+            .then(custumers => {
+                res.render('custumers/editCustumer',{
+                    custumers: mongooseToObject(custumers),
+                })
+            })
+    }
+
+    /** [PUT] /custumer/:id */
+    update(req, res, next) {
+        Custumer.findById(req.params.id)
+            .then(custumer => {
+                if(!custumer){
+                    return res.status(404).send('Custumer not found');
+                }
+                if (custumer.account === req.body.account) {
+                    delete req.body.account;
+                }
+                return Custumer.updateOne({ _id: req.params.id }, req.body);
+            })
+            .then(() => {
+                res.redirect('/custumers');
+            })
+            .catch(next);
+    }
 }
 
 module.exports = new CustomersController();

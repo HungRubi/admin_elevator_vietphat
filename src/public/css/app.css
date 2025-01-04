@@ -536,6 +536,11 @@ header .user .circle i {
   background: #ffefca;
   border: 1px solid #ffcc85;
 }
+.layout main .table tr .col_status .status_comment_block {
+  color: #c90c05;
+  background: rgba(247, 77, 77, 0.5411764706);
+  border: 1px solid #ff8585;
+}
 .layout main .table tr .col_time {
   width: 13%;
   text-align: center;

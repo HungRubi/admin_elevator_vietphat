@@ -76,8 +76,6 @@ class EmployeeController {
 
     /** [PUT] /employee/:id */
     update(req, res, next) {
-        console.log('Request Params ID:', req.params.id);
-        console.log('Request Body:', req.body);
         Employee.findById(req.params.id)
             .then(employee => {
                 if (!employee) {

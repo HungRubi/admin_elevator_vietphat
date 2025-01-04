@@ -1,0 +1,80 @@
+<div class="heading_page">
+    <h5>Dashboard <i class="bi bi-chevron-right"></i> Custumers <i class="bi bi-chevron-right"></i> Edit Custumers</h5>
+    <h2>Edit Custumers</h2>
+    <h5>Edit a new custumers to your company</h5>
+</div>
+
+<div class="layout add_page ">
+    <form action="/custumers/{{custumers._id}}?_method=PUT" method="post">
+        <div class="col-6 level-left">
+            <div class="level-top">
+                <div class="heading">
+                    <h2>Information Custumers</h2>
+                </div>
+                <div class="layout">
+                    <div class="form-group mt-3">
+                        <label>Full Name</label>
+                        <input type="text" class="form-control mt-2" name="name" value="{{custumers.name}}"  placeholder="Enter your name...">    
+                    </div>
+                    <div class="form-group mt-3">
+                        <label>Email</label>
+                        <input type="email" class="form-control mt-2" name="email" value="{{custumers.email}}"  placeholder="Enter your email...">    
+                    </div>
+                    <div class="form-group mt-3">
+                        <label>Phone</label>
+                        <input type="text" class="form-control mt-2" name="phone" value="{{custumers.phone}}"  placeholder="Enter your phone number...">    
+                    </div>
+                    <div class="form-group mt-3 mb-4">
+                        <label>Address</label>
+                        <input type="text" class="form-control mt-2" name="address" value="{{custumers.address}}"  placeholder="Enter your address...">    
+                    </div>
+                    <div class="form-group mt-3 mb-4">
+                        <label>Birth</label>
+                        <input type="date" class="form-control mt-2" name="birth" value="{{custumers.birthFormated}}">    
+                    </div>
+                    <div class="form-group mt-3 mb-4">
+                        <label>Status</label>
+                        <select class="form-select mt-2" aria-label="Default select example" name="status">
+                            <option selected value="{{custumers.status}}">{{custumers.status}}</option>
+                            <option value="verified">Verified</option>
+                            <option value="unverified">Unverified</option>
+                            <option value="banded">Banded</option>
+                        </select>    
+                    </div>
+                </div>
+            </div>
+             
+        </div>
+
+        <div class="col-6 level-right">
+            <div class="level-top mt-4">
+                <div class="heading">
+                    <h2>Account Custumers</h2>
+                </div>
+                <div class="layout">
+                    <div class="form-group mt-3">
+                        <label>Avatar</label>
+                        <input type="text" class="form-control mt-2" name="avatar" value="{{custumers.avatar}}"  placeholder="Enter your account...">    
+                    </div>
+                    <div class="form-group mt-3">
+                        <label>Account</label>
+                        <input type="text" class="form-control mt-2" name="account" value="{{custumers.account}}"  placeholder="Enter your account...">    
+                    </div>
+                    <div class="form-group mt-3 mb-4">
+                        <label>Password</label>
+                        <input type="password" class="form-control mt-2" name="password" value="{{custumers.password}}"  placeholder="Enter your password...">    
+                    </div>
+                    
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-save">
+                <i class="bi bi-floppy me-2"></i>
+                Save Custumers
+            </button>
+        </div>
+    </form>
+</div>
+<div class="footer">
+    Thank you for creating with HuyHung | 2024 © 
+</div>
+

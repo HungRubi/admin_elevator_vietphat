@@ -1,4 +1,11 @@
-<div class="heading_page">
+<div class="form-group mt-3 mb-4">
+                        <label>Authorization</label>
+                        <select class="form-select mt-2" aria-label="Default select example" name="authour">
+                            <option selected value="{{custumers.authour}}">{{#if custumers.authour}}Custumers{{else}}Admin{{/if}}</option>
+                            <option value="false">Admin</option>
+                            <option value="true">Custumers</option>
+                        </select>    
+                    </div><div class="heading_page">
     <h5>Dashboard <i class="bi bi-chevron-right"></i> Custumers</h5>
     <h2>Custumers</h2>
     <div class="option_table is-between">
@@ -64,10 +71,24 @@
                         <p>{{this.address}}</p>
                     </td>
                     <td class="col_status col-1">
-                        <div class="status_comment_approved status_comment is-center">
-                            Active
-                            <i class="bi bi-check2" ></i>
-                        </div>
+                        {{#if (eq this.status 'verified')}}
+                            <div class="status_comment status_comment is-center">
+                                Verified
+                                <i class="bi bi-check2" ></i>
+                            </div>
+                        {{else}}
+                            {{#if (eq this.status 'unverified')}}
+                                <div class="status_comment status_comment_pending is-center">
+                                    Unverified
+                                    <i class="bi bi-hourglass-split ms-2"></i>
+                                </div>
+                            {{else}}
+                                <div class="status_comment status_comment_block is-center">
+                                    Banded
+                                    <i class="bi bi-lock-fill ms-2"></i>
+                                </div>
+                            {{/if}}
+                        {{/if}}
                     </td>
                     <td class="col_time col-2">
                         <p>{{this.formatedDate}}</p>
