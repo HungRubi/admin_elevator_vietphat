@@ -8,19 +8,6 @@ class ProductsController {
     /** [GET] /products */
     index(req, res, next) {
         res.render('products/products');
-        // Products.find()
-        // .then(product => {
-        //     const formatProducts = product.map(pro => {
-        //         return{
-        //             ...pro.toObject(),
-        //             formatedDate: formatDate(pro.updatedAt)
-        //         }
-        //     })
-        //     res.render('products/products',{
-        //         product: formatProducts,
-        //     })
-        // })
-        // .catch(next);
     }
     
     /** [GET] /products/add */
@@ -123,6 +110,18 @@ class ProductsController {
                     })
             })
             .catch(next)
+    }
+    
+    /** [GET] /products/api/getcategory/:category */
+    getProductCategory(req, res, next){
+        const categoryArray = ['cop','dien','inox','thep'];
+        Products.find({ category: { $in: categoryArray } }).limit(8)
+            .then(products => {
+                res.json(products);
+            })
+            .catch(err => {
+                res.status(500).json({ error: err.message });
+            });
     }
 }
 

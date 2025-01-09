@@ -5,6 +5,7 @@ const productsController = require('../app/controller/products.controller');
 
 /** API */
 route.get('/api/getallproducts', productsController.getAllProducts);
+route.get('/api/getcategory/:category', productsController.getProductCategory);
 
 /** Route */
 route.post('/store', productsController.store);
