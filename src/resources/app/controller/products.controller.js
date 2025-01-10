@@ -112,10 +112,9 @@ class ProductsController {
             .catch(next)
     }
     
-    /** [GET] /products/api/getcategory/:category */
-    getProductCategory(req, res, next){
-        const categoryArray = ['cop','dien','inox','thep'];
-        Products.find({ category: { $in: categoryArray } }).limit(8)
+    /** [GET] /products/api/getcop */
+    getProductCop(req, res, next){
+        Products.find({category: 'cop'})
             .then(products => {
                 res.json(products);
             })
@@ -123,6 +122,8 @@ class ProductsController {
                 res.status(500).json({ error: err.message });
             });
     }
+
+    
 }
 
 module.exports = new ProductsController();
