@@ -30,6 +30,7 @@ class ProductsController {
                 thumbnail_1,
                 thumbnail_2,
                 thumbnail_3,
+                category,
             } = req.body;
             let slug = createSlug(name);
             let discount = parseFloat(sale.replace('%', ''));
@@ -46,6 +47,7 @@ class ProductsController {
                 thumbnail_2,
                 thumbnail_3,
                 slug,
+                category,
             })
             console.log(`body: ${req.body}`);
             console.log(`product: ${product}`);
@@ -118,9 +120,34 @@ class ProductsController {
             .then(products => {
                 res.json(products);
             })
-            .catch(err => {
-                res.status(500).json({ error: err.message });
-            });
+            .catch(next);
+    }
+
+    /** [GET] /products/api/getdien */
+    getProductDien(req, res, next){
+        Products.find({category: 'dien'})
+            .then(products => {
+                res.json(products);
+            })
+            .catch(next);
+    }
+
+    /** [GET] /products/api/getinox */
+    getProductInox(req, res, next){
+        Products.find({category: 'inox'})
+            .then(products => {
+                res.json(products);
+            })
+            .catch(next);
+    }
+
+    /** [GET] /products/api/getthep */
+    getProductThep(req, res, next){
+        Products.find({category: 'thep'})
+            .then(products => {
+                res.json(products);
+            })
+            .catch(next);
     }
 
     
