@@ -1,11 +1,11 @@
 <div class="heading_page">
-    <h5>Dashboard <i class="bi bi-chevron-right"></i> Custumers</h5>
-    <h2>Custumers</h2>
+    <h5>Dashboard <i class="bi bi-chevron-right"></i> articles</h5>
+    <h2>articles</h2>
     <div class="option_table is-between">
         <div class="search">
             <div class="wrapper_search">
                 <i class="bi bi-search"></i>
-                <input type="text" placeholder="search custumers">
+                <input type="text" placeholder="search article">
             </div>
         </div>
         <div class="is-between search_right">
@@ -14,8 +14,8 @@
                 Export
             </div>
             <div>
-                <a href="/custumers/add" class="btn btn-primary">
-                    <i class="bi bi-plus-lg"></i> Add custumers
+                <a href="/articles/add" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Add articles
                 </a>
             </div>
         </div>
@@ -27,72 +27,58 @@
         <thead>
             <tr>
                 <th scope="col" class="column_checkbox"><input type="checkbox" name="" id=""></th>
-                <th scope="col" class="col-2 ps-5">Name <i class="bi bi-chevron-expand"></i></th>
-                <th scope="col">Account <i class="bi bi-chevron-expand"></i></th>
-                <th scope="col">Email <i class="bi bi-chevron-expand"></i></th>
-                <th scope="col">Birth <i class="bi bi-chevron-expand"></i></th>
-                <th scope="col">Phone <i class="bi bi-chevron-expand"></i></th>
-                <th scope="col">Address <i class="bi bi-chevron-expand"></i></th>
+                <th scope="col"></th>
+                <th scope="col" class="col-2 ps-5">Subject <i class="bi bi-chevron-expand"></i></th>
+                <th scope="col"> Author<i class="bi bi-chevron-expand"></i></th>
+                <th scope="col"> Content<i class="bi bi-chevron-expand"></i></th>
                 <th scope="col" class="col_status">Status <i class="bi bi-chevron-expand"></i></th>
                 <th scope="col" class="col_time">Last Login <i class="bi bi-chevron-expand"></i></th>
             </tr>
         </thead>
         <tbody>
-            {{#each custumers}}
+            {{#each articles}}
                 <tr class="align-middle">
                     <td class="column_checkbox"><input type="checkbox" name="" id=""></th>
-                    <td class="col-2 ps-5">
-                        <div class="layout">
-                            <div class="circle">
-                                <img src="{{this.avatar}}" alt="">
-                            </div>
-                            <span>{{this.name}}</span>
+                    <td class="col_image text-center">
+                        <div class="wrapper_img_product is-center">
+                            <a href="#" class="is-center" style="width:100%;">
+                                <img src="{{this.thumbnail}}" alt="">
+                            </a>
                         </div>
                     </td>
-                    <td class="col-1">
-                        <p>{{this.account}}</p>
-                    </td>
-                    <td class="col-2">
-                        <p>{{this.email}}</p>
+                    <td class="col-2 ps-5">
+                        <span>{{this.subject}}</span>
                     </td>
                     <td class="col-1">
-                        <p>{{this.formatedBirth}}</p>
-                    </td><td class="col-1">
-                        <p>{{this.phone}}</p>
+                        <p>{{this.author}}</p>
                     </td>
-                    <td class="col-2">
-                        <p>{{this.address}}</p>
+                    <td class="col-4">
+                        <p>{{this.content}}</p>
                     </td>
                     <td class="col_status col-1">
-                        {{#if (eq this.status 'verified')}}
+                        {{#if (eq this.status 'public')}}
                             <div class="status_comment status_comment is-center">
-                                Verified
+                                Public
                                 <i class="bi bi-check2" ></i>
                             </div>
-                        {{else}}
-                            {{#if (eq this.status 'unverified')}}
-                                <div class="status_comment status_comment_pending is-center">
-                                    Unverified
-                                    <i class="bi bi-hourglass-split ms-2"></i>
-                                </div>
-                            {{else}}
-                                <div class="status_comment status_comment_block is-center">
-                                    Banded
-                                    <i class="bi bi-lock-fill ms-2"></i>
-                                </div>
-                            {{/if}}
+                        {{/if}}
+                        {{#if (eq this.status 'hide')}}
+                            <div class="status_comment status_comment_pending is-center">
+                                Hide
+                                <i class="bi bi-hourglass-split ms-2"></i>
+                            </div>
                         {{/if}}
                     </td>
                     <td class="col_time col-2">
                         <p>{{this.formatedDate}}</p>
                         <div class="layout is-center">
                             <div class="circle">
-                                <a href="/custumers/{{this._id}}/edit">
+                                <a href="/articles/{{this._id}}/edit">
                                     <i class="bi bi-pencil-fill"></i>
                                 </a>
                             </div>
                             <div class="circle">
-                                <a href="/custumers/{{this._id}}/deleted" data-bs-toggle="modal" data-id="{{this._id}}" data-bs-target="#delete-custumers-model">
+                                <a href="/articles/{{this._id}}/deleted" data-bs-toggle="modal" data-id="{{this._id}}" data-bs-target="#delete-articles-model">
                                     <i class="bi bi-trash"></i>
                                 </a>
                             </div>
@@ -105,8 +91,8 @@
     </table>
 </div>
 
-<form method="POST" name="delete-custumers-form"></form>
-<div class="modal fade" id="delete-custumers-model" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<form method="POST" name="delete-articles-form"></form>
+<div class="modal fade" id="delete-articles-model" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
@@ -130,20 +116,20 @@
 </div>
 
 <script>
-  const deleteSong = document.getElementById('delete-custumers-model')
+  const deleteSong = document.getElementById('delete-articles-model')
   const btnDelete = document.getElementById('btn-delete');
-  const deleteForm = document.forms['delete-custumers-form'];
+  const deleteForm = document.forms['delete-articles-form'];
 
-  var custumers;
+  var articles;
   if (deleteSong) {
     deleteSong.addEventListener('show.bs.modal', event => {
       const button = event.relatedTarget
-      custumers = button.getAttribute('data-id')
+      articles = button.getAttribute('data-id')
     })
   }
   if(btnDelete){
     btnDelete.addEventListener('click', () => {
-      deleteForm.action = '/custumerss/' + custumers + '?_method=DELETE';
+      deleteForm.action = '/articles/' + articles + '?_method=DELETE';
       deleteForm.submit();
     })
   }

@@ -49,8 +49,6 @@ class ProductsController {
                 slug,
                 category,
             })
-            console.log(`body: ${req.body}`);
-            console.log(`product: ${product}`);
             await product.save();
             res.redirect('/products')
         }
@@ -87,6 +85,36 @@ class ProductsController {
     /** [GET] /products/api/getallproducts */
     getAllProducts(req, res, next){
         const {page = 1, limit = 10 } = req.query;
+        const pageNumber = parseInt(page);
+        const limitNumber = parseInt(limit);
+
+        const skip = (pageNumber - 1) * limitNumber;
+        Products.find()
+            .skip(skip)
+            .limit(limitNumber)
+            .then(product => {
+                const formatProducts = product.map(pro => {
+                    return{
+                        ...pro.toObject(),
+                        formatedDate: formatDate(pro.updatedAt)
+                    }
+                })
+                Products.countDocuments()
+                    .then(totalItem => {
+                        res.json({
+                            product: formatProducts,
+                            totalItem,
+                            currentPage: pageNumber,
+                            totalPage: Math.ceil(totalItem / limitNumber)
+                        })
+                    })
+            })
+            .catch(next)
+    }
+
+    /** [GET] /products/api/getproductsfe */
+    getProductsFe(req, res, next){
+        const {page = 1, limit = 12 } = req.query;
         const pageNumber = parseInt(page);
         const limitNumber = parseInt(limit);
 
@@ -150,7 +178,14 @@ class ProductsController {
             .catch(next);
     }
 
-    
+    /** [GET] /product/api/getdetailproduct/:slug */
+    getdetailproduct(req, res, next){
+        Products.findOne({ slug: req.params.slug })
+            .then((product) => {
+                res.json(product);
+            })
+            .catch(next);
+    }
 }
 
 module.exports = new ProductsController();

@@ -1,0 +1,74 @@
+<div class="heading_page">
+    <h5>Dashboard <i class="bi bi-chevron-right"></i> articles <i class="bi bi-chevron-right"></i> Add article</h5>
+    <h2>Add article</h2>
+    <h5>Add a new article to your company</h5>
+</div>
+
+<div class="layout add_page ">
+    <form action="/articles/store" method="post">
+        <div class="col-6 level-left">
+            <div class="level-top">
+                <div class="heading">
+                    <h2>Information article</h2>
+                </div>
+                <div class="layout">
+                    <div class="form-group mt-3">
+                        <label>Subject</label>
+                        <input type="text" class="form-control mt-2" name="subject"  placeholder="Enter subject for article...">    
+                    </div>
+                    <div class="form-group mt-3">
+                        <label>Content</label>
+                        <textarea class="form-control mt-2 mb-3" name="content" rows="13" placeholder="Content..."></textarea>
+                    </div>
+                    <div class="form-group mt-3 mb-5">
+                        <label>Status</label>
+                        <select class="form-select mt-2" aria-label="Default select example" name="status">
+                            <option selected>------ Choice ------</option>
+                            <option value="public">Public</option>
+                            <option value="hide">Hide</option>
+                        </select> 
+                    </div>
+                </div>
+            </div>
+             
+        </div>
+
+        <div class="col-6 level-right">
+            <div class="level-top">
+                <div class="heading">
+                    <h2>Thumbnail article</h2>
+                </div>
+                <div class="layout">
+                    <div class="form-group mt-3">
+                        <label>Thumbnail</label>
+                        <input type="text" class="form-control mt-2" name="thumbnail"  placeholder="Enter your account...">    
+                    </div>
+                    <div class="form-group mt-3">
+                        <label>Thumbnail 1</label>
+                        <input type="text" class="form-control mt-2" name="thumbnail_1"  placeholder="Enter your account...">    
+                    </div>
+                    <div class="form-group mt-3 mb-4">
+                        <label>Thumbnail 2</label>
+                        <input type="text" class="form-control mt-2" name="thumbnail_2"  placeholder="Enter your text...">    
+                    </div>
+                    <div class="form-group mt-3 mb-4">
+                        <label>Thumbnail 3</label>
+                        <input type="text" class="form-control mt-2" name="thumbnail_3"  placeholder="Enter your text...">    
+                    </div>
+                    <div class="form-group mt-3 mb-4">
+                        <label>Thumbnail 4</label>
+                        <input type="text" class="form-control mt-2" name="thumbnail_4"  placeholder="Enter your text...">    
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-save">
+                <i class="bi bi-floppy me-2"></i>
+                Save article
+            </button>
+        </div>
+    </form>
+</div>
+<div class="footer">
+    Thank you for creating with HuyHung | 2024 © 
+</div>
+
