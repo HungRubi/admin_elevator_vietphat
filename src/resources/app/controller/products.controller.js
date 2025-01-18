@@ -21,6 +21,7 @@ class ProductsController {
             const {
                 name,
                 description,
+                specifications,
                 sale,
                 price,
                 unit,
@@ -37,6 +38,7 @@ class ProductsController {
             const product = new Products({
                 name,
                 description,
+                specifications,
                 discount,
                 price,
                 unit,

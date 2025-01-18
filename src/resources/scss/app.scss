@@ -292,6 +292,9 @@ header{
                 background: none; 
                 transition: none; 
             }
+            .tab_item.active a{
+                background: var(--hover-bg-tab);
+            }
         }
         .bottom{
             position: absolute;

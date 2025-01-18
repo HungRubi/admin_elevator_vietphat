@@ -306,6 +306,9 @@ header .user .circle i {
   background: none;
   transition: none;
 }
+.layout nav .list .tab_item.active a {
+  background: var(--hover-bg-tab);
+}
 .layout nav .bottom {
   position: absolute;
   width: 100%;

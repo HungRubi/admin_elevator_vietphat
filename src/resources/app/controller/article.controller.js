@@ -87,6 +87,35 @@ class CustomersController {
         .then(() => {res.redirect('back')})
         .catch(next)
     }
+
+    /** [GET] /articles/getall */
+    getAll(req, res, next) {
+        
+        Article.find({status : 'public'})
+        .then(articles => {
+            const formatarticle = articles.map(cus => {
+                return{
+                    ...cus.toObject(),
+                    formatedDate: formatDate(cus.updatedAt),
+                }
+            })
+            res.json(formatarticle)
+        })
+        .catch(next);
+    }
+
+    /** [GET] /article/getdetail/:slug */
+    getdetailproduct(req, res, next){
+        Article.findOne({ slug: req.params.slug })
+            .then((article) => {
+                const formatarticle = {
+                    ...article.toObject(),
+                    formatedDate: formatDate(article.updatedAt),
+                };
+                res.json(formatarticle);
+            })
+            .catch(next);
+    }
 }
 
 module.exports = new CustomersController();
