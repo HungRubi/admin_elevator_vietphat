@@ -180,11 +180,20 @@ class ProductsController {
             .catch(next);
     }
 
-    /** [GET] /product/api/getdetailproduct/:slug */
+    /** [GET] /products/api/getdetailproduct/:slug */
     getdetailproduct(req, res, next){
         Products.findOne({ slug: req.params.slug })
             .then((product) => {
                 res.json(product);
+            })
+            .catch(next);
+    }
+
+    /** [GET] /products/api/suggestproduct */
+    getSuggestProduct(req, res, next) {
+        Products.aggregate([{ $sample: { size: 4 } }])
+            .then((pro) => {
+                res.json(pro);
             })
             .catch(next);
     }

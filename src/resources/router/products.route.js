@@ -8,6 +8,7 @@ route.get('/api/getallproducts', productsController.getAllProducts);
 route.get('/api/getproductsfe', productsController.getProductsFe);
 route.get('/api/getdetailproduct/:slug', productsController.getdetailproduct);
 route.get('/api/getcop', productsController.getProductCop);
+route.get('/api/suggestproduct', productsController.getSuggestProduct);
 route.get('/api/getdien', productsController.getProductDien);
 route.get('/api/getinox', productsController.getProductInox);
 route.get('/api/getthep', productsController.getProductThep);
