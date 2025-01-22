@@ -177,6 +177,7 @@ header{
     position: fixed;
     border-bottom: 1px solid var(--border-div) ;
     background: var(--bg-div);
+    z-index: 9999999;
     .logo{
         width: 240px;
         height: 100%;
@@ -204,6 +205,9 @@ header{
         height: 100%;
         gap: 10px;
         margin-right: 30px;
+        a{
+            color: var(--text-color);
+        }
         .circle{
             i{
                 font-size: 18px;
@@ -502,7 +506,6 @@ header{
                     width: 10%;
                 }
                 .col_custumer{
-                    width: 10%;
                     .layout{
                         justify-content: start;
                     }

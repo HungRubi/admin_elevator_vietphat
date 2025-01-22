@@ -31,18 +31,27 @@ document.addEventListener("DOMContentLoaded", () => {
         btnUnCollap.classList.remove('collap');
     })
 
-    const menu = document.querySelectorAll('.menu');
+    const menuToggle = document.querySelectorAll('.menu');
     const btnToggleMenu = document.querySelectorAll('.btn_menu');
 
     btnToggleMenu.forEach((btn, index) => {
-        btn.addEventListener('click', () => {
-            menu.forEach((div, idx) => {
-                if(index === idx){
-                    div.classList.toggle('active');
-                }
-            })
-        })
-    })
+        const menu = menuToggle[index];
+        btn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            menuToggle.forEach((m) => {
+                if (m !== menu) m.classList.remove('active');
+            });
+            menu.classList.toggle('active');
+        });
+    });
+    
+    document.addEventListener('click', (event) => {
+        menuToggle.forEach((menu) => {
+            if (!menu.contains(event.target)) {
+                menu.classList.remove('active');
+            }
+        });
+    });
 
     const oriPrice = document.querySelector('#original_price');
     const disPrice = document.querySelector('#discount_price');
@@ -91,121 +100,69 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    const itemsPage = 10;
-    let pageCurrent = 1;
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": true,
+        "positionClass": "toast-bottom-right", // Vị trí: top-right, top-left, bottom-right, bottom-left
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    };
 
-    async function fetchProduct(page, itemsPage) {
-        try{
-            const response = await fetch(`/products/api/getallproducts/?page=${page}&limit=${itemsPage}`);
-            if(!response.ok){
-                throw new Error('Không thể lấy dữ liệu từ server');
-            }
-            const data = await response.json();
-            return data;
-        }
-        catch(error){
-            console.log(error);
-        }
-    }
-
-    async function displayProduct(page){
-        const {product, totalItem} = await fetchProduct(page, itemsPage);
-        const tbody = document.querySelector('#table_body'); 
-        tbody.innerHTML = '';
-        product.forEach(product => {
-            const row = 
-                `<tr class="align-middle">
-                    <td class="column_checkbox"><input type="checkbox" name="" id=""></th>
-                    <td class="col_image text-center">
-                        <div class="wrapper_img_product is-center">
-                            <a href="#" class="is-center" style="width:100%;">
-                                <img src="${product.thumbnail_main}" alt="">
-                            </a>
-                        </div>
-                    </td>
-                    <td style="color: rgb(56, 116, 255);" class="col_product"><span>${product.name}</span></td>
-                    <td class="col_custumer col-1">${product.price}</td>
-                    <td class="col_status col-1" style="padding-left:40px">${product.stock}</td>
-                    <td class="col_star col-1">${product.unit}</td>
-                    <td class="col_review col-4"><p>${product.description}</p></td>
-                    <td class="col_time">
-                        <p>${product.formatedDate}</p>
-                        <div class="layout">
-                            <div class="circle">
-                                <a href="/products/${product._id}/edit">
-                                    <i class="bi bi-pencil-fill"></i>
-                                </a>
-                            </div>
-                            <div class="circle">
-                                <a href="/products/${product._id}/deleted" data-bs-toggle="modal" data-id="${product._id}" data-bs-target="#delete-product-model">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </div>
-                            <div class="circle"><i class="bi bi-three-dots"></i></div>
-                        </div>
-                    </td>
-                </tr>`;
-            tbody.innerHTML += row;
-        })
-        displayPagination(totalItem, itemsPage);
-    }
-
-    function displayPagination(totalItem, itemsPage) {
-        const pageBar = document.querySelector('.page_bar');
-        const totalPage = Math.ceil(totalItem / itemsPage);
-
-        pageBar.innerHTML = `<button class="next previous"> <i class="bi bi-chevron-double-left"></i></button>
-                    <button class="next previous"> <i class="bi bi-chevron-left"></i> Previous</button>`;
-        for(let i = 1; i <= totalPage; i++){
-            const button = document.createElement("button");
-            button.className = `number_page ${i === pageCurrent ? "active" : ""}`;
-            button.textContent = i;
-            button.addEventListener("click", async () => {
-                pageCurrent = i;
-                const { product, totalItem } = await fetchProduct(pageCurrent, itemsPage);
-                displayProduct(pageCurrent);
-                displayPagination(totalItem, itemsPage); 
+    function renderCustumerTable() {
+        const btnAdd = document.querySelector('.btn_add_products');
+        const listSelect = document.querySelector('.list_products');
+        if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+                let isExit = false;
+                const selectedCustumer = listSelect.value;
+                const selectedNameCustumer = listSelect.options[listSelect.selectedIndex].textContent;
+                if (selectedCustumer === '--- Products ---' || selectedCustumer === '' ||selectedNameCustumer === '') {
+                    toastr.error('Vui lòng chọn sản phẩm hợp lệ','Message');
+                } else {
+                    const rows = document.querySelectorAll('.table_products .tbody_products .table-row-products');
+                    rows.forEach((row) => {
+                        const nameProduct = row.querySelector('td:nth-child(3)').textContent.trim();
+                        if (nameProduct === selectedNameCustumer.trim()) {
+                            isExit = true;
+                        }});
+                    if (isExit) {
+                        toastr.error('Sản phẩm này đã có trong danh sách!','Message');
+                    } else {
+                        const thumbnail =listSelect.options[listSelect.selectedIndex].getAttribute('data-image');
+                        const nameProduct =listSelect.options[listSelect.selectedIndex].getAttribute('data-name');
+                        const songPrice =listSelect.options[listSelect.selectedIndex].getAttribute('data-price');
+                        const tbody = document.querySelector('.tbody_products');
+                        const newRow = document.createElement('tr');
+                        newRow.classList.add('align-middle','table-row-products');
+                        newRow.innerHTML = `
+                            <td style="width:50px;"><input type="checkbox" name="" id=""></td>
+                            <td class="col_image text-center col-2">
+                                <div class="wrapper_img_product is-center">
+                                    <a href="#" class="is-center" style="width:100%;">
+                                        <img src="${thumbnail}" alt="product">
+                                    </a>
+                                </div>
+                            </td>
+                            <td class="col-5">${nameProduct}</td>
+                            <td class="col-3">${songPrice}</td>
+                            <td class="col-1 text-center">1</td>`;
+                        tbody.appendChild(newRow);
+                        toastr.success('Thêm sản phẩm thành công!','Message');
+                    }
+                }
             });
-            pageBar.appendChild(button);
-        }
-        const nextButton = document.createElement("button");
-        nextButton.className = "next";
-        nextButton.innerHTML = `Next <i class="bi bi-chevron-right"></i>`;
-        nextButton.addEventListener("click", () => {
-            pageCurrent = Math.min(pageCurrent + 1, totalPage); // Điều chỉnh pageCurrent
-            const { product, totalItem } = fetchProduct(pageCurrent, itemsPage);
-            displayProduct(pageCurrent);
-            displayPagination(totalItem, itemsPage);
-        });
-        pageBar.appendChild(nextButton); // Thêm nút next vào pageBar
-
-        const nextAllButton = document.createElement("button");
-        nextAllButton.className = "next_all";
-        nextAllButton.innerHTML = `<i class="bi bi-chevron-double-right"></i>`;
-        pageBar.appendChild(nextAllButton); // Thêm nút next_all vào pageBar
-
-        const currentButton = document.createElement("button");
-        currentButton.className = "current";
-        currentButton.textContent = `Page ${pageCurrent} / ${totalPage}`;
-        pageBar.appendChild(currentButton); // Thêm nút current vào pageBar
-        const btnPrevious = document.querySelectorAll('.previous');
-        if(pageCurrent !== 1){
-            btnPrevious.forEach(btn => {
-                btn.style.display = 'block';
-                btn.addEventListener('click', () => {
-                    pageCurrent = Math.min(pageCurrent - 1, totalPage); // Điều chỉnh pageCurrent
-                    const { product, totalItem } = fetchProduct(pageCurrent, itemsPage);
-                    displayProduct(pageCurrent);
-                    displayPagination(totalItem, itemsPage);
-                })
-            })
-        }else{
-            btnPrevious.forEach(btn => {
-                btn.style.display = 'none';
-            })
         }
     }
-    displayProduct(pageCurrent);
 
     function tabUi(){
         const currentPath = window.location.pathname;
@@ -223,6 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector('.tab-4').classList.remove('active');
             document.querySelector('.tab-5').classList.remove('active');
             document.querySelector('.tab-6').classList.remove('active');
+            renderCustumerTable();
         }else if(currentPath.startsWith('/employee')){
             document.querySelector('.tab-1').classList.remove('active');
             document.querySelector('.tab-2').classList.remove('active');
@@ -244,6 +202,121 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector('.tab-4').classList.remove('active');
             document.querySelector('.tab-5').classList.add('active');
             document.querySelector('.tab-6').classList.remove('active');
+            const itemsPage = 10;
+            let pageCurrent = 1;
+
+            async function fetchProduct(page, itemsPage) {
+                try{
+                    const response = await fetch(`/products/api/getallproducts/?page=${page}&limit=${itemsPage}`);
+                    if(!response.ok){
+                        throw new Error('Không thể lấy dữ liệu từ server');
+                    }
+                    const data = await response.json();
+                    return data;
+                }
+                catch(error){
+                    console.log(error);
+                }
+            }
+
+            async function displayProduct(page){
+                const {product, totalItem} = await fetchProduct(page, itemsPage);
+                const tbody = document.querySelector('#table_body'); 
+                tbody.innerHTML = '';
+                product.forEach(product => {
+                    const row = 
+                        `<tr class="align-middle">
+                            <td class="column_checkbox"><input type="checkbox" name="" id=""></th>
+                            <td class="col_image text-center">
+                                <div class="wrapper_img_product is-center">
+                                    <a href="#" class="is-center" style="width:100%;">
+                                        <img src="${product.thumbnail_main}" alt="">
+                                    </a>
+                                </div>
+                            </td>
+                            <td style="color: rgb(56, 116, 255);" class="col_product"><span>${product.name}</span></td>
+                            <td class="col_custumer col-1">${product.price}</td>
+                            <td class="col_status col-1" style="padding-left:40px">${product.stock}</td>
+                            <td class="col_star col-1">${product.unit}</td>
+                            <td class="col_review col-4"><p>${product.description}</p></td>
+                            <td class="col_time">
+                                <p>${product.formatedDate}</p>
+                                <div class="layout">
+                                    <div class="circle">
+                                        <a href="/products/${product._id}/edit">
+                                            <i class="bi bi-pencil-fill"></i>
+                                        </a>
+                                    </div>
+                                    <div class="circle">
+                                        <a href="/products/${product._id}/deleted" data-bs-toggle="modal" data-id="${product._id}" data-bs-target="#delete-product-model">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                    <div class="circle"><i class="bi bi-three-dots"></i></div>
+                                </div>
+                            </td>
+                        </tr>`;
+                    tbody.innerHTML += row;
+                })
+                displayPagination(totalItem, itemsPage);
+            }
+
+            function displayPagination(totalItem, itemsPage) {
+                const pageBar = document.querySelector('.page_bar');
+                const totalPage = Math.ceil(totalItem / itemsPage);
+
+                pageBar.innerHTML = `<button class="next previous"> <i class="bi bi-chevron-double-left"></i></button>
+                            <button class="next previous"> <i class="bi bi-chevron-left"></i> Previous</button>`;
+                for(let i = 1; i <= totalPage; i++){
+                    const button = document.createElement("button");
+                    button.className = `number_page ${i === pageCurrent ? "active" : ""}`;
+                    button.textContent = i;
+                    button.addEventListener("click", async () => {
+                        pageCurrent = i;
+                        const { product, totalItem } = await fetchProduct(pageCurrent, itemsPage);
+                        displayProduct(pageCurrent);
+                        displayPagination(totalItem, itemsPage); 
+                    });
+                    pageBar.appendChild(button);
+                }
+                const nextButton = document.createElement("button");
+                nextButton.className = "next";
+                nextButton.innerHTML = `Next <i class="bi bi-chevron-right"></i>`;
+                nextButton.addEventListener("click", () => {
+                    pageCurrent = Math.min(pageCurrent + 1, totalPage); // Điều chỉnh pageCurrent
+                    const { product, totalItem } = fetchProduct(pageCurrent, itemsPage);
+                    displayProduct(pageCurrent);
+                    displayPagination(totalItem, itemsPage);
+                });
+                pageBar.appendChild(nextButton); // Thêm nút next vào pageBar
+
+                const nextAllButton = document.createElement("button");
+                nextAllButton.className = "next_all";
+                nextAllButton.innerHTML = `<i class="bi bi-chevron-double-right"></i>`;
+                pageBar.appendChild(nextAllButton); // Thêm nút next_all vào pageBar
+
+                const currentButton = document.createElement("button");
+                currentButton.className = "current";
+                currentButton.textContent = `Page ${pageCurrent} / ${totalPage}`;
+                pageBar.appendChild(currentButton); // Thêm nút current vào pageBar
+                const btnPrevious = document.querySelectorAll('.previous');
+                if(pageCurrent !== 1){
+                    btnPrevious.forEach(btn => {
+                        btn.style.display = 'block';
+                        btn.addEventListener('click', () => {
+                            pageCurrent = Math.min(pageCurrent - 1, totalPage); // Điều chỉnh pageCurrent
+                            const { product, totalItem } = fetchProduct(pageCurrent, itemsPage);
+                            displayProduct(pageCurrent);
+                            displayPagination(totalItem, itemsPage);
+                        })
+                    })
+                }else{
+                    btnPrevious.forEach(btn => {
+                        btn.style.display = 'none';
+                    })
+                }
+            }
+            displayProduct(pageCurrent);
         }else if(currentPath.startsWith('/articles')){
             document.querySelector('.tab-1').classList.remove('active');
             document.querySelector('.tab-2').classList.remove('active');

@@ -1,3 +1,7 @@
+const { mutipleMongooseoObject } = require('../../util/mongoose.util');
+const Custumer = require('../model/custumers.model');
+const Product = require('../model/products.model');
+
 class OdersController {
     
     index(req, res, next) {
@@ -5,7 +9,14 @@ class OdersController {
     }
     
     add(req, res, next) {
-        res.render('orders/addOrder');
+        Promise.all([Product.find({}), Custumer.find({})])
+            .then(([products, custumers]) => {
+                res.render('orders/addOrder', {
+                    products: mutipleMongooseoObject(products),
+                    custumers: mutipleMongooseoObject(custumers),
+                });
+            })
+        
     }
 }
 

@@ -190,6 +190,7 @@ header {
   position: fixed;
   border-bottom: 1px solid var(--border-div);
   background: var(--bg-div);
+  z-index: 9999999;
 }
 header .logo {
   width: 240px;
@@ -218,6 +219,9 @@ header .user {
   height: 100%;
   gap: 10px;
   margin-right: 30px;
+}
+header .user a {
+  color: var(--text-color);
 }
 header .user .circle i {
   font-size: 18px;
@@ -502,9 +506,6 @@ header .user .circle i {
   width: 7%;
 }
 .layout main .table_convert tr .col_product {
-  width: 10%;
-}
-.layout main .table_convert tr .col_custumer {
   width: 10%;
 }
 .layout main .table_convert tr .col_custumer .layout {

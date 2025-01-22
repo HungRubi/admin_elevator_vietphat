@@ -14,18 +14,20 @@
                 <div class="layout">
                     <div class="form-group mt-3">
                         <label>Choised user</label>
-                        <select class="form-select mt-2" aria-label="Default select example" id="sale" name="sale">
-                            <option>--- Users ---</option>
-                            <option value="0%">Nguyễn Huy Hùng - huyhung1804</option>
+                        <select class="form-select mt-2 list_custumers" name="name">
+                            <option>--- Custumers ---</option>
+                            {{#each custumers}}
+                                <option data-phone="{{this.phone}}" data-address="{{this.address}}" value="{{this._id}}">{{this.name}}</option>
+                            {{/each}}
                         </select>
                     </div>
                     <div class="form-group mt-3">
                         <label>Phone</label>
-                        <input type="text" class="form-control mt-2" name="phone"  placeholder="Enter your phone number...">    
+                        <input type="text" class="form-control mt-2" name="phone"  placeholder="Name product...">    
                     </div>
-                    <div class="form-group mt-3 mb-4">
+                    <div class="form-group mt-3 mb-3">
                         <label>Address</label>
-                        <input type="text" class="form-control mt-2" name="address"  placeholder="Enter your address...">    
+                        <input type="text" class="form-control mt-2" name="address"  placeholder="Name product...">    
                     </div>
                 </div>
             </div>
@@ -65,39 +67,27 @@
                 <div class="layout">
                     <div class="form-group mt-3">
                         <label>Choised product</label>
-                        <select class="form-select mt-2" aria-label="Default select example" id="sale" name="sale">
+                        <select class="form-select mt-2 list_products" name="name">
                             <option>--- Products ---</option>
-                            <option value="0%">COP cảm ứng</option>
+                            {{#each products}}
+                                <option data-price="{{this.price}}" data-name="{{this.name}}" value="{{this._id}}" data-image="{{this.thumbnail_main}}">{{this.name}}</option>
+                            {{/each}}
                         </select>
                     </div>
-                    <button class="btn btn-primary mt-3">
+                    <button class="btn btn-primary mt-3 btn_add_products" type="button">
                         <i class="bi bi-plus"></i>
                         Thêm
                     </button>
                     <div class="form-group mt-3">
-                        <table class="table">
-                            <thead>
+                        <table class="table table_products">
+                            <thead class="align-middle">
                                 <th><input type="checkbox" name="" id=""></th>
-                                <th></th>
+                                <th class="text-center"><button class="btn btn-primary">Xóa</button></th>
                                 <th>Name</th>
                                 <th>Price</th>
                                 <th>Quantity</th>
                             </thead>
-                            <tbody>
-                                <tr class="align-middle">
-                                    <td style="width:50px;"><input type="checkbox" name="" id=""></td>
-                                    <td class="col_image text-center col-2">
-                                        <div class="wrapper_img_product is-center">
-                                            <a href="#" class="is-center" style="width:100%;">
-                                                <img src="/img/product/1.jpg" alt="product">
-                                            </a>
-                                        </div>
-                                    </td>
-                                    <td class="col-5">COP cảm ứng</td>
-                                    <td class="col-3">100.000.000 VND</td>
-                                    <td class="col-1 text-center">1</td>
-                                </tr>
-                                
+                            <tbody class="tbody_products">
                             </tbody>
                         </table>
                     </div>
