@@ -426,61 +426,61 @@ header .user .circle i {
   font-size: 12px;
   color: var(--text-color);
 }
-.layout main .table {
+.layout main .table_convert {
   width: 100%;
   z-index: 0;
   margin: 30px 0;
   min-width: 1400px;
   border-collapse: collapse;
 }
-.layout main .table thead {
+.layout main .table_convert thead {
   border-bottom: 1px solid var(--border-div);
   border-top: 1px solid var(--border-div);
 }
-.layout main .table tbody td {
+.layout main .table_convert tbody td {
   border-bottom: 1px solid var(--border-div);
 }
-.layout main .table tbody tr:hover td .layout {
+.layout main .table_convert tbody tr:hover td .layout {
   display: flex;
   transition: 0.3s linear;
 }
-.layout main .table tbody tr:hover .col_time p {
+.layout main .table_convert tbody tr:hover .col_time p {
   display: none;
 }
-.layout main .table tr th, .layout main .table tr td {
+.layout main .table_convert tr th, .layout main .table_convert tr td {
   text-align: left;
 }
-.layout main .table tr th {
+.layout main .table_convert tr th {
   font-size: 14px;
   font-weight: 550;
   text-transform: uppercase;
 }
-.layout main .table tr td {
+.layout main .table_convert tr td {
   font-size: 14px;
   font-weight: normal;
 }
-.layout main .table tr td .layout {
+.layout main .table_convert tr td .layout {
   align-items: center;
   width: 100%;
 }
-.layout main .table tr td .layout .circle {
+.layout main .table_convert tr td .layout .circle {
   width: 45px;
   height: 45px;
   overflow: hidden;
   margin-right: 15px;
 }
-.layout main .table tr td .layout span {
+.layout main .table_convert tr td .layout span {
   font-size: 14px;
   font-weight: 500;
 }
-.layout main .table tr td span {
+.layout main .table_convert tr td span {
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.layout main .table tr td .svg-inline--fa {
+.layout main .table_convert tr td .svg-inline--fa {
   display: inline-block;
   height: 1em;
   overflow: visible;
@@ -488,39 +488,39 @@ header .user .circle i {
   color: rgb(229, 120, 11);
   font-size: 0.64rem !important;
 }
-.layout main .table tr td p {
+.layout main .table_convert tr td p {
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.layout main .table tr .column_checkbox {
+.layout main .table_convert tr .column_checkbox {
   width: 3%;
 }
-.layout main .table tr .col_image {
+.layout main .table_convert tr .col_image {
   width: 7%;
 }
-.layout main .table tr .col_product {
+.layout main .table_convert tr .col_product {
   width: 10%;
 }
-.layout main .table tr .col_custumer {
+.layout main .table_convert tr .col_custumer {
   width: 10%;
 }
-.layout main .table tr .col_custumer .layout {
+.layout main .table_convert tr .col_custumer .layout {
   justify-content: start;
 }
-.layout main .table tr .col_star {
+.layout main .table_convert tr .col_star {
   width: 7%;
 }
-.layout main .table tr .col_review {
+.layout main .table_convert tr .col_review {
   width: 30%;
 }
-.layout main .table tr .col_status {
+.layout main .table_convert tr .col_status {
   width: 10%;
   padding-left: 15px;
 }
-.layout main .table tr .col_status .status_comment {
+.layout main .table_convert tr .col_status .status_comment {
   border-radius: 3px;
   max-width: 90%;
   background: #d9fbd0;
@@ -529,61 +529,51 @@ header .user .circle i {
   font-size: 12px;
   text-transform: uppercase;
 }
-.layout main .table tr .col_status .status_comment i {
+.layout main .table_convert tr .col_status .status_comment i {
   font-size: 14px;
   margin-left: 5px;
   line-height: 1.5;
 }
-.layout main .table tr .col_status .status_comment_pending {
+.layout main .table_convert tr .col_status .status_comment_pending {
   color: #bc3803;
   background: #ffefca;
   border: 1px solid #ffcc85;
 }
-.layout main .table tr .col_status .status_comment_block {
+.layout main .table_convert tr .col_status .status_comment_block {
   color: #c90c05;
   background: rgba(247, 77, 77, 0.5411764706);
   border: 1px solid #ff8585;
 }
-.layout main .table tr .col_time {
+.layout main .table_convert tr .col_time {
   width: 13%;
   text-align: center;
   padding-left: 10px;
 }
-.layout main .table tr .col_time .layout {
+.layout main .table_convert tr .col_time .layout {
   display: none;
   justify-content: center;
 }
-.layout main .table tr .col_time .layout .circle {
+.layout main .table_convert tr .col_time .layout .circle {
   background: var(--hover-btn);
   border: 1px solid var(--border-div);
   border-radius: 5px;
   width: 35px;
   height: 35px;
 }
-.layout main .table tr .col_time .layout .circle a {
+.layout main .table_convert tr .col_time .layout .circle a {
   width: 100%;
   color: black;
 }
-.layout main .table tr .col_time .layout .circle:hover {
+.layout main .table_convert tr .col_time .layout .circle:hover {
   transition: 0.3s linear;
   background: var(--primary-color);
 }
-.layout main .table tr .col_time .layout .circle:hover i {
+.layout main .table_convert tr .col_time .layout .circle:hover i {
   color: white;
   transition: 0.3s linear;
 }
-.layout main .table tr .col_time .layout .circle:nth-child(2):hover {
+.layout main .table_convert tr .col_time .layout .circle:nth-child(2):hover {
   background: #cc0033;
-}
-.layout main .table tr .wrapper_img_product {
-  width: 100%;
-}
-.layout main .table tr .wrapper_img_product img {
-  width: 60px;
-  height: 60px;
-  border-radius: 8px;
-  border: 1px solid var(--border-div);
-  object-fit: cover;
 }
 .layout main .footer {
   padding: 15px 0;
@@ -625,6 +615,16 @@ header .user .circle i {
   text-decoration: underline;
   cursor: pointer;
 }
+.layout .wrapper_img_product {
+  width: 100%;
+}
+.layout .wrapper_img_product img {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  border: 1px solid var(--border-div);
+  object-fit: cover;
+}
 .layout main.collap {
   width: 100%;
   transition: width 0.5s ease-in-out;
@@ -647,11 +647,12 @@ header .user .circle i {
 .layout .search .wrapper_search .bi-search {
   position: absolute;
   top: 50%;
-  left: 5px;
+  left: 10px;
   color: var(--text-color);
   transform: translateY(-50%);
 }
 .layout .search .wrapper_search input {
+  padding-left: 30px;
   width: 100%;
 }
 .layout .search .seleted, .layout .search .selection {
