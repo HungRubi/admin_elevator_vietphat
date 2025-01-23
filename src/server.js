@@ -9,6 +9,8 @@ const cors = require('cors');
 const port = 4000;
 const app = express();
 
+
+/** template engine */
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.engine(
@@ -22,9 +24,6 @@ app.engine(
         
     }),
 );
-
-app.use(methodOverride('_method'));
-
 app.set('view engine', '.hbs');
 app.set('views', path.join(__dirname, 'resources', 'views'));
 
@@ -33,6 +32,12 @@ app.use(
         extended: true,
     }),
 );
+/** method overide */
+app.use(methodOverride('_method'));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 app.use(cors());
 db.connect();

@@ -1,6 +1,9 @@
 class SiteController{
     index(req, res, index) {
-        res.render('site');
+        if (req.isAuthenticated()) {
+            return res.render('site');
+        }
+        res.redirect('/login');
     }
 }
 module.exports = new SiteController();

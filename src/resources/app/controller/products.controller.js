@@ -52,14 +52,14 @@ class ProductsController {
                 category,
             })
             await product.save();
-            res.redirect('/products')
+            res.redirect('/products');
         }
         catch(error){
             next(error);
         };
     }
 
-    /** [PUT] /products/edit */
+    /** [GET] /products/edit */
     edit(req, res, next){
         Products.findById(req.params.id)
         .then(product => {
@@ -73,15 +73,23 @@ class ProductsController {
     update(req, res, next) {
         console.log(req.body);
         Products.updateOne({_id: req.params.id}, req.body)
-        .then(() => res.redirect('/products'))
-        .catch(next);
+        .then(() => {
+            res.redirect('/products');
+        })
+        .catch(error => {
+            next(error);
+        });
     }
 
     /** [DELETE] /products/:id */
     delete(req, res, next) {
         Products.deleteOne({_id: req.params.id})
-        .then(() => {res.redirect('back')})
-        .catch(next)
+        .then(() => {
+            res.redirect('back');
+        })
+        .catch(error => {
+            next(error);
+        });
     }
 
     /** [GET] /products/api/getallproducts */

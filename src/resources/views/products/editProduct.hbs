@@ -1,9 +1,16 @@
+<div class="container mt-4">
+    {{#each notifications}}
+        <div class="alert alert-{{@key}} alert-dismissible fade show" role="alert">
+            {{this}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {{/each}}
+</div>
 <div class="heading_page">
     <h5>Dashboard <i class="bi bi-chevron-right"></i> Products <i class="bi bi-chevron-right"></i> Add product</h5>
     <h2>Add Products</h2>
     <h5>Add a new product to your company</h5>
 </div>
-
 <div class="layout add_page ">
     <form action="/products/{{product._id}}?_method=PUT" method="POST">
         <div class="col-6 level-left">
