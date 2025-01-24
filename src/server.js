@@ -5,6 +5,8 @@ const db = require('./config/db/index');
 const route = require('./resources/router/index.route');
 const methodOverride = require('method-override');
 const cors = require('cors');
+const passport = require('passport');
+const session = require('express-session');
 
 const port = 4000;
 const app = express();
@@ -36,7 +38,17 @@ app.use(
 app.use(methodOverride('_method'));
 
 app.use(passport.initialize());
-app.use(passport.session());
+app.use(
+    session({
+      secret: 'your-secret-key', 
+      resave: false,            
+      saveUninitialized: false,  
+      cookie: {
+        secure: false,         
+        maxAge: 1000 * 60 * 60,  
+      },
+    })
+  );
 
 
 app.use(cors());
