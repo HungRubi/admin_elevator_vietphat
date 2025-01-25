@@ -10,7 +10,17 @@ const session = require('express-session');
 
 const port = 4000;
 const app = express();
-
+app.use(
+    session({
+        secret: 'your-secret-key', 
+        resave: true,            
+        saveUninitialized: false,  
+        cookie: {
+        secure: false,         
+        maxAge: 1000 * 60 * 60,  
+        },
+    })
+);
 
 /** template engine */
 app.use(express.static(path.join(__dirname, 'public')));
@@ -38,17 +48,7 @@ app.use(
 app.use(methodOverride('_method'));
 
 app.use(passport.initialize());
-app.use(
-    session({
-      secret: 'your-secret-key', 
-      resave: false,            
-      saveUninitialized: false,  
-      cookie: {
-        secure: false,         
-        maxAge: 1000 * 60 * 60,  
-      },
-    })
-  );
+
 
 
 app.use(cors());

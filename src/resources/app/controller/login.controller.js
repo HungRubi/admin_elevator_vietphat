@@ -20,18 +20,26 @@ class LoginController{
         const { account, password } = req.body;
     
         Custumers.findOne({ account, password })
-            .then(custumer => {
-                if (custumer) {
-                    req.session.custumer = {
-                        id: custumer.id,
-                        name: custumer.name,
-                    };
-                    res.redirect('/');
-                } else {
-                    res.status(401).send('Tên đăng nhập hoặc mật khẩu không đúng');
-                }
-            })
-            .catch(next);
+        .then(custumer => {
+            console.log('Kết quả từ MongoDB:', custumer);
+            if (custumer) {
+                req.session.custumer = {
+                    id: custumer._id,
+                    account: custumer.account,
+                    name: custumer.name
+                };
+                req.session.save((err) => {
+                    if (err) {
+                        console.error('Lỗi khi lưu session:', err);
+                        return next(err);
+                    }
+                    res.redirect('/'); 
+                });
+            } else {
+                res.status(401).send('Tên đăng nhập hoặc mật khẩu không đúng');
+            }
+        })
+        .catch(next);
     }
 }
 

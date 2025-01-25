@@ -407,7 +407,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
     tabUi();
-
+    
+    const formLogin = document.querySelector('.form_login');
+    formLogin.addEventListener('submit', (event) => {
+        console.log('Form submitted');
+    })
     // const btnAddImage = document.querySelector('.btn_add_image');
 
     // btnAddImage.addEventListener('click', () => {
