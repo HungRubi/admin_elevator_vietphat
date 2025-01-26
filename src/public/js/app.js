@@ -253,6 +253,8 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector('.tab-4').classList.remove('active');
             document.querySelector('.tab-5').classList.remove('active');
             document.querySelector('.tab-6').classList.remove('active');
+            document.querySelector('.tab-7').classList.remove('active');
+            document.querySelector('.login_container').style.display = 'none';
         }else if(currentPath.startsWith('/orders')){
             document.querySelector('.tab-1').classList.remove('active');
             document.querySelector('.tab-2').classList.add('active');
@@ -260,6 +262,9 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector('.tab-4').classList.remove('active');
             document.querySelector('.tab-5').classList.remove('active');
             document.querySelector('.tab-6').classList.remove('active');
+            document.querySelector('.tab-7').classList.remove('active');
+            document.querySelector('.login_container').style.display = 'none';
+
             renderCustumerTable();
         }else if(currentPath.startsWith('/employee')){
             document.querySelector('.tab-1').classList.remove('active');
@@ -268,20 +273,27 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector('.tab-4').classList.remove('active');
             document.querySelector('.tab-5').classList.remove('active');
             document.querySelector('.tab-6').classList.remove('active');
+            document.querySelector('.tab-7').classList.remove('active');
+            document.querySelector('.login_container').style.display = 'none';
+
         }else if(currentPath.startsWith('/custumers')){
             document.querySelector('.tab-1').classList.remove('active');
             document.querySelector('.tab-2').classList.remove('active');
             document.querySelector('.tab-3').classList.remove('active');
             document.querySelector('.tab-4').classList.add('active');
             document.querySelector('.tab-5').classList.remove('active');
+            document.querySelector('.login_container').style.display = 'none';
             document.querySelector('.tab-6').classList.remove('active');
+            document.querySelector('.tab-7').classList.remove('active');
         }else if(currentPath.startsWith('/products')){
             document.querySelector('.tab-1').classList.remove('active');
             document.querySelector('.tab-2').classList.remove('active');
             document.querySelector('.tab-3').classList.remove('active');
+            document.querySelector('.login_container').style.display = 'none';
             document.querySelector('.tab-4').classList.remove('active');
             document.querySelector('.tab-5').classList.add('active');
             document.querySelector('.tab-6').classList.remove('active');
+            document.querySelector('.tab-7').classList.remove('active');
             const itemsPage = 10;
             let pageCurrent = 1;
 
@@ -403,7 +415,19 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector('.tab-3').classList.remove('active');
             document.querySelector('.tab-4').classList.remove('active');
             document.querySelector('.tab-5').classList.remove('active');
+            document.querySelector('.login_container').style.display = 'none';
             document.querySelector('.tab-6').classList.add('active');
+            document.querySelector('.tab-7').classList.remove('active');
+        }else if(currentPath.startsWith('/report')){
+            document.querySelector('.tab-1').classList.remove('active');
+            document.querySelector('.tab-2').classList.remove('active');
+            document.querySelector('.tab-3').classList.remove('active');
+            document.querySelector('.tab-4').classList.remove('active');
+            document.querySelector('.login_container').style.display = 'none';
+            document.querySelector('.tab-5').classList.remove('active');
+            document.querySelector('.tab-6').classList.remove('active');
+            document.querySelector('.tab-7').classList.add('active');
+            
         }
     }
     tabUi();
@@ -412,6 +436,7 @@ document.addEventListener("DOMContentLoaded", () => {
     formLogin.addEventListener('submit', (event) => {
         console.log('Form submitted');
     })
+    
     // const btnAddImage = document.querySelector('.btn_add_image');
 
     // btnAddImage.addEventListener('click', () => {
