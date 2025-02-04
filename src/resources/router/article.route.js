@@ -5,7 +5,7 @@ const articleController = require('../app/controller/article.controller');
 
 route.get('/getall', articleController.getAll);
 route.get('/getdetail/:slug', articleController.getdetailproduct);
-
+route.get('/api/latest', articleController.getArticleLatest);
 
 route.post('/store', articleController.store);
 route.put('/:id', articleController.update);

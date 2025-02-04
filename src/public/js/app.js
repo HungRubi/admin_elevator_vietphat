@@ -164,86 +164,54 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
     
-    (function ($) {
-        "use strict";
-        $('.input100').each(function(){
-            $(this).on('blur', function(){
-                if($(this).val().trim() != "") {
-                    $(this).addClass('has-val');
-                }
-                else {
-                    $(this).removeClass('has-val');
-                }
-            })    
-        })
-        
-        var input = $('.validate-input .input100');
+    async function renderEmployee(){
+        const response = await fetch();
+        const employee = await response.json();
 
-        $('.validate-form').on('submit',function(){
-            var check = true;
-
-            for(var i=0; i<input.length; i++) {
-                if(validate(input[i]) == false){
-                    showValidate(input[i]);
-                    check=false;
-                }
-            }
-
-            return check;
-        });
-
-
-        $('.validate-form .input100').each(function(){
-            $(this).focus(function(){
-            hideValidate(this);
-            });
-        });
-
-        function validate (input) {
-            if($(input).attr('type') == 'email' || $(input).attr('name') == 'email') {
-                if($(input).val().trim().match(/^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{1,5}|[0-9]{1,3})(\]?)$/) == null) {
-                    return false;
-                }
-            }
-            else {
-                if($(input).val().trim() == ''){
-                    return false;
-                }
-            }
-        }
-
-        function showValidate(input) {
-            var thisAlert = $(input).parent();
-
-            $(thisAlert).addClass('alert-validate');
-        }
-
-        function hideValidate(input) {
-            var thisAlert = $(input).parent();
-
-            $(thisAlert).removeClass('alert-validate');
-        }
-        
-        var showPass = 0;
-        $('.btn-show-pass').on('click', function(){
-            if(showPass == 0) {
-                $(this).next('input').attr('type','text');
-                $(this).find('i').removeClass('zmdi-eye');
-                $(this).find('i').addClass('zmdi-eye-off');
-                showPass = 1;
-            }
-            else {
-                $(this).next('input').attr('type','password');
-                $(this).find('i').addClass('zmdi-eye');
-                $(this).find('i').removeClass('zmdi-eye-off');
-                showPass = 0;
-            }
+        const html = 
+            `<img src="${employee.thumbnail}" alt="" style="border-radius: 50%;" class="btn_menu">
+            <div class="menu">
+                <div class="infor_user is-center">
+                    <div class="circle">
+                        <img src="${employee.thumbnail}" alt="" style="border-radius: 50%;">
+                    </div>
+                </div>
+                <div class="infor_user is-center" style="padding-bottom: 15px; padding-top: 10px">
+                    <h3 class="title">${employee.name}</h3>
+                </div>
+                <div class="divider"></div>
+                <ul class="list_menu">
+                    <li class="item_menu">
+                        <a href="#" class="is-center">
+                            <i class="bi bi-person"></i>
+                            Profile
+                        </a>
+                    </li>
+                    <li class="item_menu">
+                        <a href="#" class="is-center">
+                            <i class="bi bi-lock"></i>
+                            Password
+                        </a>
+                    </li>
+                    <li class="item_menu">
+                        <a href="#" class="is-center">
+                            <i class="bi bi-question-circle"></i>
+                            Help
+                        </a>
+                    </li>
+                </ul>
+                <div class="divider"></div>
+                <a href="#" class="layout is-center">
+                    <div class="btn-logout is-center">
+                        <i class="bi bi-arrow-bar-right"></i>
+                        Logout
+                    </div>
+                </a>
+            </div>`;
+        const menuUser = document.querySelector('.menu_user');
+        menuUser.innerHTML = html;
             
-        });
-
-    })(jQuery);
-
-    
+    }
     function tabUi(){
         const currentPath = window.location.pathname;
         if(currentPath === '/'){
@@ -255,6 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector('.tab-6').classList.remove('active');
             document.querySelector('.tab-7').classList.remove('active');
             document.querySelector('.login_container').style.display = 'none';
+            renderEmployee();
         }else if(currentPath.startsWith('/orders')){
             document.querySelector('.tab-1').classList.remove('active');
             document.querySelector('.tab-2').classList.add('active');
@@ -299,7 +268,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             async function fetchProduct(page, itemsPage) {
                 try{
-                    const response = await fetch(`/products/api/getallproducts/?page=${page}&limit=${itemsPage}`);
+                    const response = await fetch(`https://phukienthangmay.vn/admin/products/api/getallproducts/?page=${page}&limit=${itemsPage}`);
                     if(!response.ok){
                         throw new Error('Không thể lấy dữ liệu từ server');
                     }
@@ -433,9 +402,11 @@ document.addEventListener("DOMContentLoaded", () => {
     tabUi();
     
     const formLogin = document.querySelector('.form_login');
-    formLogin.addEventListener('submit', (event) => {
-        console.log('Form submitted');
-    })
+    if(formLogin){
+        formLogin.addEventListener('submit', (event) => {
+            console.log('Form submitted');
+        })
+    }
     
     // const btnAddImage = document.querySelector('.btn_add_image');
 

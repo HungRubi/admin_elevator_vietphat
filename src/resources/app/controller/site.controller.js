@@ -1,7 +1,7 @@
 class SiteController{
     index(req, res, index) {
-        if (req.session.custumer) {
-            res.render('site', { account: req.session.custumer.account });
+        if (req.session.employee) {
+            res.render('site');
         } else {
             res.redirect('/login');
         }

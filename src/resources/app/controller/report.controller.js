@@ -1,6 +1,10 @@
 class ReportController {
     index(req, res, next) {
-        res.render('report/report')
+        if (req.session.employee) {
+            res.render('report/report', { account: req.session.employee.account });
+        } else {
+            res.redirect('/login');
+        }
     }
 }
 

@@ -12,12 +12,13 @@ const port = 4000;
 const app = express();
 app.use(
     session({
-        secret: 'your-secret-key', 
-        resave: true,            
+        secret: 'huyhung18042002@@@SADAS', 
+        resave: false,            
         saveUninitialized: false,  
         cookie: {
-        secure: false,         
-        maxAge: 1000 * 60 * 60,  
+            secure: false,         
+            maxAge: 1000 * 60 * 60,  
+            httpOnly: false,
         },
     })
 );

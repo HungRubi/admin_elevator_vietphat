@@ -3,30 +3,43 @@ const { mutipleMongooseoObject } = require('../../util/mongoose.util');
 const { mongooseToObject } = require('../../util/mongoose.util');
 const { formatDate } = require('../../util/formatDate.util');
 const { createSlug } = require('../../util/createSlug.util')
+
+function dateEnglish(date) {
+    return new Date(date).toLocaleDateString('en-US', {  
+        month: 'short', day: '2-digit', year: 'numeric'  
+    });
+}
 class CustomersController {
     
-    /* [GET] /articles */
+    /* [GET] /admin/articles */
     index(req, res, next) {
-        Article.find()
-        .then(articles => {
-            const formatarticle = articles.map(cus => {
-                return{
-                    ...cus.toObject(),
-                    formatedDate: formatDate(cus.updatedAt),
-                }
+        if (req.session.employee) {
+            Article.find()
+            .then(articles => {
+                const formatarticle = articles.map(cus => {
+                    return{
+                        ...cus.toObject(),
+                        formatedDate: formatDate(cus.updatedAt),
+                    }
+                })
+                res.render('articles/articles',{ 
+                    account: req.session.employee.account,
+                    articles: formatarticle,
+                });
             })
-            res.render('articles/articles', {
-                articles: formatarticle,
-            });
-        })
+            
+        } else {
+            res.redirect('/login');
+        }
+        
     }
 
-    /* [GET] /article/add */
+    /* [GET] /admin/article/add */
     add(req, res, next) {
         res.render('articles/addArticle')
     }
 
-    /** [POST] /articles/store */
+    /** [POST] /admin/articles/store */
     store = async (req, res, next) => {
         try{
             const {
@@ -62,7 +75,7 @@ class CustomersController {
         }
     }
     
-    /** [GET] /articles/:id/edit */
+    /** [GET] /admin/articles/:id/edit */
     edit(req, res, next) {
         Article.findById(req.params.id)
             .then(articles => {
@@ -72,7 +85,7 @@ class CustomersController {
             })
     }
 
-    /** [PUT] /article/:id */
+    /** [PUT] /admin/articles/:id */
     update(req, res, next) {
         Article.updateOne({_id: req.params.id}, req.body)
         .then(() => {
@@ -81,14 +94,14 @@ class CustomersController {
         .catch(next);
     }
 
-    /** [DELETE] /article/:id */
+    /** [DELETE] /admin/articles/:id */
     delete(req, res, next) {
         Article.deleteOne({_id: req.params.id})
-        .then(() => {res.redirect('back')})
+        .then(() => {res.redirect('/articles')})
         .catch(next)
     }
 
-    /** [GET] /articles/getall */
+    /** [GET] /admin/articles/getall */
     getAll(req, res, next) {
         
         Article.find({status : 'public'})
@@ -104,7 +117,7 @@ class CustomersController {
         .catch(next);
     }
 
-    /** [GET] /article/getdetail/:slug */
+    /** [GET] /admin/articles/getdetail/:slug */
     getdetailproduct(req, res, next){
         Article.findOne({ slug: req.params.slug })
             .then((article) => {
@@ -115,6 +128,22 @@ class CustomersController {
                 res.json(formatarticle);
             })
             .catch(next);
+    }
+
+    /** [GET] /admin/articles/api/latest */
+    getArticleLatest = async(req, res, next) => {
+        try {
+            const latestProducts = await Article.find().sort({ createdAt: -1 }).limit(2);
+            const formatarticle = latestProducts.map(cus => {
+                return{
+                    ...cus.toObject(),
+                    formatedDate: dateEnglish(cus.createdAt),
+                }
+            })
+            res.json(formatarticle);
+        } catch (error) {
+            res.status(500).json({ message: 'Lỗi lấy sản phẩm mới nhất', error });
+        }
     }
 }
 

@@ -1,9 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 
-const Custumers = require('../model/custumers.model');
+const Employee = require('../model/employee.model');
 
 class LoginController{
+
+    /** [GET] /login */
     index(req, res, next) {
         const loginContent = fs.readFileSync(
             path.join(__dirname, '../../views/account/login.hbs'), 
@@ -15,19 +17,15 @@ class LoginController{
         });
     }
 
+    /** [PUT] /login/store */
     login(req, res, next) {
-        console.log('Form data:', req.body);
         const { account, password } = req.body;
     
-        Custumers.findOne({ account, password })
-        .then(custumer => {
-            console.log('Kết quả từ MongoDB:', custumer);
-            if (custumer) {
-                req.session.custumer = {
-                    id: custumer._id,
-                    account: custumer.account,
-                    name: custumer.name
-                };
+        Employee.findOne({ account, password })
+        .then(employee => {
+            console.log('Kết quả từ MongoDB:', employee);
+            if (employee) {
+                req.session.employee = employee;
                 req.session.save((err) => {
                     if (err) {
                         console.error('Lỗi khi lưu session:', err);
@@ -40,6 +38,22 @@ class LoginController{
             }
         })
         .catch(next);
+    }
+
+    /** [GET] /login/api/custumer/infor */
+    getEmployee(req, res, next) {
+        console.log(JSON.stringify(req.session));
+        if (req.session.employee) {
+            res.json({
+                success: true,
+                employee: req.session.employee
+            });
+        } else {
+            res.json({
+                success: false,
+                message: 'Người dùng chưa đăng nhập'
+            });
+        }
     }
 }
 
