@@ -31,28 +31,30 @@ document.addEventListener("DOMContentLoaded", () => {
         btnUnCollap.classList.remove('collap');
     })
 
-    const menuToggle = document.querySelectorAll('.menu');
-    const btnToggleMenu = document.querySelectorAll('.btn_menu');
+    function menuClick() {
+        const menuToggle = document.querySelectorAll('.menu');
+        const btnToggleMenu = document.querySelectorAll('.btn_menu');
 
-    btnToggleMenu.forEach((btn, index) => {
-        const menu = menuToggle[index];
-        btn.addEventListener('click', (event) => {
-            event.stopPropagation();
-            menuToggle.forEach((m) => {
-                if (m !== menu) m.classList.remove('active');
+        btnToggleMenu.forEach((btn, index) => {
+            const menu = menuToggle[index];
+            btn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                menuToggle.forEach((m) => {
+                    if (m !== menu) m.classList.remove('active');
+                });
+                menu.classList.toggle('active');
             });
-            menu.classList.toggle('active');
         });
-    });
-    
-    document.addEventListener('click', (event) => {
-        menuToggle.forEach((menu) => {
-            if (!menu.contains(event.target)) {
-                menu.classList.remove('active');
-            }
+        
+        document.addEventListener('click', (event) => {
+            menuToggle.forEach((menu) => {
+                if (!menu.contains(event.target)) {
+                    menu.classList.remove('active');
+                }
+            });
         });
-    });
-
+    }
+    menuClick();
     const oriPrice = document.querySelector('#original_price');
     const disPrice = document.querySelector('#discount_price');
     const seletedSale = document.querySelector("#sale");
@@ -119,6 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     function renderCustumerTable() {
+        let indexQuan = 0;
         const btnAdd = document.querySelector('.btn_add_products');
         const listSelect = document.querySelector('.list_products');
         if (btnAdd) {
@@ -145,7 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         const newRow = document.createElement('tr');
                         newRow.classList.add('align-middle','table-row-products');
                         newRow.innerHTML = `
-                            <td style="width:50px;"><input type="checkbox" name="" id=""></td>
+                            <td style="width:50px;"><input type="checkbox" name="items[0][productId]" value="${selectedCustumer}"></td>
                             <td class="col_image text-center col-2">
                                 <div class="wrapper_img_product is-center">
                                     <a href="#" class="is-center" style="width:100%;">
@@ -155,8 +158,14 @@ document.addEventListener("DOMContentLoaded", () => {
                             </td>
                             <td class="col-5">${nameProduct}</td>
                             <td class="col-3">${songPrice}</td>
-                            <td class="col-1 text-center">1</td>`;
+                            <td class="col-1 text-center">
+                                <div>
+                                    <input type="number" class="input_quantity" name="items[${indexQuan}][quantity]" value="1" min="1">
+                                </div>
+                            </td>`;
+                            
                         tbody.appendChild(newRow);
+                        indexQuan ++;
                         toastr.success('Thêm sản phẩm thành công!','Message');
                     }
                 }
@@ -165,19 +174,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     async function renderEmployee(){
-        const response = await fetch();
+        const response = await fetch('http://localhost:4000/login/api/employee/infor');
         const employee = await response.json();
-
         const html = 
-            `<img src="${employee.thumbnail}" alt="" style="border-radius: 50%;" class="btn_menu">
+            `<img src="${employee.employee.avatar}" alt="" style="border-radius: 50%;" class="btn_menu">
             <div class="menu">
                 <div class="infor_user is-center">
                     <div class="circle">
-                        <img src="${employee.thumbnail}" alt="" style="border-radius: 50%;">
+                        <img src="${employee.employee.avatar}" alt="" style="border-radius: 50%;">
                     </div>
                 </div>
                 <div class="infor_user is-center" style="padding-bottom: 15px; padding-top: 10px">
-                    <h3 class="title">${employee.name}</h3>
+                    <h3 class="title">${employee.employee.name}</h3>
                 </div>
                 <div class="divider"></div>
                 <ul class="list_menu">
@@ -201,7 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     </li>
                 </ul>
                 <div class="divider"></div>
-                <a href="#" class="layout is-center">
+                <a href="/logout" class="layout is-center">
                     <div class="btn-logout is-center">
                         <i class="bi bi-arrow-bar-right"></i>
                         Logout
@@ -210,8 +218,53 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>`;
         const menuUser = document.querySelector('.menu_user');
         menuUser.innerHTML = html;
-            
+        menuClick();
     }
+    function renderChart(labels, data) {
+        const ctx = document.getElementById("customerChart").getContext("2d");
+    
+        new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: labels, // Mảng ngày
+                datasets: [{
+                    label: "Số lượng khách hàng",
+                    data: data, // Mảng số lượng khách hàng
+                    borderColor: "blue",
+                    backgroundColor: "rgba(0, 0, 255, 0.2)",
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true }
+                },
+                scales: {
+                    // x: {
+                    //     title: { display: true, text: "Day" }
+                    // },
+                    // y: {
+                    //     beginAtZero: true,
+                    //     title: { display: true, text: "Count" }
+                    // }
+                }
+            }
+        });
+    }
+    async function renderChartCount() {
+        const response = await fetch(`http://localhost:4000/custumers/api/count-custumer`);
+        const result = await response.json();
+
+        const labels = result.map(item => `${item._id.year}-${String(item._id.month).padStart(2, "0")}-${String(item._id.day).padStart(2, "0")}`);
+        const data = result.map(item => item.count);
+
+        renderChart(labels, data);
+    }
+    renderEmployee();
     function tabUi(){
         const currentPath = window.location.pathname;
         if(currentPath === '/'){
@@ -223,7 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector('.tab-6').classList.remove('active');
             document.querySelector('.tab-7').classList.remove('active');
             document.querySelector('.login_container').style.display = 'none';
-            renderEmployee();
+            renderChartCount();
         }else if(currentPath.startsWith('/orders')){
             document.querySelector('.tab-1').classList.remove('active');
             document.querySelector('.tab-2').classList.add('active');
@@ -268,7 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             async function fetchProduct(page, itemsPage) {
                 try{
-                    const response = await fetch(`https://phukienthangmay.vn/admin/products/api/getallproducts/?page=${page}&limit=${itemsPage}`);
+                    const response = await fetch(`https://admin.phukienthangmay.vn/products/api/getallproducts/?page=${page}&limit=${itemsPage}`);
                     if(!response.ok){
                         throw new Error('Không thể lấy dữ liệu từ server');
                     }

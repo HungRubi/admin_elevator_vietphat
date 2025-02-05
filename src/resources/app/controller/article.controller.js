@@ -13,25 +13,18 @@ class CustomersController {
     
     /* [GET] /admin/articles */
     index(req, res, next) {
-        if (req.session.employee) {
-            Article.find()
-            .then(articles => {
-                const formatarticle = articles.map(cus => {
-                    return{
-                        ...cus.toObject(),
-                        formatedDate: formatDate(cus.updatedAt),
-                    }
-                })
-                res.render('articles/articles',{ 
-                    account: req.session.employee.account,
-                    articles: formatarticle,
-                });
+        Article.find()
+        .then(articles => {
+            const formatarticle = articles.map(cus => {
+                return{
+                    ...cus.toObject(),
+                    formatedDate: formatDate(cus.updatedAt),
+                }
             })
-            
-        } else {
-            res.redirect('/login');
-        }
-        
+            res.render('articles/articles',{ 
+                articles: formatarticle,
+            });
+        })
     }
 
     /* [GET] /admin/article/add */

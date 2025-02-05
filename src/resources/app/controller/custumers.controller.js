@@ -1,4 +1,5 @@
 const Custumer = require('../model/custumers.model');
+const moment = require("moment");
 const { mutipleMongooseoObject } = require('../../util/mongoose.util');
 const { mongooseToObject } = require('../../util/mongoose.util');
 const { formatDate } = require('../../util/formatDate.util')
@@ -21,7 +22,7 @@ class CustomersController {
         })
     }
 
-    /* [GET] /custumer/add */
+    /* [GET] /custumers/add */
     add(req, res, next) {
         res.render('custumers/addCustumer')
     }
@@ -68,7 +69,7 @@ class CustomersController {
             })
     }
 
-    /** [PUT] /custumer/:id */
+    /** [PUT] /custumers/:id */
     update(req, res, next) {
         Custumer.findById(req.params.id)
             .then(custumer => {
@@ -84,6 +85,41 @@ class CustomersController {
                 res.redirect('/custumers');
             })
             .catch(next);
+    }
+
+    /** [GET] /custumers/api/count-custumers */
+    getCustomersLast7Days = async (req, res) => {
+        try {
+            // Lấy ngày hiện tại và tính ngày cách đây 7 ngày
+            const sevenDaysAgo = moment().subtract(7, "days").startOf("day").toDate();
+            const today = moment().endOf("day").toDate();
+    
+            // Aggregation pipeline
+            const customers = await Custumer.aggregate([
+                {
+                    $match: {
+                        createdAt: { $gte: sevenDaysAgo, $lte: today } // Lọc khách hàng từ 7 ngày trước đến hôm nay
+                    }
+                },
+                {
+                    $group: {
+                        _id: { 
+                            year: { $year: "$createdAt" },
+                            month: { $month: "$createdAt" },
+                            day: { $dayOfMonth: "$createdAt" }
+                        },
+                        count: { $sum: 1 } // Đếm số lượng khách hàng mỗi ngày
+                    }
+                },
+                {
+                    $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 }// 1 tăng, -1 là giảm
+                } 
+            ]);
+            res.json(customers);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "Lỗi server" });
+        }
     }
 }
 
