@@ -14,7 +14,7 @@
                 <div class="layout">
                     <div class="form-group mt-3">
                         <label>Choised user</label>
-                        <select class="form-select mt-2 list_custumers" name="name">
+                        <select class="form-select mt-2 list_custumers" name="shippingAddress[name]">
                             <option>--- Custumers ---</option>
                             {{#each custumers}}
                                 <option data-phone="{{this.phone}}" data-address="{{this.address}}" value="{{this._id}}">{{this.name}}</option>
@@ -23,11 +23,11 @@
                     </div>
                     <div class="form-group mt-3">
                         <label>Phone</label>
-                        <input type="text" class="form-control mt-2" name="phone"  placeholder="Your phone...">
+                        <input type="text" class="form-control mt-2" name="shippingAddress[phone]"  placeholder="Your phone...">
                     </div>
                     <div class="form-group mt-3 mb-3">
                         <label>Address</label>
-                        <input type="text" class="form-control mt-2" name="address"  placeholder="Your address...">    
+                        <input type="text" class="form-control mt-2" name="shippingAddress[address]"  placeholder="Your address...">    
                     </div>
                 </div>
             </div>
