@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const Employee = require('../model/employee.model');
+const User = require('../model/user.model');
 
 class LoginController{
 
@@ -21,11 +21,11 @@ class LoginController{
     login(req, res, next) {
         const { account, password } = req.body;
     
-        Employee.findOne({ account, password })
-        .then(employee => {
-            console.log('Kết quả từ MongoDB:', employee);
-            if (employee) {
-                req.session.employee = employee;
+        User.findOne({ account, password })
+        .then(user => {
+            console.log('Kết quả từ MongoDB:', user);
+            if (user) {
+                req.session.user = user;
                 req.session.save((err) => {
                     if (err) {
                         console.error('Lỗi khi lưu session:', err);
@@ -42,11 +42,10 @@ class LoginController{
 
     /** [GET] /login/api/custumer/infor */
     getEmployee(req, res, next) {
-        console.log(JSON.stringify(req.session));
-        if (req.session.employee) {
+        if (req.session.user) {
             res.json({
                 success: true,
-                employee: req.session.employee
+                user: req.session.user
             });
         } else {
             res.json({

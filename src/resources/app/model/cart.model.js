@@ -32,11 +32,6 @@ const cart = new Schema(
             required: true,
             default: 0,
         },
-        status: {
-            type: String,
-            enum: ['pending', 'completed', 'cancelled'],
-            default: 'pending',
-        },
     },
     {
         timestamps: true

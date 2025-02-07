@@ -1,5 +1,5 @@
 const { mutipleMongooseoObject } = require('../../util/mongoose.util');
-const Custumer = require('../model/custumers.model');
+const User = require('../model/user.model');
 const Product = require('../model/products.model');
 const Orders = require('../model/orders.model');
 class OdersController {
@@ -11,21 +11,20 @@ class OdersController {
     
     /** [GET] /orders/add */
     add(req, res, next) {
-        Promise.all([Product.find({}), Custumer.find({})])
-            .then(([products, custumers]) => {
+        Promise.all([Product.find({}), User.find({ authour: 'customer' })])
+            .then(([products, users]) => {
                 res.render('orders/addOrder', {
                     products: mutipleMongooseoObject(products),
-                    custumers: mutipleMongooseoObject(custumers),
+                    users: mutipleMongooseoObject(users),
                 });
             })
-        
     }
 
     /** [POST] /orders/store */
     store = async(req, res, next) => {
         try{
             const {
-                userId,
+                user_id,
                 items, 
                 totalPrice,
                 status,
@@ -35,7 +34,7 @@ class OdersController {
             } = req.body;
     
             const order = new Orders({
-                userId,
+                user_id,
                 items, 
                 totalPrice,
                 status,

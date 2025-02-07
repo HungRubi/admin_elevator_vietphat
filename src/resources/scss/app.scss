@@ -240,7 +240,9 @@ header{
         }
     }
 }
-
+.tab_drop.active{
+    background: var(--hover-bg-tab);
+}
 .layout{
     display: flex;
     position: relative;

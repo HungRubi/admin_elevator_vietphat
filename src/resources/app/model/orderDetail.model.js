@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
-const orders = new mongoose.Schema(
+const orderDetail = new mongoose.Schema(
     {
-        user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true }, 
-        order_date: {type: Date, default: Date.now},
+        order_id: { type: mongoose.Schema.Types.ObjectId, ref: 'orders', required: true }, 
+        product_id: { type: mongoose.Schema.Types.ObjectId, ref: 'products', required: true },
         total_price: {type: Number, min: 0, require: true},
         shipping_address: {
             name: { type: String, required: true }, 
@@ -26,4 +26,4 @@ const orders = new mongoose.Schema(
     }
 );
 
-module.exports = mongoose.model('orders', orders);
+module.exports = mongoose.model('orderDetail', orderDetail);

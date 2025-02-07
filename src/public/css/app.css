@@ -254,6 +254,10 @@ header .user .circle i {
   color: var(--text-color);
 }
 
+.tab_drop.active {
+  background: var(--hover-bg-tab);
+}
+
 .layout {
   display: flex;
   position: relative;

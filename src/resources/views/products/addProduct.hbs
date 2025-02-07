@@ -18,63 +18,23 @@
                     </div>
                     <div class="form-group mt-3">
                         <label>Product Description</label>
-                        <textarea class="form-control mt-2 mb-3" name="description" rows="5" placeholder="Description..."></textarea>
+                        <textarea class="form-control mt-2 mb-3" name="description" rows="15" placeholder="Description..."></textarea>
                     </div>
                     <div class="form-group mt-3">
-                        <label>Product specification</label>
-                        <textarea class="form-control mt-2 mb-3" name="specification" rows="4" placeholder="Specification..."></textarea>
-                    </div>
-                    <div class="form-group mt-3">
-                        <label>Product structure</label>
-                        <textarea class="form-control mt-2 mb-3" name="structure" rows="4" placeholder="Structure..."></textarea>
-                    </div>
-                </div>
-            </div>
-            <div class="level-top mt-4">
-                <div class="heading">
-                    <h2>Product Pricing</h2>
-                </div>
-                <div class="layout">
-                    <div class="form-group mt-3">
-                        <div class="form-group mb-3">
-                            <label>Discount</label>
-                            <select class="form-select mt-2" aria-label="Default select example" id="sale" name="sale">
-                                <option>Choice</option>
-                                <option value="0%">0%</option>
-                                <option value="5%">5%</option>
-                                <option value="10%">10%</option>
-                                <option value="15%">15%</option>
-                                <option value="20%">20%</option>
-                                <option value="25%">25%</option>
-                                <option value="30%">30%</option>
-                                <option value="50%">50%</option>
-                            </select>
-                        </div>
-
-                        <div class="input-group mb-3" style="width:100%;">
-                            <div class="input-group mb-3 d-flex" style="gap:31px;">
-                                <div class="col-50">
-                                    <label for="product1" class="form-label">Original Price</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text" style="width:42px"><i class="bi bi-currency-dollar"></i></span>
-                                        <input type="number" class="form-control" id="original_price" placeholder="Price" aria-label="Server">
-                                    </div>
-                                </div>
-
-                                <div class="col-50">
-                                    <label for="product2" class="form-label">Discounted Price</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text" style="width:42px"><i class="bi bi-currency-dollar"></i></span>
-                                        <input type="number" disabled class="form-control" id="discount_price" placeholder="Price" aria-label="Server">
-                                    </div>
-                                    <input type="number" hidden class="form-control" name="price" id="price_hidden">
-                                </div>
+                        <label>Price</label>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">VND</span>
                             </div>
+                            <input type="number" class="form-control" placeholder="Price product..." aria-label="Username" aria-describedby="basic-addon1" min="0" name="price">
                         </div>
                     </div>
                 </div>
             </div>
-             
+            <button type="submit" class="btn btn-primary btn-save">
+                <i class="bi bi-floppy me-2"></i>
+                Save Product
+            </button>
         </div>
         <div class="col-6 level-right">
             <div class="level-top">
@@ -157,10 +117,7 @@
                     </div>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-save">
-                <i class="bi bi-floppy me-2"></i>
-                Save Product
-            </button>
+            
         </div>
     </form>
 </div>

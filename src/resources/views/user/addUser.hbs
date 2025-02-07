@@ -1,15 +1,15 @@
 <div class="heading_page">
-    <h5>Dashboard <i class="bi bi-chevron-right"></i> Custumers <i class="bi bi-chevron-right"></i> Add Custumer</h5>
-    <h2>Add custumer</h2>
-    <h5>Add a new custumer to your company</h5>
+    <h5>Dashboard <i class="bi bi-chevron-right"></i> Users <i class="bi bi-chevron-right"></i> Add User</h5>
+    <h2>Add User</h2>
+    <h5>Add a new user to your company</h5>
 </div>
 
 <div class="layout add_page ">
-    <form action="/custumers/store" method="post">
+    <form action="/users/store" method="post">
         <div class="col-6 level-left">
             <div class="level-top">
                 <div class="heading">
-                    <h2>Information custumer</h2>
+                    <h2>Information User</h2>
                 </div>
                 <div class="layout">
                     <div class="form-group mt-3">
@@ -40,7 +40,7 @@
         <div class="col-6 level-right">
             <div class="level-top mt-4">
                 <div class="heading">
-                    <h2>Account custumer</h2>
+                    <h2>Account User</h2>
                 </div>
                 <div class="layout">
                     <div class="form-group mt-3">
@@ -51,15 +51,24 @@
                         <label>Account</label>
                         <input type="text" class="form-control mt-2" name="account"  placeholder="Enter your account...">    
                     </div>
-                    <div class="form-group mt-3 mb-4">
+                    <div class="form-group mt-3">
                         <label>Password</label>
-                        <input type="password" class="form-control mt-2" name="password"  placeholder="Enter your password...">    
+                        <input type="text" class="form-control mt-2" name="password"  placeholder="Enter your password...">    
+                    </div>
+                    <div class="form-group mt-3 mb-4">
+                        <label>Authorization</label>
+                        <select class="form-select mt-2" aria-label="Default select example" name="unit">
+                            <option selected>Choice</option>
+                            <option value="admin">Admin</option>
+                            <option value="employee">Employee</option>
+                            <option value="customer">Customer</option>
+                        </select>    
                     </div>
                 </div>
             </div>
             <button type="submit" class="btn btn-primary btn-save">
                 <i class="bi bi-floppy me-2"></i>
-                Save custumer
+                Save
             </button>
         </div>
     </form>

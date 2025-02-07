@@ -21,8 +21,6 @@ class ProductsController {
             const {
                 name,
                 description,
-                specifications,
-                sale,
                 price,
                 unit,
                 minimum,
@@ -34,12 +32,9 @@ class ProductsController {
                 category,
             } = req.body;
             let slug = createSlug(name);
-            let discount = parseFloat(sale.replace('%', ''));
             const product = new Products({
                 name,
                 description,
-                specifications,
-                discount,
                 price,
                 unit,
                 minimum,

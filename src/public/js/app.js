@@ -275,8 +275,15 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector('.tab-5').classList.remove('active');
             document.querySelector('.tab-6').classList.remove('active');
             document.querySelector('.tab-7').classList.remove('active');
+            document.querySelector('.tab-8').classList.remove('active');
+            document.querySelector('.tab-9').classList.remove('active');
+            document.querySelector('.tab-10').classList.remove('active');
+            divDrop.classList.remove('click');
+            document.querySelector('.tab-11').classList.remove('active');
+
             document.querySelector('.login_container').style.display = 'none';
             renderChartCount();
+
         }else if(currentPath.startsWith('/orders')){
             document.querySelector('.tab-1').classList.remove('active');
             document.querySelector('.tab-2').classList.add('active');
@@ -285,10 +292,15 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector('.tab-5').classList.remove('active');
             document.querySelector('.tab-6').classList.remove('active');
             document.querySelector('.tab-7').classList.remove('active');
+            document.querySelector('.tab-8').classList.remove('active');
+            document.querySelector('.tab-9').classList.remove('active');
+            document.querySelector('.tab-10').classList.remove('active');
+            document.querySelector('.tab-11').classList.remove('active');
+            divDrop.classList.remove('click');
             document.querySelector('.login_container').style.display = 'none';
 
             renderCustumerTable();
-        }else if(currentPath.startsWith('/employee')){
+        }else if(currentPath.startsWith('/users')){
             document.querySelector('.tab-1').classList.remove('active');
             document.querySelector('.tab-2').classList.remove('active');
             document.querySelector('.tab-3').classList.add('active');
@@ -296,17 +308,28 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector('.tab-5').classList.remove('active');
             document.querySelector('.tab-6').classList.remove('active');
             document.querySelector('.tab-7').classList.remove('active');
+            document.querySelector('.tab-8').classList.remove('active');
+            document.querySelector('.tab-9').classList.remove('active');
+            document.querySelector('.tab-10').classList.remove('active');
+            document.querySelector('.tab-11').classList.remove('active');
+            divDrop.classList.remove('click');
             document.querySelector('.login_container').style.display = 'none';
 
-        }else if(currentPath.startsWith('/custumers')){
+        }else if(currentPath.startsWith('/setting')){
             document.querySelector('.tab-1').classList.remove('active');
             document.querySelector('.tab-2').classList.remove('active');
-            document.querySelector('.tab-3').classList.remove('active');
-            document.querySelector('.tab-4').classList.add('active');
+            document.querySelector('.tab-3').classList.add('active');
+            document.querySelector('.tab-4').classList.remove('active');
             document.querySelector('.tab-5').classList.remove('active');
-            document.querySelector('.login_container').style.display = 'none';
             document.querySelector('.tab-6').classList.remove('active');
             document.querySelector('.tab-7').classList.remove('active');
+            document.querySelector('.tab-8').classList.remove('active');
+            document.querySelector('.tab-9').classList.remove('active');
+            document.querySelector('.tab-10').classList.remove('active');
+            document.querySelector('.tab-11').classList.remove('active');
+            divDrop.classList.remove('click');
+            document.querySelector('.login_container').style.display = 'none';
+
         }else if(currentPath.startsWith('/products')){
             document.querySelector('.tab-1').classList.remove('active');
             document.querySelector('.tab-2').classList.remove('active');
@@ -316,6 +339,10 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector('.tab-5').classList.add('active');
             document.querySelector('.tab-6').classList.remove('active');
             document.querySelector('.tab-7').classList.remove('active');
+            document.querySelector('.tab-8').classList.remove('active');
+            document.querySelector('.tab-9').classList.remove('active');
+            document.querySelector('.tab-10').classList.remove('active');
+            document.querySelector('.tab-11').classList.remove('active');
             const itemsPage = 10;
             let pageCurrent = 1;
 
@@ -431,16 +458,38 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
             displayProduct(pageCurrent);
+            divDrop.classList.remove('click');
+
         }else if(currentPath.startsWith('/articles')){
             document.querySelector('.tab-1').classList.remove('active');
             document.querySelector('.tab-2').classList.remove('active');
             document.querySelector('.tab-3').classList.remove('active');
             document.querySelector('.tab-4').classList.remove('active');
             document.querySelector('.tab-5').classList.remove('active');
-            document.querySelector('.login_container').style.display = 'none';
             document.querySelector('.tab-6').classList.add('active');
             document.querySelector('.tab-7').classList.remove('active');
+            document.querySelector('.tab-8').classList.remove('active');
+            document.querySelector('.tab-9').classList.remove('active');
+            document.querySelector('.tab-10').classList.remove('active');
+            document.querySelector('.tab-11').classList.remove('active');
+            divDrop.classList.remove('click');
+            document.querySelector('.login_container').style.display = 'none';
         }else if(currentPath.startsWith('/report')){
+            document.querySelector('.tab-1').classList.remove('active');
+            document.querySelector('.tab-2').classList.remove('active');
+            document.querySelector('.tab-3').classList.remove('active');
+            document.querySelector('.tab-4').classList.remove('active');
+            document.querySelector('.tab-5').classList.remove('active');
+            document.querySelector('.tab-6').classList.remove('active');
+            document.querySelector('.tab-7').classList.add('active');
+            document.querySelector('.tab-8').classList.remove('active');
+            document.querySelector('.tab-9').classList.remove('active');
+            document.querySelector('.tab-10').classList.remove('active');
+            document.querySelector('.tab-11').classList.remove('active');
+            document.querySelector('.login_container').style.display = 'none';
+            divDrop.classList.remove('click');
+            
+        }else if(currentPath.startsWith('/category/product')){
             document.querySelector('.tab-1').classList.remove('active');
             document.querySelector('.tab-2').classList.remove('active');
             document.querySelector('.tab-3').classList.remove('active');
@@ -448,8 +497,59 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector('.login_container').style.display = 'none';
             document.querySelector('.tab-5').classList.remove('active');
             document.querySelector('.tab-6').classList.remove('active');
-            document.querySelector('.tab-7').classList.add('active');
-            
+            document.querySelector('.tab-7').classList.remove('active');
+            document.querySelector('.tab-8').classList.add('active');
+            document.querySelector('.tab-9').classList.remove('active');
+            document.querySelector('.tab-10').classList.remove('active');
+            document.querySelector('.login_container').style.display = 'none';
+            document.querySelector('.tab-11').classList.remove('active');
+            divDrop.classList.add('click');
+
+        }else if(currentPath.startsWith('/category/discount')){
+            document.querySelector('.tab-1').classList.remove('active');
+            document.querySelector('.tab-2').classList.remove('active');
+            document.querySelector('.tab-3').classList.remove('active');
+            document.querySelector('.tab-4').classList.remove('active');
+            document.querySelector('.tab-5').classList.remove('active');
+            document.querySelector('.tab-6').classList.remove('active');
+            document.querySelector('.tab-7').classList.remove('active');
+            document.querySelector('.tab-8').classList.remove('active');
+            document.querySelector('.tab-9').classList.add('active');
+            document.querySelector('.tab-10').classList.remove('active');
+            document.querySelector('.tab-11').classList.remove('active');
+            document.querySelector('.login_container').style.display = 'none';
+            divDrop.classList.add('click');
+
+        }else if(currentPath.startsWith('/category/banner')){
+            document.querySelector('.tab-1').classList.remove('active');
+            document.querySelector('.tab-2').classList.remove('active');
+            document.querySelector('.tab-3').classList.remove('active');
+            document.querySelector('.tab-4').classList.remove('active');
+            document.querySelector('.tab-5').classList.remove('active');
+            document.querySelector('.tab-6').classList.remove('active');
+            document.querySelector('.tab-7').classList.remove('active');
+            document.querySelector('.tab-8').classList.remove('active');
+            document.querySelector('.tab-9').classList.remove('active');
+            document.querySelector('.tab-10').classList.add('active');
+            document.querySelector('.tab-11').classList.remove('active');
+            document.querySelector('.login_container').style.display = 'none';
+            divDrop.classList.add('click');
+
+        }else if(currentPath.startsWith('/category/notification')){
+            document.querySelector('.tab-1').classList.remove('active');
+            document.querySelector('.tab-2').classList.remove('active');
+            document.querySelector('.tab-3').classList.remove('active');
+            document.querySelector('.tab-4').classList.remove('active');
+            document.querySelector('.tab-5').classList.remove('active');
+            document.querySelector('.tab-6').classList.remove('active');
+            document.querySelector('.tab-7').classList.remove('active');
+            document.querySelector('.tab-8').classList.remove('active');
+            document.querySelector('.tab-9').classList.remove('active');
+            document.querySelector('.tab-10').classList.remove('active');
+            document.querySelector('.tab-11').classList.add('active');
+            document.querySelector('.login_container').style.display = 'none';
+            divDrop.classList.add('click');
+
         }
     }
     tabUi();
