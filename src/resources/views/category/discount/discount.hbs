@@ -1,0 +1,98 @@
+<div class="heading_page">
+    <h5>Dashboard <i class="bi bi-chevron-right"></i> Discount</h5>
+    <h2>Discount</h2>
+    <div class="option_table is-between">
+        <div class="search">
+            <div class="wrapper_search">
+                <i class="bi bi-search"></i>
+                <input type="text" placeholder="search discount...">
+            </div>
+        </div>
+        <div class="is-between search_right">
+            <div class="export_btn">
+                <i class="bi bi-file-earmark-arrow-down-fill"></i>
+                Export
+            </div>
+            <a href="/category/discount/add" class="add_btn btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Add discount
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="layout comments">
+    <div class="title_table is-between">
+        <div class="title">
+            <h3>Discount list</h3>
+            <p class="sub_heading">List of all discount on the website</p>
+        </div>
+        <div class="search is-center">
+            <div class="wrapper_search">
+                <i class="bi bi-search"></i>
+                <input type="text">
+            </div>
+            <div class="seleted">All Discount</div>
+            <div class="selection">
+                <i class="bi bi-three-dots"></i>
+            </div>
+        </div>
+    </div>
+    <table class="table table_convert">
+        <thead>
+            <tr>
+                <th scope="col"><input type="checkbox" name="" id=""></th>
+                <th scope="col">title <i class="bi bi-chevron-expand"></i></th>
+                <th scope="col">description <i class="bi bi-chevron-expand"></i></th>
+                <th scope="col">type<i class="bi bi-chevron-expand"></i></th>
+                <th scope="col">start<i class="bi bi-chevron-expand"></i></th>
+                <th scope="col">end <i class="bi bi-chevron-expand"></i></th>
+                <th scope="col">status <i class="bi bi-chevron-expand"></i></th>
+                <th scope="col">max use <i class="bi bi-chevron-expand"></i></th>
+                <th scope="col">used <i class="bi bi-chevron-expand"></i></th>
+                <th scope="col" class="col_time">Time <i class="bi bi-chevron-expand"></i></th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each discounts}}
+                <tr class="align-middle">
+                    <td style="width:50px;"><input type="checkbox" name="" id=""></th>
+                    <td class="col-2">
+                        <p>{{this.title}}</p>
+                    </td>
+                    <td class="col-2">
+                        <p>{{this.description}}</p>
+                    </td>
+                    <td class="col-1">
+                        <p>{{this.discount_type}}</p>
+                    </td>
+                    <td class="col-1">
+                        <p>{{this.start}}</p>
+                    </td>
+                    <td class="col-1">
+                        <p>{{this.end}}</p>
+                    </td>
+                    <td class="col_status">
+                        <div class="status_comment_approved status_comment is-center">
+                            approved
+                            <i class="bi bi-check2" ></i>
+                        </div>
+                    </td>
+                    <td class="col-1">
+                        <p>{{this.use_limit}}</p>
+                    </td>
+                    <td class="col-1">
+                        <p>{{this.use_count}}</p>
+                    </td>
+                    <td class="col_time">
+                        <p>{{this.lastUpdate}}</p>
+                        <div class="layout">
+                            <div class="circle"><i class="bi bi-check-lg"></i></div>
+                            <div class="circle"><i class="bi bi-trash"></i></div>
+                            <div class="circle"><i class="bi bi-three-dots"></i></div>
+                        </div>
+                    </td>
+                </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</div>

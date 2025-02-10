@@ -13,6 +13,11 @@ const products = new Schema(
         thumbnail_2: { type: String, required: true },
         thumbnail_3: { type: String, required: true },
         unit: { type: String, required: true },
+        discount: {
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'discount', 
+            required: true 
+        },
         minimum: {type: Number, index: true, default: 10},
         category: {type: String, enum:['cop','dien','inox','thep'], require:true},
     },

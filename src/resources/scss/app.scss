@@ -60,6 +60,12 @@ a{
 .col-50{
     width: 48%;
 }
+.discount_product{
+    display: none;
+}
+.discount_product.active{
+    display: block;
+}
 .input_quantity{
     border: 1px solid var(--border-div);
     background: none;
@@ -828,6 +834,9 @@ header{
     .previous{
         display: none;
     }
+}
+.wrapper{
+    width: 100%;
 }
 .login_container{
     position: fixed;

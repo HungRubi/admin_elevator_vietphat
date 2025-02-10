@@ -68,6 +68,14 @@ a {
   width: 48%;
 }
 
+.discount_product {
+  display: none;
+}
+
+.discount_product.active {
+  display: block;
+}
+
 .input_quantity {
   border: 1px solid var(--border-div);
   background: none;
@@ -818,6 +826,10 @@ header .user .circle i {
 }
 .page_bar .previous {
   display: none;
+}
+
+.wrapper {
+  width: 100%;
 }
 
 .login_container {

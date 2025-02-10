@@ -18,7 +18,7 @@ const orders = new mongoose.Schema(
         status: {
             type: String,
             enum: ['Thành công', 'Đang xử lý', 'Thất bại'], 
-            default: 'Thành công',
+            default: 'Đang xử lý',
         },
     },
     {

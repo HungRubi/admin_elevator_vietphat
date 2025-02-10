@@ -14,13 +14,13 @@
                 <div class="layout">
                     <div class="form-group mt-3">
                         <label>Choised user</label>
-                        <select class="form-select mt-2 list_custumers">
+                        <select class="form-select mt-2 list_custumers user_list_js">
                             <option>--- Users ---</option>
                             {{#each users}}
-                                <option data-phone="{{this.phone}}" data-address="{{this.address}}" value="{{this._id}}">
+                                <option data-phone="{{this.phone}}" data-address="{{this.address}}" value="{{this._id}}" data-name="{{this.name}}">
                                     {{this.name}}
-                                    <input type="text" name="user_id" hidden value="{{this._id}}">
-                                    <input type="text" name="shipping_address[name]" hidden value="{{this._id}}">
+                                    <input type="text" class="user_id" name="user_id" hidden value="{{this._id}}">
+                                    <input type="text" class="shipping_address_name" name="shipping_address[name]" hidden value="{{this._id}}">
                                 </option>
                             {{/each}}
                         </select>
@@ -28,11 +28,57 @@
                     
                     <div class="form-group mt-3">
                         <label>Phone</label>
-                        <input type="text" class="form-control mt-2" name="shipping_address[phone]"  placeholder="Your phone...">
+                        <input type="text" class="form-control mt-2 lb_phone" name="shipping_address[phone]"  placeholder="Your phone...">
                     </div>
                     <div class="form-group mt-3 mb-3">
                         <label>Address</label>
-                        <input type="text" class="form-control mt-2" name="shipping_address[address]"  placeholder="Your address...">    
+                        <input type="text" class="form-control mt-2 lb_address" name="shipping_address[address]"  placeholder="Your address...">    
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-save">
+                <i class="bi bi-floppy me-2"></i>
+                Save order
+            </button>
+        </div>
+
+        <div class="col-6 level-right">
+            <div class="level-top">
+                <div class="heading">
+                    <h2>Product</h2>
+                </div>
+                <div class="layout">
+                    <div class="form-group mt-3">
+                        <label>Choised product</label>
+                        <select class="form-select mt-2 list_products" name="name">
+                            <option>--- Products ---</option>
+                            {{#each products}}
+                                <option data-price="{{this.price}}" data-name="{{this.name}}" value="{{this._id}}" data-id="{{this._id}}" data-image="{{this.thumbnail_main}}">{{this.name}}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+                    <button class="btn btn-primary mt-3 btn_add_products" type="button">
+                        <i class="bi bi-plus"></i>
+                        Thêm
+                    </button>
+                    <div class="form-group mt-3">
+                        <table class="table table_products">
+                            <thead class="align-middle">
+                                <th><input type="checkbox" name="" id=""></th>
+                                <th class="text-center"><button class="btn btn-primary">Xóa</button></th>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                            </thead>
+                            <tbody class="tbody_products">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="form-group mt-3 mb-3">
+                        <label>Total price</label>
+                        <input type="number" class="form-control mt-2 lb_total_price" name="total_price"  placeholder="Total price..." min="0" required>
                     </div>
                 </div>
             </div>
@@ -61,47 +107,6 @@
                     </div>
                 </div>
             </div>
-            
-        </div>
-
-        <div class="col-6 level-right">
-            <div class="level-top">
-                <div class="heading">
-                    <h2>Product</h2>
-                </div>
-                <div class="layout">
-                    <div class="form-group mt-3">
-                        <label>Choised product</label>
-                        <select class="form-select mt-2 list_products" name="name">
-                            <option>--- Products ---</option>
-                            {{#each products}}
-                                <option data-price="{{this.price}}" data-name="{{this.name}}" value="{{this._id}}" data-image="{{this.thumbnail_main}}">{{this.name}}</option>
-                            {{/each}}
-                        </select>
-                    </div>
-                    <button class="btn btn-primary mt-3 btn_add_products" type="button">
-                        <i class="bi bi-plus"></i>
-                        Thêm
-                    </button>
-                    <div class="form-group mt-3">
-                        <table class="table table_products">
-                            <thead class="align-middle">
-                                <th><input type="checkbox" name="" id=""></th>
-                                <th class="text-center"><button class="btn btn-primary">Xóa</button></th>
-                                <th>Name</th>
-                                <th>Price</th>
-                                <th>Quantity</th>
-                            </thead>
-                            <tbody class="tbody_products">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <button type="submit" class="btn btn-primary btn-save">
-                <i class="bi bi-floppy me-2"></i>
-                Save order
-            </button>
         </div>
     </form>
 </div>

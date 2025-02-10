@@ -2,7 +2,7 @@ const Products = require('../model/products.model');
 const {createSlug} = require('../../util/createSlug.util');
 const { mutipleMongooseoObject } = require('../../util/mongoose.util');
 const { mongooseToObject } = require('../../util/mongoose.util');
-const { formatDate } = require('../../util/formatDate.util')
+const { formatDate } = require('../../util/formatDate.util');
 class ProductsController {
     
     /** [GET] /products */
@@ -66,7 +66,6 @@ class ProductsController {
     
     /** [PUT] /products/:id */
     update(req, res, next) {
-        console.log(req.body);
         Products.updateOne({_id: req.params.id}, req.body)
         .then(() => {
             res.redirect('/products');

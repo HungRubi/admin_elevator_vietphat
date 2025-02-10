@@ -122,6 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderCustumerTable() {
         let indexQuan = 0;
+        let total = 0;
         const btnAdd = document.querySelector('.btn_add_products');
         const listSelect = document.querySelector('.list_products');
         if (btnAdd) {
@@ -144,11 +145,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         const thumbnail =listSelect.options[listSelect.selectedIndex].getAttribute('data-image');
                         const nameProduct =listSelect.options[listSelect.selectedIndex].getAttribute('data-name');
                         const songPrice =listSelect.options[listSelect.selectedIndex].getAttribute('data-price');
+                        const idProduct =listSelect.options[listSelect.selectedIndex].getAttribute('data-id');
                         const tbody = document.querySelector('.tbody_products');
                         const newRow = document.createElement('tr');
                         newRow.classList.add('align-middle','table-row-products');
                         newRow.innerHTML = `
-                            <td style="width:50px;"><input type="checkbox" name="items[0][productId]" value="${selectedCustumer}"></td>
+                            <td style="width:50px;">
+                                <input type="checkbox" name="" value="">
+                                <input type="text" name="items[${indexQuan}][product_id]" value="${idProduct}" hidden>
+                            </td>
                             <td class="col_image text-center col-2">
                                 <div class="wrapper_img_product is-center">
                                     <a href="#" class="is-center" style="width:100%;">
@@ -157,7 +162,10 @@ document.addEventListener("DOMContentLoaded", () => {
                                 </div>
                             </td>
                             <td class="col-5">${nameProduct}</td>
-                            <td class="col-3">${songPrice}</td>
+                            <td class="col-3 price_row">
+                                ${songPrice}
+                                <input type="number" class="input_quantity" name="items[${indexQuan}][price]" value="${songPrice}" min="1">
+                            </td>
                             <td class="col-1 text-center">
                                 <div>
                                     <input type="number" class="input_quantity" name="items[${indexQuan}][quantity]" value="1" min="1">
@@ -165,6 +173,28 @@ document.addEventListener("DOMContentLoaded", () => {
                             </td>`;
                             
                         tbody.appendChild(newRow);
+                        
+                        function updateTotal() {
+                            const totalPrice = document.querySelector('.lb_total_price');
+                            const productRows = tbody.querySelectorAll(".table-row-products");
+
+                            if (productRows.length === 0) {
+                                totalPrice.value = 0;
+                            }
+                            productRows.forEach(row => {
+                                const quantity = Number(row.querySelector(".input_quantity").value) || 0; 
+                                const price = Number(row.querySelector(".price_row").textContent) || 0; 
+                                total += quantity * price;
+                            });
+                            totalPrice.value = total;
+                        }
+                        updateTotal();
+                        document.querySelectorAll('.input_quantity').forEach((e) => {
+                            e.addEventListener('input', () => {
+                                updateTotal();
+                            })
+                        })
+                        
                         indexQuan ++;
                         toastr.success('Thêm sản phẩm thành công!','Message');
                     }
@@ -220,6 +250,8 @@ document.addEventListener("DOMContentLoaded", () => {
         menuUser.innerHTML = html;
         menuClick();
     }
+    renderEmployee();
+
     function renderChart(labels, data) {
         const ctx = document.getElementById("customerChart").getContext("2d");
     
@@ -255,16 +287,102 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+
     async function renderChartCount() {
         const response = await fetch(`http://localhost:4000/custumers/api/count-custumer`);
         const result = await response.json();
 
-        const labels = result.map(item => `${item._id.year}-${String(item._id.month).padStart(2, "0")}-${String(item._id.day).padStart(2, "0")}`);
+        const labels = result.map(item => 
+            `${item._id.year}-${String(item._id.month).padStart(2, "0")}-${String(item._id.day).padStart(2, "0")}`
+        );
         const data = result.map(item => item.count);
 
         renderChart(labels, data);
     }
-    renderEmployee();
+
+    function autoFillShippingAdress(){
+        const userList = document.querySelector('.user_list_js');
+        const labelPhone = document.querySelector('.lb_phone');
+        const labelAdress = document.querySelector('.lb_address');
+        const labelUserId = document.querySelector('.user_id');
+        const labelName = document.querySelector('.shipping_address_name');
+        userList.addEventListener('change', () => {
+            const id = userList.value;
+            const name =userList.options[userList.selectedIndex].getAttribute('data-name');
+            const phone =userList.options[userList.selectedIndex].getAttribute('data-phone');
+            const address =userList.options[userList.selectedIndex].getAttribute('data-address');
+ 
+            labelUserId.value = id;
+            labelName.value = name;
+            labelPhone.value = phone;
+            labelAdress.value = address;
+        })
+    }
+
+    function renderProductDiscount() {
+        let indexQuan = 0;
+        const btnAdd = document.querySelector('.btn_add_products');
+        const listSelect = document.querySelector('.list_products');
+        if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+                let isExit = false;
+                const selectedCustumer = listSelect.value;
+                const selectedNameCustumer = listSelect.options[listSelect.selectedIndex].textContent;
+                if (selectedCustumer === '--- Products ---' || selectedCustumer === '' ||selectedNameCustumer === '') {
+                    toastr.warning('Vui lòng chọn sản phẩm hợp lệ!','Message');
+                } else {
+                    const rows = document.querySelectorAll('.table_products .tbody_products .table-row-products');
+                    rows.forEach((row) => {
+                        const nameProduct = row.querySelector('td:nth-child(3)').textContent.trim();
+                        if (nameProduct === selectedNameCustumer.trim()) {
+                            isExit = true;
+                        }});
+                    if (isExit) {
+                        toastr.warning('Sản phẩm này đã có trong danh sách!','Message');
+                    } else {
+                        const thumbnail =listSelect.options[listSelect.selectedIndex].getAttribute('data-image');
+                        const nameProduct =listSelect.options[listSelect.selectedIndex].getAttribute('data-name');
+                        const songPrice =listSelect.options[listSelect.selectedIndex].getAttribute('data-price');
+                        const idProduct =listSelect.options[listSelect.selectedIndex].getAttribute('data-id');
+                        const tbody = document.querySelector('.tbody_products');
+                        const newRow = document.createElement('tr');
+                        newRow.classList.add('align-middle','table-row-products');
+                        newRow.innerHTML = `
+                            <td style="width:50px;">
+                                <input type="checkbox" name="" value="">
+                                <input type="text" name="apply_product[${indexQuan}][product_id]" value="${idProduct}" hidden>
+                            </td>
+                            <td class="col_image text-center col-2">
+                                <div class="wrapper_img_product is-center">
+                                    <a href="#" class="is-center" style="width:100%;">
+                                        <img src="${thumbnail}" alt="product">
+                                    </a>
+                                </div>
+                            </td>
+                            <td class="col-5">${nameProduct}</td>
+                            <td class="col-3 price_row">${songPrice} VND</td>`;
+                            
+                        tbody.appendChild(newRow);
+                    }
+                }
+            })
+        }
+    }
+
+    function changeTypeProduct() {
+        const listType = document.querySelector('.list_type_products');
+        const valueSelected = listType.options[listType.selectedIndex].textContent;
+        if(valueSelected === 'Specific Products'){
+            document.querySelectorAll('.discount_product')[0].classList.add('active');
+            document.querySelectorAll('.discount_product')[1].classList.remove('active');
+        }else if(valueSelected === 'Type of Products'){
+            document.querySelectorAll('.discount_product')[0].classList.remove('active');
+            document.querySelectorAll('.discount_product')[1].classList.add('active');
+        }else{
+            document.querySelectorAll('.discount_product')[0].classList.remove('active');
+            document.querySelectorAll('.discount_product')[1].classList.remove('active');
+        }
+    }
     function tabUi(){
         const currentPath = window.location.pathname;
         if(currentPath === '/'){
@@ -298,7 +416,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector('.tab-11').classList.remove('active');
             divDrop.classList.remove('click');
             document.querySelector('.login_container').style.display = 'none';
-
+            autoFillShippingAdress();
             renderCustumerTable();
         }else if(currentPath.startsWith('/users')){
             document.querySelector('.tab-1').classList.remove('active');
@@ -505,6 +623,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector('.tab-11').classList.remove('active');
             divDrop.classList.add('click');
 
+
         }else if(currentPath.startsWith('/category/discount')){
             document.querySelector('.tab-1').classList.remove('active');
             document.querySelector('.tab-2').classList.remove('active');
@@ -519,6 +638,10 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector('.tab-11').classList.remove('active');
             document.querySelector('.login_container').style.display = 'none';
             divDrop.classList.add('click');
+            renderProductDiscount();
+            document.querySelector('.list_type_products').addEventListener('change', () => {
+                changeTypeProduct();
+            })
 
         }else if(currentPath.startsWith('/category/banner')){
             document.querySelector('.tab-1').classList.remove('active');
