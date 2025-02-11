@@ -12,18 +12,40 @@ class CategoryController{
 
     /** [GET] /category/product */
     product(req, res, next) {
-        CategoryProduct.find({})
-        .then(categoryProduct => {
-            const formatType = categoryProduct.map(type => {
-                return{
-                    ...type.toObject(),
-                    lastUpdate: formatDate(type.updatedAt)
-                }
-            });
-            res.render('category/product/product', {
-                categoryProduct: formatType,
+        const searchQuery = req.query.timkiem?.trim() || '';
+        if(searchQuery) {
+            CategoryProduct.find({
+                name: { $regex: searchQuery, $options: 'i' }
             })
-        })
+            .then(searchProduct => {
+                const formatType = searchProduct.map(type => {
+                    return{
+                        ...type.toObject(),
+                        lastUpdate: formatDate(type.updatedAt)
+                    }
+                });
+                res.render('category/product/product', {
+                    searchType: true,
+                    searchProduct: formatType,
+                    searchQuery
+                })
+            })
+            .catch(next)
+        }else{
+            CategoryProduct.find({})
+            .then(categoryProduct => {
+                const formatType = categoryProduct.map(type => {
+                    return{
+                        ...type.toObject(),
+                        lastUpdate: formatDate(type.updatedAt)
+                    }
+                });
+                res.render('category/product/product', {
+                    categoryProduct: formatType,
+                    searchType: false,
+                })
+            }).catch(next)
+        }
     }
 
     /** [GET] /category/product/add */
@@ -56,6 +78,26 @@ class CategoryController{
                 categoryProduct: mongooseToObject(categoryProduct)
             })
         })
+    }
+
+    /** [PUT] /category/product/:id/edit */
+    updateProduct(req, res, next) {
+        const {name, description} = req.body;
+        const slug = createSlug(name);
+        CategoryProduct.updateOne({_id: req.params.id},{name,description,slug})
+        .then(() => {
+            res.redirect('/category/product');
+        })
+        .catch(next);
+    }
+
+    /** [DELETE] /category/product/:id/deleted*/
+    destroyProduct(req, res, next) {
+        CategoryProduct.deleteOne({_id: req.params.id})
+        .then(() => {
+            res.redirect('/category/product');
+        })
+        .catch(next);
     }
 
     /** ===== DISCOUNT ===== */

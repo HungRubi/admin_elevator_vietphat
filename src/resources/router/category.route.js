@@ -8,6 +8,8 @@ route.get('/product', categoryController.product);
 route.get('/product/:id/edit', categoryController.editProduct);
 route.get('/product/add', categoryController.addProduct);
 route.post('/product/store', categoryController.storeProduct);
+route.put('/product/:id', categoryController.updateProduct);
+route.delete('/product/:id', categoryController.destroyProduct);
 
 /** === DISCOUNT === */
 route.post('/discount/store',categoryController.storeDiscount);

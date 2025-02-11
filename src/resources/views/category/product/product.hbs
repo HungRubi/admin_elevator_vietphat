@@ -27,6 +27,26 @@
 </div>
 
 <div class="layout comments">
+    <div class="title_table is-between">
+        <div class="title">
+            <h3>List types of product</h3>
+            <p class="sub_heading">Product categories are products that have certain characteristics and functions in common</p>
+        </div>
+        <div class="search is-center">
+            <form action="/category/product" method="GET" style="width:100%; justify-content:end" class="is-center search">
+                <div class="search is-center" style="width:100%;">
+                    <div class="wrapper_search">
+                        <i class="bi bi-search"></i>
+                        <input type="text" name="timkiem" placeholder="Enter product type name to search" value="{{searchQuery}}">
+                    </div>
+                    <button type="submit" class="seleted btn">Search</button>
+                    <div class="selection">
+                        <i class="bi bi-three-dots"></i>
+                    </div>
+                </div>
+            </form>
+        </div>
+   </div>
     <table class="table table_convert">
         <thead>
             <tr>
@@ -37,33 +57,65 @@
             </tr>
         </thead>
         <tbody>
-            {{#each categoryProduct}}
-                <tr class="align-middle">
-                    <td class="column_checkbox"><input type="checkbox"></th>
-                    <td class="col-3">
-                        <span>{{this.name}}</span>
-                    </td>
-                    <td class="col-7">
-                        <p>{{this.description}}</p>
-                    </td>
-                    <td class="col_time col-2">
-                        <p>{{this.lastUpdate}}</p>
-                        <div class="layout is-center">
-                            <div class="circle">
-                                <a href="/category/product/{{this._id}}/edit">
-                                    <i class="bi bi-pencil-fill"></i>
-                                </a>
+            {{#if searchProduct}}
+                {{#each searchProduct}}
+                    <tr class="align-middle">
+                        <td class="column_checkbox"><input type="checkbox"></th>
+                        <td class="col-3">
+                            <span>{{this.name}}</span>
+                        </td>
+                        <td class="col-7">
+                            <p>{{this.description}}</p>
+                        </td>
+                        <td class="col_time col-2">
+                            <p>{{this.lastUpdate}}</p>
+                            <div class="layout is-center">
+                                <div class="circle">
+                                    <a href="/category/product/{{this._id}}/edit">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </a>
+                                </div>
+                                <div class="circle">
+                                    <a href="/category/product/{{this._id}}/deleted" data-bs-toggle="modal" data-id="{{this._id}}" data-bs-target="#delete-articles-model">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                                <div class="circle"><i class="bi bi-three-dots"></i></div>
                             </div>
-                            <div class="circle">
-                                <a href="/category/product/{{this._id}}/deleted" data-bs-toggle="modal" data-id="{{this._id}}" data-bs-target="#delete-articles-model">
-                                    <i class="bi bi-trash"></i>
-                                </a>
+                        </td>
+                    </tr>
+                    {{else}}
+                        <tr><td colspan="4">⚠ Không tìm thấy kết quả nào!</td></tr>
+                {{/each}}
+            {{else}}
+                {{#each categoryProduct}}
+                    <tr class="align-middle">
+                        <td class="column_checkbox"><input type="checkbox"></th>
+                        <td class="col-3">
+                            <span>{{this.name}}</span>
+                        </td>
+                        <td class="col-7">
+                            <p>{{this.description}}</p>
+                        </td>
+                        <td class="col_time col-2">
+                            <p>{{this.lastUpdate}}</p>
+                            <div class="layout is-center">
+                                <div class="circle">
+                                    <a href="/category/product/{{this._id}}/edit">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </a>
+                                </div>
+                                <div class="circle">
+                                    <a href="/category/product/{{this._id}}/deleted" data-bs-toggle="modal" data-id="{{this._id}}" data-bs-target="#delete-articles-model">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                                <div class="circle"><i class="bi bi-three-dots"></i></div>
                             </div>
-                            <div class="circle"><i class="bi bi-three-dots"></i></div>
-                        </div>
-                    </td>
-                </tr>
-            {{/each}}
+                        </td>
+                    </tr>
+                {{/each}}
+            {{/if}}
         </tbody>
     </table>
 </div>
