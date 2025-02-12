@@ -13,13 +13,18 @@ const products = new Schema(
         thumbnail_2: { type: String, required: true },
         thumbnail_3: { type: String, required: true },
         unit: { type: String, required: true },
+        sale: {type: Number, default: 0},
         discount: {
             type: mongoose.Schema.Types.ObjectId, 
             ref: 'discount', 
             required: true 
         },
         minimum: {type: Number, index: true, default: 10},
-        category: {type: String, enum:['cop','dien','inox','thep'], require:true},
+        category: {
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'categoryproducts', 
+            require:true
+        },
     },
     {
         timestamps: true,

@@ -5,6 +5,8 @@ const categoryController = require('../app/controller/category.controller');
 
 /** === PRODUCT === */
 route.get('/product', categoryController.product);
+route.get('/product/all', categoryController.getCategoryProduct);
+route.get('/product/:slug', categoryController.getCategoryProduct);
 route.get('/product/:id/edit', categoryController.editProduct);
 route.get('/product/add', categoryController.addProduct);
 route.post('/product/store', categoryController.storeProduct);

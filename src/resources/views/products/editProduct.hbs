@@ -28,12 +28,26 @@
                         <textarea class="form-control mt-2 mb-3" name="description" rows="15" placeholder="Description...">{{product.description}}</textarea>
                     </div>
                     <div class="form-group mt-3">
+                        <label>Product Discount</label>
+                        <select class="form-select mt-2" aria-label="Default select example" name="sale" >
+                            <option selected>{{product.sale}}</option>
+                            <option value="0">0%</option>
+                            <option value="0">5%</option>
+                            <option value="0">10%</option>
+                            <option value="0">15%</option>
+                            <option value="0">20%</option>
+                            <option value="0">25%</option>
+                            <option value="0">30%</option>
+                            <option value="0">35%</option>
+                        </select>    
+                    </div>
+                    <div class="form-group mt-3">
                         <label>Price</label>
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
                                 <span class="input-group-text" id="basic-addon1">VND</span>
                             </div>
-                            <input type="number" class="form-control" placeholder="Price product..." aria-label="Username" aria-describedby="basic-addon1" min="0" value="{{product.price}}">
+                            <input type="number" class="form-control" placeholder="Price product..." name="price" min="0" value="{{product.price}}">
                         </div>
                     </div>
                 </div>
@@ -61,11 +75,10 @@
                     <div class="form-group mt-3">
                         <label>Loại</label>
                         <select class="form-select mt-2" aria-label="Default select example" name="category">
-                            <option selected>{{product.category}}</option>
-                            <option value="cop">COP-LOP</option>
-                            <option value="dien">Linh kiện điện</option>
-                            <option value="inox">Linh kiện inox</option>
-                            <option value="thep">Linh kiện thép</option>
+                            <option selected value="{{categoryName._id}}">{{categoryName.name}}</option>
+                            {{#each categoryPro}}
+                                <option value="{{this._id}}">{{this.name}}</option>
+                            {{/each}}
                         </select>
                     </div>
                     <div class="input-group mb-3 mt-3" style="width:100%;">

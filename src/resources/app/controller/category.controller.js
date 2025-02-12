@@ -100,6 +100,33 @@ class CategoryController{
         .catch(next);
     }
 
+    /** [GET] /category/product/all */
+    getCategoryProduct(req, res, next) {
+        CategoryProduct.find()
+        .then(category => {
+            res.json(category)
+        })
+        .catch(next)
+    }
+
+    /** [GET] /category/product/:slug */
+    async getProductCategory(req, res, next){
+        try {
+            const { slug } = req.params; 
+    
+            const category = await CategoryProduct.findOne({ slug });
+    
+            if (!category) {
+                return res.status(404).json({ message: "Không tìm thấy danh mục" });
+            }
+    
+            const products = await Product.find({ category: category._id });
+    
+            res.json(products);
+        } catch (error) {
+            next(error);
+        }
+    }
     /** ===== DISCOUNT ===== */
 
     /** [GET] /category/discount */
