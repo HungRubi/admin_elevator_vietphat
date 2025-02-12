@@ -115,7 +115,6 @@ class CategoryController{
             const { slug } = req.params; 
     
             const category = await CategoryProduct.findOne({ slug });
-    
             if (!category) {
                 return res.status(404).json({ message: "Không tìm thấy danh mục" });
             }
