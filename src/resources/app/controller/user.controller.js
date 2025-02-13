@@ -2,7 +2,10 @@ const User = require('../model/user.model');
 const { mutipleMongooseoObject } = require('../../util/mongoose.util');
 const { formatDate } = require('../../util/formatDate.util')
 const { mongooseToObject } = require('../../util/mongoose.util')
-const { importDate } = require('../../util/importDate.util'); 
+const { importDate } = require('../../util/importDate.util');
+const moment = require('moment');
+const mongoose = require('mongoose');
+const Product = require('../model/products.model');
 class UserController {
     
     /** [GET] /users */
@@ -84,7 +87,7 @@ class UserController {
                 if (user.account === req.body.account) {
                     delete req.body.account;
                 }
-                return user.updateOne({ _id: req.params.id }, req.body);
+                return User.updateOne({ _id: req.params.id }, { $set: req.body });
             })
             .then(() => {
                 res.redirect('/users')
@@ -101,6 +104,59 @@ class UserController {
         .catch(error => {
             next(error);
         });
+    }
+
+    /** [GET] /user/api/count */
+    getCustomersLast7Days = async (req, res) => {
+        try {
+            const sevenDaysAgo = moment().subtract(7, "days").startOf("day").toDate();
+            const today = moment().endOf("day").toDate();
+    
+            const customers = await User.aggregate([
+                {
+                    $match: {
+                        createdAt: { $gte: sevenDaysAgo, $lte: today } 
+                    }
+                },
+                {
+                    $group: {
+                        _id: { 
+                            year: { $year: "$createdAt" },
+                            month: { $month: "$createdAt" },
+                            day: { $dayOfMonth: "$createdAt" }
+                        },
+                        count: { $sum: 1 } 
+                    }
+                },
+                {
+                    $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 }// 1 tăng, -1 là giảm
+                } 
+            ]);
+            res.json(customers);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "Lỗi server" });
+        }
+    }
+    
+    /** [GET] /users/cart/:id */
+    async getCart(req, res, next) {
+        try{
+            const userId = req.params.id;
+            if (!mongoose.Types.ObjectId.isValid(userId)) {
+                return res.status(400).json({ error: "User không hợp lệ" });
+            }
+            const user = await User.findById(userId);
+
+            const products = await Product.find({});
+
+            res.render('user/cartUser', {
+                user: mongooseToObject(user),
+                products: mutipleMongooseoObject(products)
+            })
+        }catch(err){
+            next(err);
+        }
     }
 }
 

@@ -1,0 +1,61 @@
+<div class="heading_page">
+    <h5>
+        <a href="/">Dashboard</a><i class="bi bi-chevron-right"></i>
+        <a href="/users">Users</a><i class="bi bi-chevron-right"></i>
+        {{user.name}}<i class="bi bi-chevron-right"></i>Cart
+    </h5>
+    <h2>Cart</h2>
+    <div class="option_table is-between" style="width:40%; gap:20px;">
+        <select class="form-select list_product_cart">
+            <option>--- Thêm sản phẩm vào giỏ hàng ---</option>
+            {{#each products}}
+                <option value="{{this._id}}" 
+                data-img="{{this.thumbnail_main}}"
+                data-name="{{this.name}}"
+                data-price="{{this.price}}"
+                data-id="{{this._id}}">
+                    {{this.name}}
+                </option>
+            {{/each}}
+        </select>
+        <button class="btn btn-primary add_products_cart">Thêm</button>
+    </div>
+</div>
+
+<div class="layout comments">
+    <div class="title_table is-between">
+        <div class="title">
+            <h3>Cart list</h3>
+            <p class="sub_heading">Products of my cart on the website</p>
+        </div>
+        <div class="search is-center">
+            <div class="wrapper_search">
+                <i class="bi bi-search"></i>
+                <input type="text">
+            </div>
+            <div class="seleted">All Users</div>
+            <div class="selection">
+                <i class="bi bi-three-dots"></i>
+            </div>
+        </div>
+    </div>
+    <table class="table table_convert table_my_cart">
+        <thead>
+            <tr>
+                <th scope="col" class="column_checkbox"><input type="checkbox" name="" id=""></th>
+                <th scope="col" class="col_image"></th>
+                <th scope="col">Product <i class="bi bi-chevron-expand"></i></th>
+                <th scope="col">Type <i class="bi bi-chevron-expand"></i></th>
+                <th scope="col" style="padding-left:40px" class="col_status">Price<i class="bi bi-chevron-expand"></i></th>
+                <th scope="col">Quatity <i class="bi bi-chevron-expand"></i></th>
+                <th scope="col">Total <i class="bi bi-chevron-expand"></i></th>
+            </tr>
+        </thead>
+        <tbody id="table_body">
+        </tbody>
+    </table>
+    <div class="total_price w-100 is-between">
+        <h5>Thành tiền: <span class="total_amount">0 VNĐ</span></h5>
+        <input type="text" hidden name="total" value="0" class="input_total_amount">
+    </div>
+</div>

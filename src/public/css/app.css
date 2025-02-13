@@ -952,4 +952,129 @@ header .user .circle i {
   font-size: 20px;
 }
 
+.detail_btn:hover .menu_model_user {
+  display: block;
+}
+
+.menu_model_user {
+  border: 1px solid var(--border-div);
+  width: 200px;
+  background-color: white;
+  position: absolute;
+  bottom: 120%;
+  border-radius: 2px;
+  box-shadow: rgba(0, 0, 0, 0.075) 0px 0.125rem 0.25rem;
+  right: 0;
+  display: none;
+}
+.menu_model_user .view_user {
+  color: var(--text-color);
+  text-align: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-div);
+  line-height: 10px;
+}
+.menu_model_user .view_user h5 {
+  font-size: 16px;
+  margin-bottom: 0 !important;
+}
+.menu_model_user ul {
+  width: 100%;
+  padding: 10px 0 !important;
+}
+.menu_model_user ul li {
+  width: 100%;
+}
+.menu_model_user ul li a {
+  width: 100%;
+  padding: 7px 15px;
+  color: var(--text-color);
+  font-size: 15px;
+  display: flex;
+  align-items: start;
+  align-items: center;
+}
+.menu_model_user ul li a i {
+  margin-right: 10px;
+  font-size: 17px;
+  color: var(--text-color) !important;
+  z-index: 10;
+}
+.menu_model_user ul li:hover {
+  background-color: var(--hover-bg);
+  transition: 0.3s linear;
+}
+
+.col_cart {
+  width: 100%;
+  text-align: center;
+}
+.col_cart button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border-div);
+  background: none;
+  font-size: 18px;
+}
+.col_cart input {
+  width: 50px;
+  height: 30px;
+  border: 1px solid var(--border-div);
+  border-left: none;
+  border-right: none;
+  text-align: center;
+  border-radius: unset !important;
+  padding: 0 !important;
+  text-align: center;
+}
+.col_cart span i {
+  color: var(--color-main);
+  cursor: pointer;
+}
+
+.menu_model_user::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  width: 0.8rem;
+  height: 0.8rem;
+  bottom: -7px;
+  right: 1.05rem;
+  transform: rotate(45deg);
+  border-top-left-radius: 0.25rem;
+  background: inherit;
+  border-bottom: 1px solid var(--border-div);
+  border-right: 1px solid var(--border-div);
+}
+
+.model {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 50%;
+  left: 50%;
+  width: 400px;
+  height: 400px;
+  transform: translate(-50%, -50%);
+  z-index: 1000000000000000000000000000000000000000000000000;
+  background: var(--bg-div);
+  border: 1px solid var(--border-div);
+  border-radius: 4px;
+  padding: 20px;
+}
+
+.total_price {
+  padding-bottom: 20px;
+}
+.total_price h5 {
+  color: var(--text-color);
+  font-size: 16px;
+  margin: 0 !important;
+}
+.total_price h5 .total_amount {
+  font-size: 18px;
+  color: #f56025;
+}
+
 /*# sourceMappingURL=app.css.map */

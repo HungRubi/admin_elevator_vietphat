@@ -98,7 +98,34 @@
                                     <i class="bi bi-trash"></i>
                                 </a>
                             </div>
-                            <div class="circle"><i class="bi bi-three-dots"></i></div>
+                            <div class="circle detail_btn" style="position: relative;overflow: unset;">
+                                <i class="bi bi-three-dots"></i>
+                                <div class="menu_model_user">
+                                    <div class="view_user">
+                                        <h5>View detail</h5>
+                                    </div>
+                                    <ul>
+                                        <li>
+                                            <a href="/users/cart/{{this._id}}">
+                                                <i class="bi bi-cart"></i>
+                                                Cart
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="/users/comment/{{this._id}}">
+                                                <i class="bi bi-chat-square-dots"></i>
+                                                Comments
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="/users/comment/{{this._id}}">
+                                                <i class="bi bi-box"></i>
+                                                Orders
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                     </td>
                 </tr>
