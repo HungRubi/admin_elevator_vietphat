@@ -6,6 +6,7 @@ const { importDate } = require('../../util/importDate.util');
 const moment = require('moment');
 const mongoose = require('mongoose');
 const Product = require('../model/products.model');
+const Cart = require('../model/cart.model');
 class UserController {
     
     /** [GET] /users */
@@ -158,6 +159,30 @@ class UserController {
             next(err);
         }
     }
+
+    /** [POST] /users/cart/:id/store */
+    async storeCart(req, res, next) {
+        try {
+            const { userId, items, totalPrice } = req.body;
+            let cart = await Cart.findOne({ userId });
+            if (cart) {
+                cart.items = items; 
+                cart.totalPrice = totalPrice;
+                await cart.save();
+            } else {
+                cart = new Cart({
+                    userId,
+                    items,
+                    totalPrice
+                });
+                await cart.save();
+            }
+            res.redirect('/users');
+        } catch (err) {
+            next(err);
+        }
+    }
+    
 }
 
 module.exports = new UserController();

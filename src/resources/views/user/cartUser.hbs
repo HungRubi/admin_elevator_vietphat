@@ -23,39 +23,43 @@
 </div>
 
 <div class="layout comments">
-    <div class="title_table is-between">
-        <div class="title">
-            <h3>Cart list</h3>
-            <p class="sub_heading">Products of my cart on the website</p>
-        </div>
-        <div class="search is-center">
-            <div class="wrapper_search">
-                <i class="bi bi-search"></i>
-                <input type="text">
+    <form action="/users/cart/{{user._id}}/store" method="post">
+        <div class="title_table is-between">
+            <div class="title">
+                <h3>Cart list</h3>
+                <p class="sub_heading">Products of my cart on the website</p>
             </div>
-            <div class="seleted">All Users</div>
-            <div class="selection">
-                <i class="bi bi-three-dots"></i>
+            <div class="search is-center">
+                <div class="wrapper_search">
+                    <i class="bi bi-search"></i>
+                    <input type="text">
+                </div>
+                <div class="seleted">All Users</div>
+                <div class="selection">
+                    <i class="bi bi-three-dots"></i>
+                </div>
             </div>
         </div>
-    </div>
-    <table class="table table_convert table_my_cart">
-        <thead>
-            <tr>
-                <th scope="col" class="column_checkbox"><input type="checkbox" name="" id=""></th>
-                <th scope="col" class="col_image"></th>
-                <th scope="col">Product <i class="bi bi-chevron-expand"></i></th>
-                <th scope="col">Type <i class="bi bi-chevron-expand"></i></th>
-                <th scope="col" style="padding-left:40px" class="col_status">Price<i class="bi bi-chevron-expand"></i></th>
-                <th scope="col">Quatity <i class="bi bi-chevron-expand"></i></th>
-                <th scope="col">Total <i class="bi bi-chevron-expand"></i></th>
-            </tr>
-        </thead>
-        <tbody id="table_body">
-        </tbody>
-    </table>
-    <div class="total_price w-100 is-between">
-        <h5>Thành tiền: <span class="total_amount">0 VNĐ</span></h5>
-        <input type="text" hidden name="total" value="0" class="input_total_amount">
-    </div>
+        <table class="table table_convert table_my_cart">
+            <thead>
+                <tr>
+                    <th scope="col" class="column_checkbox"><input type="checkbox" name="" id=""></th>
+                    <th scope="col" class="col_image"></th>
+                    <th scope="col">Product <i class="bi bi-chevron-expand"></i></th>
+                    <th scope="col">Type <i class="bi bi-chevron-expand"></i></th>
+                    <th scope="col" style="padding-left:40px" class="col_status">Price<i class="bi bi-chevron-expand"></i></th>
+                    <th scope="col">Quatity <i class="bi bi-chevron-expand"></i></th>
+                    <th scope="col">Total <i class="bi bi-chevron-expand"></i></th>
+                </tr>
+            </thead>
+            <tbody id="table_body">
+            </tbody>
+        </table>
+        <div class="total_price w-100 is-between">
+            <h5>Thành tiền: <span class="total_amount">0 VNĐ</span></h5>
+            <input type="text" hidden name="totalPrice" value="0" class="input_total_amount">
+            <input type="text" hidden name="userId" value="{{user._id}}">
+            <button type="submit" class="btn btn-primary">Save cart</button>
+        </div>
+    </form>
 </div>

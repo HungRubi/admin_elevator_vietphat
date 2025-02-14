@@ -369,14 +369,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
     let sum = 0;
-    function changeSum() {
-        const totalPrice = document.querySelectorAll('.total_row_cart'); // Tổng tiền của từng sản phẩm
-        totalPrice.forEach((total) => {
-            let priceText = total.textContent || total.innerText; // Lấy nội dung text của phần tử
-            let priceNumber = parseFloat(priceText.replace(/[^0-9.-]+/g, '')); // Lọc lấy số từ VNĐ
-            sum += isNaN(priceNumber) ? 0 : priceNumber; // Kiểm tra nếu NaN thì gán 0
-        });
-    }
     function changeValueInput() {
         const btnDiscount = document.querySelectorAll('.discount_btn');
         const btnEncrease = document.querySelectorAll('.encrease_btn');
@@ -392,9 +384,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         function updateTotalAmount() {
             const totalAmount = document.querySelector('.total_amount');
+            let sum = 0
             inputCount.forEach((input, index) => {
-                let priceItem = Number(price[index].textContent.replace(/\D/g, '')); // Lấy giá & loại bỏ ký tự không phải số
-                sum += priceItem; // Tính tổng tiền
+                let quantity = parseInt(input.value);
+                let priceItem = Number(price[index].textContent.replace(/\D/g, ''));
+                let total = quantity * priceItem;
+                sum += total; // Tính tổng tiền
             });
         
             totalAmount.innerHTML = sum.toLocaleString() + ' VNĐ';
@@ -434,6 +429,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateTotalAmount();
     }
     function renderProductMyCart() {
+        let indexCart = 0;
         const btnAdd = document.querySelector('.add_products_cart');
         const listSelect = document.querySelector('.list_product_cart');
         if (btnAdd) {
@@ -468,7 +464,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     <a href="#" class="is-center" style="width:100%;">
                                         <img src="${thumbnail}" alt="">
                                     </a>
-                                    <input type="text" name="productId[]" value="${idProduct}" hidden>
+                                    <input type="text" name="items[${indexCart}][productId]" value="${idProduct}" hidden>
                                 </div>
                             </td>
                             <td style="color: rgb(56, 116, 255);" class="col-2"><span>${nameProduct}</span></td>
@@ -477,12 +473,16 @@ document.addEventListener("DOMContentLoaded", () => {
                             <td class="col-2">
                                 <div class="col_cart is-center" style="justify-content: start;">
                                     <button class="btn_number discount_btn is-center">-</button>
-                                    <input type="text" value="1" class="input_count">
+                                    <input type="text" value="1" class="input_count" name="item[${indexCart}][quantity]">
                                     <button class="btn_number encrease_btn is-center">+</button>
                                 </div>
                             </td>
-                            <td class="col-2"><p class="total_row_cart"> ${songPrice} VNĐ</p></td>`;
+                            <td class="col-2"><p class="total_row_cart"> ${songPrice} VNĐ <input type="text" hidden name="price"></p></td>`;
+                        const totalAmount = document.querySelector('.total_amount');
+                        
+                        document.querySelector('.input_total_amount').value = totalAmount.textContent;
                         tbody.appendChild(newRow);
+                        indexCart++;
                         changeValueInput();
                     }
                 }
