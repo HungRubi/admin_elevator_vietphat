@@ -1,94 +1,221 @@
 <div class="heading_page">
-    <h5>Dashboard <i class="bi bi-chevron-right"></i> articles</h5>
-    <h2>articles</h2>
+    <h5><a href="/">Dashboard</a> 
+        <i class="bi bi-chevron-right"></i> 
+        Articles
+    </h5>
+    <h2>Articles</h2>
     <div class="option_table is-between">
-        <div class="search">
-            <div class="wrapper_search">
-                <i class="bi bi-search"></i>
-                <input type="text" placeholder="search article">
-            </div>
-        </div>
         <div class="is-between search_right">
-            <div class="export_btn">
-                <i class="bi bi-file-earmark-arrow-down-fill"></i>
-                Export
-            </div>
             <div>
                 <a href="/articles/add" class="btn btn-primary">
                     <i class="bi bi-plus-lg"></i> Add articles
                 </a>
+            </div>
+            <div class="export_btn">
+                <i class="bi bi-file-earmark-arrow-down-fill"></i>
+                Export
             </div>
         </div>
     </div>
 </div>
 
 <div class="layout comments">
+    <div class="title_table is-between">
+        <div class="title d-flex align-items-center">
+        <h3>Article list <br>
+            <span class="sub_heading">List of all articles on the website</span>
+        </h3>
+        </div>
+        <div class="search is-center">
+        <div class="wrapper_search">
+            <form action="/articles">
+                <button type="submit" class="btn_position is-center"><i class="bi bi-search"></i></button>
+                <input type="text" name="timkiem" placeholder="Enter article name to search">
+            </form>
+        </div>
+        <div class="seleted">All articles</div>
+        <div class="selection">
+            <i class="bi bi-three-dots"></i>
+        </div>
+        </div>
+    </div>
     <table class="table table_convert">
         <thead>
             <tr>
                 <th scope="col" class="column_checkbox"><input type="checkbox" name="" id=""></th>
                 <th scope="col"></th>
-                <th scope="col" class="col-2 ps-5">Subject <i class="bi bi-chevron-expand"></i></th>
-                <th scope="col"> Author<i class="bi bi-chevron-expand"></i></th>
-                <th scope="col"> Content<i class="bi bi-chevron-expand"></i></th>
-                <th scope="col" class="col_status">Status <i class="bi bi-chevron-expand"></i></th>
-                <th scope="col" class="col_time">Last Login <i class="bi bi-chevron-expand"></i></th>
+                <th scope="col" class="col-2 ps-5">
+                    Subject 
+                    <a href="?sort=subject&order={{#if (and (eq currentSort 'subject') (eq currentOrder 'asc'))}}desc{{else}}asc{{/if}}">
+                        <i class="bi {{#if (eq currentSort 'subject')}}{{#if (eq currentOrder 'asc')}}bi-caret-up-fill{{else}}bi-caret-down-fill{{/if}}{{else}}bi-chevron-expand{{/if}}" 
+                        style="font-size:12px; color:#000;">
+                        </i>
+                    </a>
+                </th>
+                <th scope="col">
+                    Author
+                    <a href="?sort=author&order={{#if (and (eq currentSort 'author') (eq currentOrder 'asc'))}}desc{{else}}asc{{/if}}">
+                        <i class="bi {{#if (eq currentSort 'author')}}{{#if (eq currentOrder 'asc')}}bi-caret-up-fill{{else}}bi-caret-down-fill{{/if}}{{else}}bi-chevron-expand{{/if}}" 
+                        style="font-size:12px; color:#000;">
+                        </i>
+                    </a>
+                </th>
+                <th scope="col">Content</th>
+                <th scope="col" class="col_status">
+                    Status 
+                    <a href="?sort=status&order={{#if (and (eq currentSort 'status') (eq currentOrder 'asc'))}}desc{{else}}asc{{/if}}">
+                        <i class="bi {{#if (eq currentSort 'status')}}{{#if (eq currentOrder 'asc')}}bi-caret-up-fill{{else}}bi-caret-down-fill{{/if}}{{else}}bi-chevron-expand{{/if}}" 
+                        style="font-size:12px; color:#000;">
+                        </i>
+                    </a>
+                </th>
+                <th scope="col" class="col_time">
+                    Last Update 
+                    <a href="?sort=updatedAt&order={{#if (and (eq currentSort 'updatedAt') (eq currentOrder 'asc'))}}desc{{else}}asc{{/if}}">
+                        <i class="bi {{#if (eq currentSort 'updatedAt')}}{{#if (eq currentOrder 'asc')}}bi-caret-up-fill{{else}}bi-caret-down-fill{{/if}}{{else}}bi-chevron-expand{{/if}}" 
+                        style="font-size:12px; color:#000;">
+                        </i>
+                    </a>
+                </th>
             </tr>
         </thead>
         <tbody>
-            {{#each articles}}
-                <tr class="align-middle">
-                    <td class="column_checkbox"><input type="checkbox" name="" id=""></th>
-                    <td class="col_image text-center">
-                        <div class="wrapper_img_product is-center">
-                            <a href="#" class="is-center" style="width:100%;">
-                                <img src="{{this.thumbnail}}" alt="">
-                            </a>
-                        </div>
-                    </td>
-                    <td class="col-2 ps-5">
-                        <span>{{this.subject}}</span>
-                    </td>
-                    <td class="col-1">
-                        <p>{{this.author}}</p>
-                    </td>
-                    <td class="col-4">
-                        <p>{{this.content}}</p>
-                    </td>
-                    <td class="col_status col-1">
-                        {{#if (eq this.status 'public')}}
-                            <div class="status_comment status_comment is-center">
-                                Public
-                                <i class="bi bi-check2" ></i>
-                            </div>
-                        {{/if}}
-                        {{#if (eq this.status 'hide')}}
-                            <div class="status_comment status_comment_pending is-center">
-                                Hide
-                                <i class="bi bi-hourglass-split ms-2"></i>
-                            </div>
-                        {{/if}}
-                    </td>
-                    <td class="col_time col-2">
-                        <p>{{this.formatedDate}}</p>
-                        <div class="layout is-center">
-                            <div class="circle">
-                                <a href="/articles/{{this._id}}/edit">
-                                    <i class="bi bi-pencil-fill"></i>
+            {{#if searchType}}
+                {{#each searchArticle}}
+                    <tr class="align-middle">
+                        <td class="column_checkbox"><input type="checkbox" name="" id=""></th>
+                        <td class="col_image text-center">
+                            <div class="wrapper_img_product is-center">
+                                <a href="#" class="is-center" style="width:100%;">
+                                    <img src="{{this.thumbnail}}" alt="">
                                 </a>
                             </div>
-                            <div class="circle">
-                                <a href="/articles/{{this._id}}/deleted" data-bs-toggle="modal" data-id="{{this._id}}" data-bs-target="#delete-articles-model">
-                                    <i class="bi bi-trash"></i>
+                        </td>
+                        <td class="col-2 ps-5">
+                            <span>{{this.subject}}</span>
+                        </td>
+                        <td class="col-1">
+                            <p>{{this.author}}</p>
+                        </td>
+                        <td class="col-4">
+                            <p>{{this.content}}</p>
+                        </td>
+                        <td class="col_status col-1">
+                            {{#if (eq this.status 'public')}}
+                                <div class="status_comment status_comment is-center">
+                                    Public
+                                    <i class="bi bi-check2" ></i>
+                                </div>
+                            {{/if}}
+                            {{#if (eq this.status 'hide')}}
+                                <div class="status_comment status_comment_pending is-center">
+                                    Hide
+                                    <i class="bi bi-hourglass-split ms-2"></i>
+                                </div>
+                            {{/if}}
+                        </td>
+                        <td class="col_time col-2">
+                            <p>{{this.lastUpdate}}</p>
+                            <div class="layout is-center">
+                                <div class="circle">
+                                    <a href="/articles/{{this._id}}/edit">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </a>
+                                </div>
+                                <div class="circle">
+                                    <a href="/articles/{{this._id}}/deleted" data-bs-toggle="modal" data-id="{{this._id}}" data-bs-target="#delete-articles-model">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                                <div class="circle"><i class="bi bi-three-dots"></i></div>
+                            </div>
+                        </td>
+                    </tr>
+                {{/each}}
+            {{else}}
+                {{#each formatArticleMain}}
+                    <tr class="align-middle">
+                        <td class="column_checkbox"><input type="checkbox" name="" id=""></th>
+                        <td class="col_image text-center">
+                            <div class="wrapper_img_product is-center">
+                                <a href="#" class="is-center" style="width:100%;">
+                                    <img src="{{this.thumbnail}}" alt="">
                                 </a>
                             </div>
-                            <div class="circle"><i class="bi bi-three-dots"></i></div>
-                        </div>
-                    </td>
-                </tr>
-            {{/each}}
+                        </td>
+                        <td class="col-2 ps-5">
+                            <span>{{this.subject}}</span>
+                        </td>
+                        <td class="col-1">
+                            <p>{{this.author}}</p>
+                        </td>
+                        <td class="col-4">
+                            <p>{{this.content}}</p>
+                        </td>
+                        <td class="col_status col-1">
+                            {{#if (eq this.status 'public')}}
+                                <div class="status_comment status_comment is-center">
+                                    Public
+                                    <i class="bi bi-check2" ></i>
+                                </div>
+                            {{/if}}
+                            {{#if (eq this.status 'hide')}}
+                                <div class="status_comment status_comment_pending is-center">
+                                    Hide
+                                    <i class="bi bi-hourglass-split ms-2"></i>
+                                </div>
+                            {{/if}}
+                        </td>
+                        <td class="col_time col-2">
+                            <p>{{this.dateFormat}}</p>
+                            <div class="layout is-center">
+                                <div class="circle">
+                                    <a href="/articles/{{this._id}}/edit">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </a>
+                                </div>
+                                <div class="circle">
+                                    <a href="/articles/{{this._id}}/deleted" data-bs-toggle="modal" data-id="{{this._id}}" data-bs-target="#delete-articles-model">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                                <div class="circle"><i class="bi bi-three-dots"></i></div>
+                            </div>
+                        </td>
+                    </tr>
+                {{/each}}
+            {{/if}}
         </tbody>
     </table>
+    <div class="page_bar is-center">
+        {{#if (gt currentPage 1)}}
+        <button class="next previous">
+            <a href="?page={{subtract currentPage 1}}" style="color:#292828;">
+                <i class="bi bi-chevron-left"></i>
+                Previous
+            </a>
+        </button>
+        {{/if}}
+        {{#each (range 1 totalPage)}}
+        {{#if (eq this ../currentPage)}}
+            <button class="number_page active">
+            <a href="?page={{this}}">{{this}}</a>
+            </button>
+        {{else}}
+            <button class="number_page">
+            <a style="color:#292828;" href="?page={{this}}">{{this}}</a>
+            </button>
+        {{/if}}
+        {{/each}}
+        {{#if (gt currentPage 1)}}
+        <button class="next previous">
+            <a href="?page={{add currentPage 1}}" style="color:#292828;">
+                Next
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </button>
+        {{/if}}
+    </div>
 </div>
 
 <form method="POST" name="delete-articles-form"></form>

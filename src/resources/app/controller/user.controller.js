@@ -10,20 +10,56 @@ const Cart = require('../model/cart.model');
 class UserController {
     
     /** [GET] /users */
-    index(req, res, next) {
-        User.find()
-        .then(user => {
-            const formatUser = user.map(u => {
-                return{
-                    ...u.toObject(),
-                    formatedDate: formatDate(u.lastLogin),
-                    formatedBirth: formatDate(u.birth),
-                }
-            })
+    async index(req, res, next) {
+        let page = parseInt(req.query.page) || 1;
+        let limit = 10;
+        let skip = (page - 1) * limit;
+        let sortField = req.query.sort || 'name'; 
+        let sortOrder = req.query.order === 'desc' ? -1 : 1;
+        try{
+            const searchQuery = req.query.timkiem?.trim() || '';
+            if(searchQuery){
+                const users = await User.find({
+                        name: { $regex: searchQuery, $options: 'i' }
+                }).sort({ [sortField]: sortOrder }).lean();
+                const userFormart = users.map(user => ({
+                    ...user,
+                    birthFormat: formatDate(user.birth),
+                    lastLoginFormat: formatDate(user.lastLogin),
+                }));
+                return res.render('user/user', {
+                    searchType: true,
+                    searchUser: userFormart,
+                    currentSort: sortField,
+                    currentOrder: sortOrder === 1 ? 'asc' : 'desc',
+                })
+            }
+            const users = await User.find()
+                .skip(skip)
+                .limit(limit)
+                .sort({ [sortField]: sortOrder }) // Sắp xếp sản phẩm
+                .lean();
+    
+            const formatUser = users.map(user => ({
+                ...user,
+                birthFormat: formatDate(user.birth),
+                lastLoginFormat: formatDate(user.lastLogin),
+            }));
+    
+            const totalUser = await User.countDocuments();
+            const totalPage = Math.ceil(totalUser / limit);
+    
             res.render('user/user', {
-                user: formatUser,
+                formatUser,
+                currentPage: page,
+                totalPage,
+                searchType: false,
+                currentSort: sortField,
+                currentOrder: sortOrder === 1 ? 'asc' : 'desc'
             });
-        })
+        }catch(err){
+            next(err)
+        }
     }
  
     /** [GET] /users/add */
@@ -70,7 +106,6 @@ class UserController {
             const formatBirth = {
                     ...user.toObject(),
                     birthFormated: importDate(user.birth)
-                
             }
             res.render('user/editUser', {
                 user: formatBirth
@@ -142,16 +177,69 @@ class UserController {
     
     /** [GET] /users/cart/:id */
     async getCart(req, res, next) {
-        try{
+        try {
             const userId = req.params.id;
+    
             if (!mongoose.Types.ObjectId.isValid(userId)) {
                 return res.status(400).json({ error: "User không hợp lệ" });
             }
+    
+            const user = await User.findById(userId);
+            if (!user) {
+                return res.status(404).json({ error: "User không tồn tại" });
+            }
+    
+            const products = await Product.find({});
+    
+            const cart = await Cart.findOne({ userId });
+    
+            if (!cart) {
+                return res.render('user/cartUser', {
+                    cart: null,
+                    itemsWithProductDetails: [],
+                    user: user.toObject(),
+                    products: mutipleMongooseoObject(products)
+                });
+            }
+    
+            const itemsWithProductDetails = await Promise.all(cart.items.map(async (item) => {
+                const product = await Product.findById(item.productId);
+                return {
+                    productId: item.productId,
+                    name: product ? product.name : "Sản phẩm không tồn tại",
+                    img: product ? product.thumbnail_main : "/images/default.jpg",
+                    price: product ? product.price : 0,
+                    quantity: item.quantity
+                };
+            }));
+    
+            res.render('user/cartUser', {
+                cart: cart.toObject(),
+                itemsWithProductDetails, 
+                user: user.toObject(),
+                products: mutipleMongooseoObject(products)
+            });
+    
+        } catch (err) {
+            console.error("Lỗi khi lấy giỏ hàng:", err);
+            next(err);
+        }
+    }
+
+    /** [GET] /users/cart/:id/add */
+    async addCartUser(req, res, next) {
+        try{
+            const userId = req.params.id;
+
+            if (!mongoose.Types.ObjectId.isValid(userId)) {
+                return res.status(400).json({ error: "User không hợp lệ" });
+            }
+
             const user = await User.findById(userId);
 
-            const products = await Product.find({});
+            const products = await Product.find();
 
-            res.render('user/cartUser', {
+            res.render('user/cartUserAdd', {
                 user: mongooseToObject(user),
                 products: mutipleMongooseoObject(products)
             })
@@ -163,26 +251,76 @@ class UserController {
     /** [POST] /users/cart/:id/store */
     async storeCart(req, res, next) {
         try {
-            const { userId, items, totalPrice } = req.body;
-            let cart = await Cart.findOne({ userId });
-            if (cart) {
-                cart.items = items; 
-                cart.totalPrice = totalPrice;
-                await cart.save();
-            } else {
-                cart = new Cart({
-                    userId,
-                    items,
-                    totalPrice
-                });
-                await cart.save();
+            let { userId, items } = req.body;
+
+            if (!userId || !Array.isArray(items) || items.length === 0) {
+                return res.status(400).json({ error: "Dữ liệu không hợp lệ." });
             }
-            res.redirect('/users');
+
+            items = items.map((item, index) => ({
+                productId: item.productId ? item.productId.trim() : null,
+                price: Number(item.price) || 0,
+                quantity: Number(item.quantity) || 1
+            })).filter(item => item.productId); 
+
+            let cart = await Cart.findOne({ userId });
+
+            if (cart) {
+                items.forEach(newItem => {
+                    const existingItem = cart.items.find(item => item.productId.equals(newItem.productId));
+
+                    if (existingItem) {
+                        existingItem.quantity += newItem.quantity;
+                    } else {
+                        cart.items.push(newItem);
+                    }
+                });
+            } else {
+                cart = new Cart({ userId, items });
+            }
+
+            cart.totalPrice = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+            await cart.save();
+
+            res.redirect('/users')
+
         } catch (err) {
+            console.error("Lỗi khi lưu giỏ hàng:", err);
+            res.status(500).json({ error: "Lỗi máy chủ nội bộ." });
             next(err);
         }
     }
     
+
+    /** [GET] /users/cart/infor/:id */
+    async getCartInfor(req, res, next) {
+        try{
+            const userId = req.params.id;
+            if (!mongoose.Types.ObjectId.isValid(userId)) {
+                return res.status(400).json({ error: "User không hợp lệ" });
+            }
+            const cart = await Cart.findOne({userId: userId});
+
+            const itemsWithProductDetails = await Promise.all(cart.items.map(async (item) => {
+                const product = await Product.findById(item.productId); 
+                return {
+                    productId: item.productId,
+                    name: product.name,
+                    img: product.thumbnail_main,
+                    price: product.price,
+                    quantity: item.quantity
+                };
+            }));
+            
+            res.json({
+                cart,
+                itemsWithProductDetails
+            });
+        }catch(err) {
+            next(err);
+        }
+    }
 }
 
 module.exports = new UserController();

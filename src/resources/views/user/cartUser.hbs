@@ -5,61 +5,83 @@
         {{user.name}}<i class="bi bi-chevron-right"></i>Cart
     </h5>
     <h2>Cart</h2>
-    <div class="option_table is-between" style="width:40%; gap:20px;">
-        <select class="form-select list_product_cart">
-            <option>--- Thêm sản phẩm vào giỏ hàng ---</option>
-            {{#each products}}
-                <option value="{{this._id}}" 
-                data-img="{{this.thumbnail_main}}"
-                data-name="{{this.name}}"
-                data-price="{{this.price}}"
-                data-id="{{this._id}}">
-                    {{this.name}}
-                </option>
-            {{/each}}
-        </select>
-        <button class="btn btn-primary add_products_cart">Thêm</button>
+    <div class="option_table is-between">
+        <div class="is-between search_right">
+            <div>
+                <a href="/users/cart/{{user._id}}/add" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Add product
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 
 <div class="layout comments">
-    <form action="/users/cart/{{user._id}}/store" method="post">
-        <div class="title_table is-between">
-            <div class="title">
-                <h3>Cart list</h3>
-                <p class="sub_heading">Products of my cart on the website</p>
+    <div class="title_table is-between">
+        <div class="title">
+            <h3>Cart list</h3>
+            <p class="sub_heading">Products of my cart on the website</p>
+        </div>
+        <div class="search is-center">
+            <div class="wrapper_search">
+                <i class="bi bi-search"></i>
+                <input type="text">
             </div>
-            <div class="search is-center">
-                <div class="wrapper_search">
-                    <i class="bi bi-search"></i>
-                    <input type="text">
-                </div>
-                <div class="seleted">All Users</div>
-                <div class="selection">
-                    <i class="bi bi-three-dots"></i>
-                </div>
+            <div class="seleted">All Users</div>
+            <div class="selection">
+                <i class="bi bi-three-dots"></i>
             </div>
         </div>
-        <table class="table table_convert table_my_cart">
-            <thead>
-                <tr>
-                    <th scope="col" class="column_checkbox"><input type="checkbox" name="" id=""></th>
-                    <th scope="col" class="col_image"></th>
-                    <th scope="col">Product <i class="bi bi-chevron-expand"></i></th>
-                    <th scope="col">Type <i class="bi bi-chevron-expand"></i></th>
-                    <th scope="col" style="padding-left:40px" class="col_status">Price<i class="bi bi-chevron-expand"></i></th>
-                    <th scope="col">Quatity <i class="bi bi-chevron-expand"></i></th>
-                    <th scope="col">Total <i class="bi bi-chevron-expand"></i></th>
+    </div>
+    <table class="table table_convert table_my_cart">
+        <thead>
+            <tr>
+                <th scope="col" class="column_checkbox"><input type="checkbox" name="" id=""></th>
+                <th scope="col" class="col_image"></th>
+                <th scope="col">Product <i class="bi bi-chevron-expand"></i></th>
+                <th scope="col">Type <i class="bi bi-chevron-expand"></i></th>
+                <th scope="col" style="padding-left:40px" class="col_status">Price<i class="bi bi-chevron-expand"></i></th>
+                <th scope="col">Quatity <i class="bi bi-chevron-expand"></i></th>
+                <th scope="col">Total <i class="bi bi-chevron-expand"></i></th>
+            </tr>
+        </thead>
+        <tbody id="table_body">
+            {{#each itemsWithProductDetails}}
+                <tr class="row_cart align-middle">
+                    <td class="column_checkbox"><input type="checkbox" name="" id=""></th>
+                    <td class="col_image text-center">
+                        <div class="wrapper_img_product is-center">
+                            <a href="#" class="is-center" style="width:100%;">
+                                <img src="{{this.img}}" alt="">
+                            </a>
+                            <input type="text" name="items[][productId]" value="{{this.productId}}" hidden>
+                        </div>
+                    </td>
+                    <td style="color: rgb(56, 116, 255);" class="col-2"><span>{{this.name}}</span></td>
+                    <td class="col-2">Linh kiện điện</td>
+                    <td class="col-2 price_row_cart" style="padding-left:40px">
+                        {{this.price}} VNĐ
+                        <input type="text" hidden name="items[][price]" value="${item.price}">
+                    </td>
+                    <td class="col-2">
+                        <div class="col_cart is-center" style="justify-content: start;">
+                            <button type="button" class="btn_number discount_btn is-center">-</button>
+                            <input type="text" value="{{this.quantity}}" class="input_count" name="items[][quantity]">
+                            <button type="button" class="btn_number encrease_btn is-center">+</button>
+                        </div>
+                    </td>
+                    <td class="col-2"><p class="total_row_cart"> {{this.price}} VNĐ</p></td>
                 </tr>
-            </thead>
-            <tbody id="table_body">
-            </tbody>
-        </table>
-        <div class="total_price w-100 is-between">
-            <h5>Thành tiền: <span class="total_amount">0 VNĐ</span></h5>
-            <input type="text" hidden name="totalPrice" value="0" class="input_total_amount">
-            <input type="text" hidden name="userId" value="{{user._id}}">
-            <button type="submit" class="btn btn-primary">Save cart</button>
-        </div>
-    </form>
+            {{else}}
+                <p class="text-center">Chưa có sản phẩm nào trong giỏ hàng
+                    <a href="/users/cart/{{user._id}}/add">
+                        thêm sản phẩm vào giỏ hàng
+                    </a>
+                </p>
+            {{/each}}
+        </tbody>
+    </table>
+    <div class="total_price w-100 is-between">
+        <h5>Thành tiền: <span class="total_amount">0 VNĐ</span></h5>
+    </div>
 </div>

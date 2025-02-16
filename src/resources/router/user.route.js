@@ -10,6 +10,8 @@ route.post('/store', userController.store);
 route.post('/cart/:id/store', userController.storeCart);
 route.put('/:id', userController.update);
 route.get('/:id/edit', userController.edit);
+route.get('/cart/:id/add', userController.addCartUser);
+route.get('/cart/infor/:id', userController.getCartInfor);
 route.get('/cart/:id', userController.getCart);
 route.get('/add', userController.add);
 route.get('/', userController.index);

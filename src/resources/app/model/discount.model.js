@@ -25,15 +25,6 @@ const discount = new mongoose.Schema(
             enum: ['active', 'stop'],
             default: 'active'
         },
-        apply_product: [
-            {
-                product_id: { 
-                    type: mongoose.Schema.Types.ObjectId, 
-                    ref: 'products', 
-                    required: true 
-                }
-            }
-        ],
         minimum_purchase: {type: Number, require: true},
         use_limit: {type: Number, min: 1, require: true},//tổng số lần sử dụng tối đa mã giảm giá với tất cả user trong hệ thống
         use_count: {type: Number, min: 0, default: 0},//tổng số lần đã sử dụng mã giảm giá với tất cả user trong hệ thống

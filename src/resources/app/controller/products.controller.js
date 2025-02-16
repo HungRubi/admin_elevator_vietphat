@@ -7,9 +7,64 @@ const { formatDate } = require('../../util/formatDate.util');
 class ProductsController {
     
     /** [GET] /products */
-    index(req, res, next) {
-        res.render('products/products');
+    async index(req, res, next) {
+        let page = parseInt(req.query.page) || 1;
+        let limit = 10;
+        let skip = (page - 1) * limit;
+        let sortField = req.query.sort || 'name'; 
+        let sortOrder = req.query.order === 'desc' ? -1 : 1; 
+    
+        try {
+            const searchQuery = req.query.timkiem?.trim() || '';
+    
+            // Nếu có tìm kiếm
+            if (searchQuery) {
+                const products = await Products.find({
+                    name: { $regex: searchQuery, $options: 'i' }
+                }).sort({ [sortField]: sortOrder }).lean();
+    
+                const formatType = products.map(type => ({
+                    ...type,
+                    lastUpdate: formatDate(type.updatedAt)
+                }));
+    
+                return res.render('products/products', {
+                    searchType: true,
+                    searchProduct: formatType,
+                    searchQuery,
+                    currentSort: sortField,
+                    currentOrder: sortOrder === 1 ? 'asc' : 'desc'
+                });
+            } 
+    
+            const products = await Products.find()
+                .skip(skip)
+                .limit(limit)
+                .sort({ [sortField]: sortOrder }) // Sắp xếp sản phẩm
+                .lean();
+    
+            const formatProducts = products.map(pro => ({
+                ...pro,
+                dateFormat: formatDate(pro.updatedAt)
+            }));
+    
+            const totalProduct = await Products.countDocuments();
+            const totalPage = Math.ceil(totalProduct / limit);
+    
+            res.render('products/products', {
+                formatProducts,
+                currentPage: page,
+                totalPage,
+                searchType: false,
+                currentSort: sortField,
+                currentOrder: sortOrder === 1 ? 'asc' : 'desc'
+            });
+    
+        } catch (err) {
+            next(err);
+        }
     }
+    
     
     /** [GET] /products/add */
     add(req, res, next){

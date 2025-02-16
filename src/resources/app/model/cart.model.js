@@ -38,11 +38,4 @@ const cart = new Schema(
     }
 );
 
-cart.pre('save', function(next) {
-    this.totalPrice = this.items.reduce((total, item) => {
-        return total + item.quantity * item.price;
-    }, 0);
-    next();
-})
-
 module.exports = mongoose.model('cart', cart);

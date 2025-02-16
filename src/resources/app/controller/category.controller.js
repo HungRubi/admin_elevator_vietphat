@@ -5,6 +5,7 @@ const { mongooseToObject } = require('../../util/mongoose.util');
 const { mutipleMongooseoObject } = require('../../util/mongoose.util');
 const { formatDate } = require('../../util/formatDate.util');
 const {createSlug} = require('../../util/createSlug.util');
+const {importDate} = require('../../util/importDate.util');
 
 class CategoryController{
 
@@ -129,21 +130,58 @@ class CategoryController{
     /** ===== DISCOUNT ===== */
 
     /** [GET] /category/discount */
-    discount(req, res, next) {
-        Discount.find({})
-        .then(discounts => {
-            const formatDiscount = discounts.map(discount => {
-                return{
-                    ...discount.toObject(),
-                    start: formatDate(discount.start_date),
-                    end: formatDate(discount.end_date),
+    async discount(req, res, next) {
+        let page = parseInt(req.query.page) || 1;
+        let limit = 10;
+        let skip = (page - 1) * limit;
+        let sortField = req.query.sort || 'title'; 
+        let sortOrder = req.query.order === 'desc' ? -1 : 1;
+        try{
+            const searchQuery = req.query.timkiem?.trim() || '';
+            if(searchQuery){
+                const discounts = await Discount.find({
+                        title: { $regex: searchQuery, $options: 'i' }
+                }).sort({ [sortField]: sortOrder }).lean();
+                const discountFormat = discounts.map(discount => ({
+                    ...discount,
+                    startDate: formatDate(discount.start_date),
+                    endDate: formatDate(discount.end_date),
                     lastUpdate: formatDate(discount.updatedAt),
-                }
-            })
+                }));
+                return res.render('category/discount/discount', {
+                    searchType: true,
+                    searchDiscount: discountFormat,
+                    currentSort: sortField,
+                    currentOrder: sortOrder === 1 ? 'asc' : 'desc',
+                })
+            }
+            const discounts = await Discount.find()
+                .skip(skip)
+                .limit(limit)
+                .sort({ [sortField]: sortOrder })
+                .lean();
+    
+            const formatDiscount = discounts.map(discount => ({
+                ...discount,
+                startDate: formatDate(discount.start_date),
+                endDate: formatDate(discount.end_date),
+                lastUpdate: formatDate(discount.updatedAt),
+            }));
+    
+            const totalDiscount = await Discount.countDocuments();
+            const totalPage = Math.ceil(totalDiscount / limit);
+    
             res.render('category/discount/discount', {
-                discounts: formatDiscount,
-            })
-        })
+                formatDiscount,
+                currentPage: page,
+                totalPage,
+                searchType: false,
+                currentSort: sortField,
+                currentOrder: sortOrder === 1 ? 'asc' : 'desc'
+            });
+        }catch(err){
+            next(err)
+        }
     }
 
     /** [GET] /category/discount/add */
@@ -189,6 +227,32 @@ class CategoryController{
         }catch(err){
             next(err)
         }
+    }
+
+    /** [GET] /category/discount/:id/edit */
+    async editDiscount(req, res, next) {
+        try{
+            const discounts = await Discount.findById({_id: req.params.id});
+            const discount = {
+                ...discounts.toObject(),
+                formatDate: importDate(discounts.end_date)
+            }
+            console.log(discount.formatDate)
+            res.render('category/discount/editDiscount', {
+                discount
+            })
+        }catch(err) {
+            next(err);
+        }
+    }
+
+    
+    updateDiscount(req, res, next) {
+        Discount.updateOne({_id: req.params.id}, req.body)
+        .then(() => {
+            res.redirect('/category/discount');
+        })
+        .catch(next);
     }
 }
 

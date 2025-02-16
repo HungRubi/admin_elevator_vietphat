@@ -119,8 +119,141 @@ document.addEventListener("DOMContentLoaded", () => {
         "showMethod": "fadeIn",
         "hideMethod": "fadeOut"
     };
+    function changeValueInput() {
+        const btnDiscount = document.querySelectorAll('.discount_btn');
+        const btnEncrease = document.querySelectorAll('.encrease_btn');
+        const inputCount = document.querySelectorAll('.input_count');
+        const price = document.querySelectorAll('.price_row_cart'); // Giá từng sản phẩm
+        const totalPrice = document.querySelectorAll('.total_row_cart');
+        const totalInput = document.querySelector('.input_total_amount');
+        function updateTotalPrice(index) {
+            let quantity = parseInt(inputCount[index].value);
+            let unitPrice = parseFloat(price[index].textContent.replace(/[^0-9.-]+/g, '')); // Lấy giá trị số từ text
+            let total = quantity * unitPrice;
+            totalPrice[index].textContent = total.toLocaleString() + ' VNĐ';
+        }
+        function updateTotalAmount() {
+            const totalAmount = document.querySelector('.total_amount');
+            let sum = 0
+            inputCount.forEach((input, index) => {
+                let quantity = parseInt(input.value);
+                let priceItem = Number(price[index].textContent.replace(/\D/g, ''));
+                let total = quantity * priceItem;
+                sum += total; // Tính tổng tiền
+            });
+        
+            totalAmount.innerHTML = sum.toLocaleString() + ' VNĐ';
+            totalInput.value = sum;
+        }
+        btnDiscount.forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                let quantity = parseInt(inputCount[index].value);
+                if (quantity > 1) { // Ngăn số lượng < 1
+                    inputCount[index].value = --quantity;
+                    updateTotalPrice(index);
+                    updateTotalAmount();
+                }
+            });
+        });
 
-    function renderCustumerTable() {
+        // Tăng số lượng sản phẩm
+        btnEncrease.forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                let quantity = parseInt(inputCount[index].value);
+                inputCount[index].value = ++quantity;
+                updateTotalPrice(index);
+                updateTotalAmount();
+            });
+        });
+
+        inputCount.forEach((input, index) => {
+            input.addEventListener('input', () => {
+                let quantity = parseInt(input.value);
+                if (isNaN(quantity) || quantity < 1) {
+                    input.value = 1; // Ngăn nhập số âm hoặc không hợp lệ
+                }
+                updateTotalPrice(index);
+                updateTotalAmount();
+            });
+        });
+        updateTotalAmount();
+    }
+    function changeValueOrder() {
+        const tableBody = document.querySelector(".tbody_products"); // Bảng sản phẩm
+        const totalAmount = document.querySelector(".total_amount"); // Tổng tiền
+        const totalInput = document.querySelector(".input_total_amount"); // Input tổng giá trị
+    
+        // 🟢 Hàm cập nhật tổng tiền của từng sản phẩm
+        function updateTotalPrice(row) {
+            const quantityInput = row.querySelector(".input_count");
+            const priceElement = row.querySelector(".price_row");
+            const totalElement = row.querySelector(".total_row_cart");
+    
+            let quantity = parseInt(quantityInput.value) || 1;
+            let unitPrice = parseFloat(priceElement.textContent.replace(/[^0-9.-]+/g, "")) || 0;
+            let total = quantity * unitPrice;
+    
+            if (totalElement) totalElement.textContent = total.toLocaleString() + " VNĐ";
+        }
+    
+        // 🟢 Hàm cập nhật tổng giá trị toàn bộ giỏ hàng
+        function updateTotalAmount() {
+            let sum = 0;
+            document.querySelectorAll(".table-row-products").forEach(row => {
+                let quantity = parseInt(row.querySelector(".input_count").value) || 1;
+                let price = parseFloat(row.querySelector(".price_row").textContent.replace(/[^0-9.-]+/g, "")) || 0;
+                sum += quantity * price;
+            });
+    
+            totalAmount.innerHTML = sum.toLocaleString() + " VNĐ";
+            totalInput.value = sum;
+        }
+    
+        // 🟢 Lắng nghe sự kiện click trên bảng (Event Delegation)
+        tableBody.addEventListener("click", function (event) {
+            const target = event.target;
+            const row = target.closest(".table-row-products");
+    
+            if (!row) return;
+    
+            const quantityInput = row.querySelector(".input_count");
+    
+            if (target.classList.contains("discount_btn")) {
+                // Giảm số lượng sản phẩm
+                let quantity = parseInt(quantityInput.value) || 1;
+                if (quantity > 1) {
+                    quantityInput.value = --quantity;
+                    updateTotalPrice(row);
+                    updateTotalAmount();
+                }
+            }
+    
+            if (target.classList.contains("encrease_btn")) {
+                // Tăng số lượng sản phẩm
+                let quantity = parseInt(quantityInput.value) || 1;
+                quantityInput.value = ++quantity;
+                updateTotalPrice(row);
+                updateTotalAmount();
+            }
+        });
+    
+        // 🟢 Lắng nghe sự kiện thay đổi input số lượng
+        tableBody.addEventListener("input", function (event) {
+            const target = event.target;
+            if (target.classList.contains("input_count")) {
+                let quantity = parseInt(target.value);
+                if (isNaN(quantity) || quantity < 1) {
+                    target.value = 1; // Ngăn nhập số âm hoặc không hợp lệ
+                }
+                updateTotalPrice(target.closest(".table-row-products"));
+                updateTotalAmount();
+            }
+        });
+    
+        // 🟢 Gọi cập nhật tổng tiền ngay từ đầu
+        updateTotalAmount();
+    }
+    function renderProductOrder() {
         let indexQuan = 0;
         let total = 0;
         const btnAdd = document.querySelector('.btn_add_products');
@@ -163,38 +296,20 @@ document.addEventListener("DOMContentLoaded", () => {
                             </td>
                             <td class="col-5">${nameProduct}</td>
                             <td class="col-3 price_row">
-                                ${songPrice}
-                                <input type="number" class="input_quantity" name="items[${indexQuan}][price]" value="${songPrice}" min="1">
+                                ${songPrice} VNĐ
+                                <input type="number" class="input_quantity" name="items[${indexQuan}][price]" value="${songPrice}" min="1" hidden>
                             </td>
                             <td class="col-1 text-center">
-                                <div>
-                                    <input type="number" class="input_quantity" name="items[${indexQuan}][quantity]" value="1" min="1">
+                                <div class="col_cart is-center" style="justify-content: start;">
+                                    <button type="button" class="btn_number discount_btn is-center">-</button>
+                                    <input type="text" value="1" class="input_count" name="items[${indexQuan}][quantity]">
+                                    <button type="button" class="btn_number encrease_btn is-center">+</button>
                                 </div>
-                            </td>`;
+                            </td>
+                            `;
                             
                         tbody.appendChild(newRow);
-                        
-                        function updateTotal() {
-                            const totalPrice = document.querySelector('.lb_total_price');
-                            const productRows = tbody.querySelectorAll(".table-row-products");
-
-                            if (productRows.length === 0) {
-                                totalPrice.value = 0;
-                            }
-                            productRows.forEach(row => {
-                                const quantity = Number(row.querySelector(".input_quantity").value) || 0; 
-                                const price = Number(row.querySelector(".price_row").textContent) || 0; 
-                                total += quantity * price;
-                            });
-                            totalPrice.value = total;
-                        }
-                        updateTotal();
-                        document.querySelectorAll('.input_quantity').forEach((e) => {
-                            e.addEventListener('input', () => {
-                                updateTotal();
-                            })
-                        })
-                        
+                        changeValueOrder();
                         indexQuan ++;
                         toastr.success('Thêm sản phẩm thành công!','Message');
                     }
@@ -368,66 +483,7 @@ document.addEventListener("DOMContentLoaded", () => {
             })
         }
     }
-    let sum = 0;
-    function changeValueInput() {
-        const btnDiscount = document.querySelectorAll('.discount_btn');
-        const btnEncrease = document.querySelectorAll('.encrease_btn');
-        const inputCount = document.querySelectorAll('.input_count');
-        const price = document.querySelectorAll('.price_row_cart'); // Giá từng sản phẩm
-        const totalPrice = document.querySelectorAll('.total_row_cart'); // Tổng tiền của từng sản phẩm
 
-        function updateTotalPrice(index) {
-            let quantity = parseInt(inputCount[index].value);
-            let unitPrice = parseFloat(price[index].textContent.replace(/[^0-9.-]+/g, '')); // Lấy giá trị số từ text
-            let total = quantity * unitPrice;
-            totalPrice[index].textContent = total.toLocaleString() + ' VNĐ';
-        }
-        function updateTotalAmount() {
-            const totalAmount = document.querySelector('.total_amount');
-            let sum = 0
-            inputCount.forEach((input, index) => {
-                let quantity = parseInt(input.value);
-                let priceItem = Number(price[index].textContent.replace(/\D/g, ''));
-                let total = quantity * priceItem;
-                sum += total; // Tính tổng tiền
-            });
-        
-            totalAmount.innerHTML = sum.toLocaleString() + ' VNĐ';
-        }
-        btnDiscount.forEach((btn, index) => {
-            btn.addEventListener('click', () => {
-                let quantity = parseInt(inputCount[index].value);
-                if (quantity > 1) { // Ngăn số lượng < 1
-                    inputCount[index].value = --quantity;
-                    updateTotalPrice(index);
-                    updateTotalAmount();
-                }
-            });
-        });
-
-        // Tăng số lượng sản phẩm
-        btnEncrease.forEach((btn, index) => {
-            btn.addEventListener('click', () => {
-                let quantity = parseInt(inputCount[index].value);
-                inputCount[index].value = ++quantity;
-                updateTotalPrice(index);
-                updateTotalAmount();
-            });
-        });
-
-        // Khi người dùng nhập trực tiếp vào ô input
-        inputCount.forEach((input, index) => {
-            input.addEventListener('input', () => {
-                let quantity = parseInt(input.value);
-                if (isNaN(quantity) || quantity < 1) {
-                    input.value = 1; // Ngăn nhập số âm hoặc không hợp lệ
-                }
-                updateTotalPrice(index);
-                updateTotalAmount();
-            });
-        });
-        updateTotalAmount();
-    }
     function renderProductMyCart() {
         let indexCart = 0;
         const btnAdd = document.querySelector('.add_products_cart');
@@ -469,21 +525,21 @@ document.addEventListener("DOMContentLoaded", () => {
                             </td>
                             <td style="color: rgb(56, 116, 255);" class="col-2"><span>${nameProduct}</span></td>
                             <td class="col-2">Linh kiện điện</td>
-                            <td class="col-2 price_row_cart" style="padding-left:40px">${songPrice} VNĐ</td>
+                            <td class="col-2 price_row_cart" style="padding-left:40px">
+                                ${songPrice} VNĐ
+                                <input type="text" hidden name="items[${indexCart}][price]" value="${songPrice}">
+                            </td>
                             <td class="col-2">
                                 <div class="col_cart is-center" style="justify-content: start;">
-                                    <button class="btn_number discount_btn is-center">-</button>
-                                    <input type="text" value="1" class="input_count" name="item[${indexCart}][quantity]">
-                                    <button class="btn_number encrease_btn is-center">+</button>
+                                    <button type="button" class="btn_number discount_btn is-center">-</button>
+                                    <input type="text" value="1" class="input_count" name="items[${indexCart}][quantity]">
+                                    <button type="button" class="btn_number encrease_btn is-center">+</button>
                                 </div>
                             </td>
-                            <td class="col-2"><p class="total_row_cart"> ${songPrice} VNĐ <input type="text" hidden name="price"></p></td>`;
-                        const totalAmount = document.querySelector('.total_amount');
-                        
-                        document.querySelector('.input_total_amount').value = totalAmount.textContent;
+                            <td class="col-2"><p class="total_row_cart"> ${songPrice} VNĐ</p></td>`;
                         tbody.appendChild(newRow);
-                        indexCart++;
                         changeValueInput();
+                        indexCart++;
                     }
                 }
             })
@@ -504,6 +560,18 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelectorAll('.discount_product')[1].classList.remove('active');
         }
     }
+    tinymce.init({
+        selector: 'textarea',
+        height: 450,
+        menubar: true,
+        plugins: 'lists link image table code',
+        toolbar: 'undo redo | formatselect | bold italic underline | alignleft aligncenter alignright | bullist numlist outdent indent | link image',
+        content_css: '//www.tiny.cloud/css/codepen.min.css',
+        content_style: `
+            .mce-content-body:not([dir=rtl])[data-mce-placeholder]:not(.mce-visualblocks)::before {
+                left: unset !important;
+            }`,
+    });
     function tabUi(){
         const currentPath = window.location.pathname;
         if(currentPath === '/'){
@@ -538,7 +606,7 @@ document.addEventListener("DOMContentLoaded", () => {
             divDrop.classList.remove('click');
             document.querySelector('.login_container').style.display = 'none';
             autoFillShippingAdress();
-            renderCustumerTable();
+            renderProductOrder();
         }else if(currentPath.startsWith('/users')){
             document.querySelector('.tab-1').classList.remove('active');
             document.querySelector('.tab-2').classList.remove('active');
@@ -553,7 +621,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector('.tab-11').classList.remove('active');
             divDrop.classList.remove('click');
             document.querySelector('.login_container').style.display = 'none';
-
+            changeValueInput();
         }else if(currentPath.startsWith('/setting')){
             document.querySelector('.tab-1').classList.remove('active');
             document.querySelector('.tab-2').classList.remove('active');
@@ -582,123 +650,6 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector('.tab-9').classList.remove('active');
             document.querySelector('.tab-10').classList.remove('active');
             document.querySelector('.tab-11').classList.remove('active');
-            const itemsPage = 10;
-            let pageCurrent = 1;
-
-
-
-            async function fetchProduct(page, itemsPage) {
-                try{
-                    const response = await fetch(`http://localhost:4000/products/api/getallproducts/?page=${page}&limit=${itemsPage}`);
-                    if(!response.ok){
-                        throw new Error('Không thể lấy dữ liệu từ server');
-                    }
-                    const data = await response.json();
-                    return data;
-                }
-                catch(error){
-                    console.log(error);
-                }
-            }
-
-            async function displayProduct(page){
-                const {product, totalItem} = await fetchProduct(page, itemsPage);
-                const tbody = document.querySelector('#table_body'); 
-                tbody.innerHTML = '';
-                product.forEach(product => {
-                    const row = 
-                        `<tr class="align-middle">
-                            <td class="column_checkbox"><input type="checkbox" name="" id=""></th>
-                            <td class="col_image text-center">
-                                <div class="wrapper_img_product is-center">
-                                    <a href="#" class="is-center" style="width:100%;">
-                                        <img src="${product.thumbnail_main}" alt="">
-                                    </a>
-                                </div>
-                            </td>
-                            <td style="color: rgb(56, 116, 255);" class="col_product"><span>${product.name}</span></td>
-                            <td class="col_custumer col-1">${product.price}</td>
-                            <td class="col_status col-1" style="padding-left:40px">${product.stock}</td>
-                            <td class="col_star col-1">${product.unit}</td>
-                            <td class="col_review col-4"><p>${product.description}</p></td>
-                            <td class="col_time">
-                                <p>${product.formatedDate}</p>
-                                <div class="layout">
-                                    <div class="circle">
-                                        <a href="/products/${product._id}/edit">
-                                            <i class="bi bi-pencil-fill"></i>
-                                        </a>
-                                    </div>
-                                    <div class="circle">
-                                        <a href="/products/${product._id}/deleted" data-bs-toggle="modal" data-id="${product._id}" data-bs-target="#delete-product-model">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
-                                    </div>
-                                    <div class="circle"><i class="bi bi-three-dots"></i></div>
-                                </div>
-                            </td>
-                        </tr>`;
-                    tbody.innerHTML += row;
-                })
-                displayPagination(totalItem, itemsPage);
-            }
-
-            function displayPagination(totalItem, itemsPage) {
-                const pageBar = document.querySelector('.page_bar');
-                const totalPage = Math.ceil(totalItem / itemsPage);
-
-                pageBar.innerHTML = `<button class="next previous"> <i class="bi bi-chevron-double-left"></i></button>
-                            <button class="next previous"> <i class="bi bi-chevron-left"></i> Previous</button>`;
-                for(let i = 1; i <= totalPage; i++){
-                    const button = document.createElement("button");
-                    button.className = `number_page ${i === pageCurrent ? "active" : ""}`;
-                    button.textContent = i;
-                    button.addEventListener("click", async () => {
-                        pageCurrent = i;
-                        const { product, totalItem } = await fetchProduct(pageCurrent, itemsPage);
-                        displayProduct(pageCurrent);
-                        displayPagination(totalItem, itemsPage); 
-                    });
-                    pageBar.appendChild(button);
-                }
-                const nextButton = document.createElement("button");
-                nextButton.className = "next";
-                nextButton.innerHTML = `Next <i class="bi bi-chevron-right"></i>`;
-                nextButton.addEventListener("click", () => {
-                    pageCurrent = Math.min(pageCurrent + 1, totalPage); // Điều chỉnh pageCurrent
-                    const { product, totalItem } = fetchProduct(pageCurrent, itemsPage);
-                    displayProduct(pageCurrent);
-                    displayPagination(totalItem, itemsPage);
-                });
-                pageBar.appendChild(nextButton); // Thêm nút next vào pageBar
-
-                const nextAllButton = document.createElement("button");
-                nextAllButton.className = "next_all";
-                nextAllButton.innerHTML = `<i class="bi bi-chevron-double-right"></i>`;
-                pageBar.appendChild(nextAllButton); // Thêm nút next_all vào pageBar
-
-                const currentButton = document.createElement("button");
-                currentButton.className = "current";
-                currentButton.textContent = `Page ${pageCurrent} / ${totalPage}`;
-                pageBar.appendChild(currentButton); // Thêm nút current vào pageBar
-                const btnPrevious = document.querySelectorAll('.previous');
-                if(pageCurrent !== 1){
-                    btnPrevious.forEach(btn => {
-                        btn.style.display = 'block';
-                        btn.addEventListener('click', () => {
-                            pageCurrent = Math.min(pageCurrent - 1, totalPage); // Điều chỉnh pageCurrent
-                            const { product, totalItem } = fetchProduct(pageCurrent, itemsPage);
-                            displayProduct(pageCurrent);
-                            displayPagination(totalItem, itemsPage);
-                        })
-                    })
-                }else{
-                    btnPrevious.forEach(btn => {
-                        btn.style.display = 'none';
-                    })
-                }
-            }
-            displayProduct(pageCurrent);
             divDrop.classList.remove('click');
 
         }else if(currentPath.startsWith('/articles')){
@@ -799,14 +750,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
     tabUi();
-    
-    const formLogin = document.querySelector('.form_login');
-    if(formLogin){
-        formLogin.addEventListener('submit', (event) => {
-            console.log('Form submitted');
-        })
-    }
-    
     // const btnAddImage = document.querySelector('.btn_add_image');
 
     // btnAddImage.addEventListener('click', () => {

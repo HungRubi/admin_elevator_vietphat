@@ -20,6 +20,8 @@ const orders = new mongoose.Schema(
             enum: ['Thành công', 'Đang xử lý', 'Thất bại'], 
             default: 'Đang xử lý',
         },
+        discount_id: {type: mongoose.Schema.Types.ObjectId, ref: 'discount'},
+
     },
     {
         timestamps: true

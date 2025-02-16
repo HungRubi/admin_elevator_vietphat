@@ -19,8 +19,7 @@
                             {{#each users}}
                                 <option data-phone="{{this.phone}}" data-address="{{this.address}}" value="{{this._id}}" data-name="{{this.name}}">
                                     {{this.name}}
-                                    <input type="text" class="user_id" name="user_id" hidden value="{{this._id}}">
-                                    <input type="text" class="shipping_address_name" name="shipping_address[name]" hidden value="{{this._id}}">
+                                    
                                 </option>
                             {{/each}}
                         </select>
@@ -28,6 +27,8 @@
                     
                     <div class="form-group mt-3">
                         <label>Phone</label>
+                        <input type="text" class="user_id" name="user_id" hidden value="{{this._id}}">
+                        <input type="text" class="shipping_address_name" name="shipping_address[name]" hidden value="{{this._id}}">
                         <input type="text" class="form-control mt-2 lb_phone" name="shipping_address[phone]"  placeholder="Your phone...">
                     </div>
                     <div class="form-group mt-3 mb-3">
@@ -74,12 +75,13 @@
                             <tbody class="tbody_products">
                             </tbody>
                         </table>
+                        <div class="form-group mt-3 mb-3">
+                            <h5>Thành tiền: <span class="total_amount">0 VNĐ</span></h5>
+                            <input type="number" class="form-control mt-2 input_total_amount" name="total_price"  placeholder="Total price..." hidden>
+                        </div>
                     </div>
 
-                    <div class="form-group mt-3 mb-3">
-                        <label>Total price</label>
-                        <input type="number" class="form-control mt-2 lb_total_price" name="total_price"  placeholder="Total price..." min="0" required>
-                    </div>
+                    
                 </div>
             </div>
             <div class="level-top mt-3">

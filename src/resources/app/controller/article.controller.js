@@ -9,22 +9,61 @@ function dateEnglish(date) {
         month: 'short', day: '2-digit', year: 'numeric'  
     });
 }
-class CustomersController {
+class ArticleController {
     
     /* [GET] /admin/articles */
-    index(req, res, next) {
-        Article.find()
-        .then(articles => {
-            const formatarticle = articles.map(cus => {
-                return{
-                    ...cus.toObject(),
-                    formatedDate: formatDate(cus.updatedAt),
-                }
-            })
-            res.render('articles/articles',{ 
-                articles: formatarticle,
+    async index(req, res, next) {
+        let page = parseInt(req.query.page) || 1;
+        let limit = 10;
+        let skip = (page - 1) * limit;
+        let sortField = req.query.sort || 'subject'; 
+        let sortOrder = req.query.order === 'desc' ? -1 : 1; 
+        try{
+            const searchQuery = req.query.timkiem?.trim() || '';
+            if (searchQuery) {
+                const articles = await Article.find({
+                    subject: { $regex: searchQuery, $options: 'i' }
+                }).sort({ [sortField]: sortOrder }).lean();
+    
+                const formatArticle = articles.map(article => ({
+                    ...article,
+                    lastUpdate: formatDate(article.updatedAt)
+                }));
+    
+                return res.render('articles/articles', {
+                    searchType: true,
+                    searchArticle: formatArticle,
+                    searchQuery,
+                    currentSort: sortField,
+                    currentOrder: sortOrder === 1 ? 'asc' : 'desc'
+                });
+            } 
+    
+            const articles = await Article.find()
+                .skip(skip)
+                .limit(limit)
+                .sort({ [sortField]: sortOrder }) // Sắp xếp sản phẩm
+                .lean();
+    
+            const formatArticleMain = articles.map(article => ({
+                ...article,
+                dateFormat: formatDate(article.updatedAt)
+            }));
+    
+            const totalArticle = await Article.countDocuments();
+            const totalPage = Math.ceil(totalArticle / limit);
+    
+            res.render('articles/articles', {
+                formatArticleMain,
+                currentPage: page,
+                totalPage,
+                searchType: false,
+                currentSort: sortField,
+                currentOrder: sortOrder === 1 ? 'asc' : 'desc'
             });
-        })
+        }catch(err){
+            next(err);
+        }
     }
 
     /* [GET] /admin/article/add */
@@ -140,4 +179,4 @@ class CustomersController {
     }
 }
 
-module.exports = new CustomersController();
+module.exports = new ArticleController();

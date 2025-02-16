@@ -2,20 +2,14 @@
     <h5>Dashboard <i class="bi bi-chevron-right"></i> Orders</h5>
     <h2>Orders</h2>
     <div class="option_table is-between">
-        <div class="search">
-            <div class="wrapper_search">
-                <i class="bi bi-search"></i>
-                <input type="text" placeholder="search order...">
-            </div>
-        </div>
         <div class="is-between search_right">
+            <a href="/orders/add" class="add_btn btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Add orders
+            </a>
             <div class="export_btn">
                 <i class="bi bi-file-earmark-arrow-down-fill"></i>
                 Export
             </div>
-            <a href="/orders/add" class="add_btn btn btn-primary">
-                <i class="bi bi-plus-lg"></i> Add orders
-            </a>
         </div>
     </div>
 </div>
@@ -28,8 +22,10 @@
         </div>
         <div class="search is-center">
             <div class="wrapper_search">
-                <i class="bi bi-search"></i>
-                <input type="text">
+                <form action="/orders">
+                    <button type="submit" class="btn_position is-center"><i class="bi bi-search"></i></button>
+                    <input type="text" name="timkiem" placeholder="Enter customer name to search">
+                </form>
             </div>
             <div class="seleted">All orders</div>
             <div class="selection">
