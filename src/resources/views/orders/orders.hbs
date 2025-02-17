@@ -37,55 +37,157 @@
         <thead>
             <tr>
                 <th scope="col"><input type="checkbox" name="" id=""></th>
-                <th scope="col"></th>
-                <th scope="col">Product <i class="bi bi-chevron-expand"></i></th>
-                <th scope="col">Custumer <i class="bi bi-chevron-expand"></i></th>
-                <th scope="col">Address <i class="bi bi-chevron-expand"></i></th>
-                <th scope="col">Pay Method <i class="bi bi-chevron-expand"></i></th>
-                <th scope="col" class="col_status">Status <i class="bi bi-chevron-expand"></i></th>
-                <th scope="col" class="col_time">Time <i class="bi bi-chevron-expand"></i></th>
+                <th scope="col">
+                    User
+                    <a href="?sort=userName&order={{#if (and (eq currentSort 'userName') (eq currentOrder 'asc'))}}desc{{else}}asc{{/if}}">
+                        <i class="bi {{#if (eq currentSort 'userName')}}{{#if (eq currentOrder 'asc')}}bi-caret-up-fill{{else}}bi-caret-down-fill{{/if}}{{else}}bi-chevron-expand{{/if}}" 
+                        style="font-size:12px; color:#000;">
+                        </i>
+                    </a>
+                </th>
+                <th scope="col">Order code<i class="bi bi-chevron-expand"></i></th>
+                <th scope="col">
+                    Order date
+                    <a href="?sort=order_date&order={{#if (and (eq currentSort 'order_date') (eq currentOrder 'asc'))}}desc{{else}}asc{{/if}}">
+                        <i class="bi {{#if (eq currentSort 'order_date')}}{{#if (eq currentOrder 'asc')}}bi-caret-up-fill{{else}}bi-caret-down-fill{{/if}}{{else}}bi-chevron-expand{{/if}}" 
+                        style="font-size:12px; color:#000;">
+                        </i>
+                    </a>
+                </th>
+                <th scope="col">
+                    Address
+                    <a href="?sort=shipping_address&order={{#if (and (eq currentSort 'shipping_address') (eq currentOrder 'asc'))}}desc{{else}}asc{{/if}}">
+                        <i class="bi {{#if (eq currentSort 'shipping_address')}}{{#if (eq currentOrder 'asc')}}bi-caret-up-fill{{else}}bi-caret-down-fill{{/if}}{{else}}bi-chevron-expand{{/if}}" 
+                        style="font-size:12px; color:#000;">
+                        </i>
+                    </a>
+                </th>
+                <th scope="col">
+                    Payment 
+                    <a href="?sort=payment_method&order={{#if (and (eq currentSort 'payment_method') (eq currentOrder 'asc'))}}desc{{else}}asc{{/if}}">
+                        <i class="bi {{#if (eq currentSort 'payment_method')}}{{#if (eq currentOrder 'asc')}}bi-caret-up-fill{{else}}bi-caret-down-fill{{/if}}{{else}}bi-chevron-expand{{/if}}" 
+                        style="font-size:12px; color:#000;">
+                        </i>
+                    </a>
+                </th>
+                <th scope="col">
+                    Voucher 
+                    <a href="?sort=payment_method&order={{#if (and (eq currentSort 'payment_method') (eq currentOrder 'asc'))}}desc{{else}}asc{{/if}}">
+                        <i class="bi {{#if (eq currentSort 'payment_method')}}{{#if (eq currentOrder 'asc')}}bi-caret-up-fill{{else}}bi-caret-down-fill{{/if}}{{else}}bi-chevron-expand{{/if}}" 
+                        style="font-size:12px; color:#000;">
+                        </i>
+                    </a>
+                </th>
+                <th scope="col">Status <i class="bi bi-chevron-expand"></i></th>
+                <th scope="col" class="col_time">last update<i class="bi bi-chevron-expand"></i></th>
             </tr>
         </thead>
         <tbody>
-            <tr class="align-middle">
-                <td style="width:50px;"><input type="checkbox" name="" id=""></th>
-                <td style="width:100px">
-                    <div class="wrapper_img_product">
-                        <a href="#" class="is-center" style="width:100%;">
-                            <img src="/img/product/1.jpg" alt="">
-                        </a>
-                    </div>
-                </td>
-                <td style="color: rgb(56, 116, 255);" class="col-2"><span>Dây xích huyền thoại</span></td>
-                <td class="col-2">
-                    <div class="layout">
-                        <div class="circle">
-                            <img src="/img/user.jpg" alt="">
-                        </div>
-                        <span>Nguyen Huy Hung</span>
-                    </div>
-                </td>
-                <td class="col-3">
-                    <p>Thôn Kênh Trạch - xã Hưng Nhân - huyện Vĩnh Bảo - Hải Phòng</p>
-                </td>
-                <td class="col-1">
-                    <p>Thanh toán khi nhận hàng</p>
-                </td>
-                <td class="col_status">
-                    <div class="status_comment_approved status_comment is-center">
-                        approved
-                        <i class="bi bi-check2" ></i>
-                    </div>
-                </td>
-                <td class="col_time">
-                    <p>Just now</p>
-                    <div class="layout">
-                        <div class="circle"><i class="bi bi-check-lg"></i></div>
-                        <div class="circle"><i class="bi bi-trash"></i></div>
-                        <div class="circle"><i class="bi bi-three-dots"></i></div>
-                    </div>
-                </td>
-            </tr>
+            {{#if searchType}}
+                {{#each searchOrder}}
+                    <tr class="align-middle">
+                        <td style="width:50px;"><input type="checkbox" name="" id=""></th>
+                        <td class="col-1">
+                            {{this.userName}}
+                        </td>
+                        <td class="col-2">
+                            {{this.order_code}}
+                        </td>
+                        <td class="col-1">
+                            {{this.orderDate}}
+                        </td>
+                        <td class="col-2">
+                            {{this.shipping_address.address}}
+                        </td>
+                        <td class="col-1">
+                            {{this.payment_method}}
+                        </td>
+                        <td class="col-2">
+                            {{this.discountName}}
+                        </td>
+                        <td class="col_status">
+                            {{#if (eq this.status 'Thành công')}}
+                                <div class="status_comment status_comment is-center">
+                                    Done
+                                    <i class="bi bi-check2" ></i>
+                                </div>
+                            {{/if}}
+                            {{#if (eq this.status 'Đang xử lý')}}
+                                <div class="status_comment status_comment_pending is-center">
+                                    Process
+                                    <i class="bi bi-hourglass-split ms-2"></i>
+                                </div>
+                            {{/if}}
+                            {{#if (eq this.status 'Thất bại')}}
+                                <div class="status_comment status_comment_block is-center">
+                                    Cancelled
+                                    <i class="bi bi-hourglass-split ms-2"></i>
+                                </div>
+                            {{/if}}
+                        </td>
+                        <td class="col_time">
+                            <p>{{this.lastUpdate}}</p>
+                            <div class="layout is-center">
+                                <div class="circle"><i class="bi bi-check-lg"></i></div>
+                                <div class="circle"><i class="bi bi-trash"></i></div>
+                                <div class="circle"><i class="bi bi-three-dots"></i></div>
+                            </div>
+                        </td>
+                    </tr>
+                {{/each}}
+            {{else}}
+                {{#each orderFormat}}
+                    <tr class="align-middle">
+                        <td style="width:50px;"><input type="checkbox" name="" id=""></th>
+                        <td class="col-1">
+                            {{this.userName}}
+                        </td>
+                        <td class="col-2">
+                            {{this.order_code}}
+                        </td>
+                        <td class="col-1">
+                            {{this.orderDate}}
+                        </td>
+                        <td class="col-2">
+                            {{this.shipping_address.address}}
+                        </td>
+                        <td class="col-1">
+                            {{this.payment_method}}
+                        </td>
+                        <td class="col-2">
+                            {{this.discountName}}
+                        </td>
+                        <td class="col_status">
+                            {{#if (eq this.status 'Thành công')}}
+                                <div class="status_comment status_comment is-center">
+                                    Done
+                                    <i class="bi bi-check2" ></i>
+                                </div>
+                            {{/if}}
+                            {{#if (eq this.status 'Đang xử lý')}}
+                                <div class="status_comment status_comment_pending is-center">
+                                    Process
+                                    <i class="bi bi-hourglass-split ms-2"></i>
+                                </div>
+                            {{/if}}
+                            {{#if (eq this.status 'Thất bại')}}
+                                <div class="status_comment status_comment_block is-center">
+                                    Cancelled
+                                    <i class="bi bi-hourglass-split ms-2"></i>
+                                </div>
+                            {{/if}}
+                        </td>
+                        <td class="col_time">
+                            <p>{{this.lastUpdate}}</p>
+                            <div class="layout is-center">
+                                <div class="circle"><i class="bi bi-check-lg"></i></div>
+                                <div class="circle"><i class="bi bi-trash"></i></div>
+                                <div class="circle"><i class="bi bi-three-dots"></i></div>
+                            </div>
+                        </td>
+                    </tr>
+                {{/each}}
+            {{/if}}
         </tbody>
     </table>
 </div>

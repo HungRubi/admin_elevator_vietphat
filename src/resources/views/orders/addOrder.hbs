@@ -75,6 +75,17 @@
                             <tbody class="tbody_products">
                             </tbody>
                         </table>
+                        <select class="form-select mt-2 list_products" name="discount_id">
+                            <option>--- Vouchers ---</option>
+                            {{#each discounts}}
+                                <option 
+                                    value="{{this._id}}"
+                                    data-type="{{this.discount_type}}"
+                                    data-value="{{this.value_discount}}">
+                                    {{this.title}}
+                                </option>
+                            {{/each}}
+                        </select>
                         <div class="form-group mt-3 mb-3">
                             <h5>Thành tiền: <span class="total_amount">0 VNĐ</span></h5>
                             <input type="number" class="form-control mt-2 input_total_amount" name="total_price"  placeholder="Total price..." hidden>
