@@ -73,9 +73,16 @@ class LoginController{
     profile(req, res) {
         const user = req.session.user || req.session.customer;
         if (!user) {
-            return res.status(401).json({ error: "Chưa đăng nhập" });
+            return res.status(401).json({ 
+                error: "Chưa đăng nhập",
+                success: false
+            });
         }
-        res.json({ message: "Bạn đang đăng nhập!", user });
+        res.json({ 
+            message: "Bạn đang đăng nhập!", 
+            success: false,
+            user 
+        });
     }
 }
 

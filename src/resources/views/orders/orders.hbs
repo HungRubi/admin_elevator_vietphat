@@ -72,8 +72,8 @@
                 </th>
                 <th scope="col">
                     Voucher 
-                    <a href="?sort=payment_method&order={{#if (and (eq currentSort 'payment_method') (eq currentOrder 'asc'))}}desc{{else}}asc{{/if}}">
-                        <i class="bi {{#if (eq currentSort 'payment_method')}}{{#if (eq currentOrder 'asc')}}bi-caret-up-fill{{else}}bi-caret-down-fill{{/if}}{{else}}bi-chevron-expand{{/if}}" 
+                    <a href="?sort=discount&order={{#if (and (eq currentSort 'discount') (eq currentOrder 'asc'))}}desc{{else}}asc{{/if}}">
+                        <i class="bi {{#if (eq currentSort 'discount')}}{{#if (eq currentOrder 'asc')}}bi-caret-up-fill{{else}}bi-caret-down-fill{{/if}}{{else}}bi-chevron-expand{{/if}}" 
                         style="font-size:12px; color:#000;">
                         </i>
                     </a>
@@ -121,16 +121,39 @@
                             {{#if (eq this.status 'Thất bại')}}
                                 <div class="status_comment status_comment_block is-center">
                                     Cancelled
-                                    <i class="bi bi-hourglass-split ms-2"></i>
+                                    <i class="bi bi-x-circle ms-2"></i>
                                 </div>
                             {{/if}}
                         </td>
                         <td class="col_time">
                             <p>{{this.lastUpdate}}</p>
                             <div class="layout is-center">
-                                <div class="circle"><i class="bi bi-check-lg"></i></div>
-                                <div class="circle"><i class="bi bi-trash"></i></div>
-                                <div class="circle"><i class="bi bi-three-dots"></i></div>
+                                <div class="circle">
+                                    <a href="/orders/{{this._id}}/edit">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </a>
+                                </div>
+                                <div class="circle">
+                                    <a href="/orders/{{this._id}}/deleted" data-bs-toggle="modal" data-id="{{this._id}}" data-bs-target="#delete-user-model">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                                <div class="circle detail_btn" style="position: relative;overflow: unset;">
+                                    <i class="bi bi-three-dots"></i>
+                                    <div class="menu_model_user">
+                                        <div class="view_user">
+                                            <h5>View detail</h5>
+                                        </div>
+                                        <ul>
+                                            <li>
+                                                <a href="/orders/details/{{this._id}}">
+                                                    <i class="bi bi-cart"></i>
+                                                    Details
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -173,16 +196,39 @@
                             {{#if (eq this.status 'Thất bại')}}
                                 <div class="status_comment status_comment_block is-center">
                                     Cancelled
-                                    <i class="bi bi-hourglass-split ms-2"></i>
+                                    <i class="bi bi-x-circle text-danger ms-2"></i>
                                 </div>
                             {{/if}}
                         </td>
                         <td class="col_time">
                             <p>{{this.lastUpdate}}</p>
                             <div class="layout is-center">
-                                <div class="circle"><i class="bi bi-check-lg"></i></div>
-                                <div class="circle"><i class="bi bi-trash"></i></div>
-                                <div class="circle"><i class="bi bi-three-dots"></i></div>
+                                <div class="circle">
+                                    <a href="/orders/{{this._id}}/edit">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </a>
+                                </div>
+                                <div class="circle">
+                                    <a href="/orders/{{this._id}}/deleted" data-bs-toggle="modal" data-id="{{this._id}}" data-bs-target="#delete-user-model">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                                <div class="circle detail_btn" style="position: relative;overflow: unset;">
+                                    <i class="bi bi-three-dots"></i>
+                                    <div class="menu_model_user">
+                                        <div class="view_user">
+                                            <h5>View detail</h5>
+                                        </div>
+                                        <ul>
+                                            <li>
+                                                <a href="/orders/details/{{this._id}}">
+                                                    <i class="bi bi-cart"></i>
+                                                    Details
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -190,4 +236,33 @@
             {{/if}}
         </tbody>
     </table>
+    <div class="page_bar is-center">
+    {{#if (gt currentPage 1)}}
+      <button class="next previous">
+        <a href="?page={{subtract currentPage 1}}" style="color:#292828;">
+            <i class="bi bi-chevron-left"></i>
+            Previous
+        </a>
+      </button>
+    {{/if}}
+    {{#each (range 1 totalPage)}}
+      {{#if (eq this ../currentPage)}}
+        <button class="number_page active">
+          <a href="?page={{this}}">{{this}}</a>
+        </button>
+      {{else}}
+        <button class="number_page">
+          <a style="color:#292828;" href="?page={{this}}">{{this}}</a>
+        </button>
+      {{/if}}
+    {{/each}}
+    {{#if (gt currentPage 1)}}
+      <button class="next previous">
+        <a href="?page={{add currentPage 1}}" style="color:#292828;">
+            Next
+            <i class="bi bi-chevron-right"></i>
+        </a>
+      </button>
+    {{/if}}
+  </div> 
 </div>

@@ -1,0 +1,98 @@
+<div class="heading_page">
+    <h5>
+        <a href="/">Dashboard</a> 
+        <i class="bi bi-chevron-right"></i> 
+        <a href="/">Orders</a> 
+        <i class="bi bi-chevron-right"></i> 
+        Edit order
+    </h5>
+    <h2>Edit order</h2>
+    <h5>Edit a ordered in your company</h5>
+</div>
+
+<div class="layout add_page ">
+    <form action="/orders/{{order._id}}?_method=PUT" method="post">
+        <div class="col-6 level-left">
+            <div class="level-top">
+                <div class="heading">
+                    <h2>User</h2>
+                </div>
+                <div class="layout">
+                    <div class="form-group mt-3">
+                        <label>Choised user</label>
+                        <select class="form-select mt-2 list_custumers user_list_js">
+                            <option value="{{order.user_id}}">{{order.shipping_address.name}}</option>
+                            {{#each users}}
+                                <option data-phone="{{this.phone}}" data-address="{{this.address}}" value="{{this._id}}" data-name="{{this.name}}">
+                                    {{this.name}}
+                                </option>
+                            {{/each}}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group mt-3">
+                        <label>Phone</label>
+                        <input type="text" class="user_id" name="user_id" hidden value="{{order.user_id}}">
+                        <input type="text" class="shipping_address_name" name="shipping_address[name]" hidden value="{{order.shipping_address.name}}">
+                        <input type="text" class="form-control mt-2 lb_phone" name="shipping_address[phone]"  placeholder="Your phone..." value="{{order.shipping_address.phone}}">
+                    </div>
+                    <div class="form-group mt-3 mb-3">
+                        <label>Address</label>
+                        <input type="text" class="form-control mt-2 lb_address" name="shipping_address[address]"  placeholder="Your address..." value="{{order.shipping_address.address}}">    
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary mt-3">
+                <i class="bi bi-floppy me-2"></i>
+                Save order
+            </button>
+        </div>
+
+        <div class="col-6 level-right">
+            <div class="level-top">
+                <div class="heading">
+                    <h2>Status order</h2>
+                </div>
+                <div class="layout">
+                    <div class="form-group mt-3">
+                        <label>Choised pay method</label>
+                        <select class="form-select mt-2" aria-label="Default select example" name="payment_method">
+                            <option>{{order.payment_method}}</option>
+                            <option value="Thanh toán khi nhận hàng">Thanh toán khi nhận hàng</option>
+                            <option value="Visa">Thanh toán qua thẻ Visa</option>
+                            <option value="Atm nội địa">Chuyển khoản qua ATM</option>
+                        </select>
+                    </div>
+                    <div class="form-group mt-3">
+                        <label>Status</label>
+                        <select class="form-select mt-2" aria-label="Default select example" name="status">
+                            <option>{{order.status}}</option>
+                            <option value="Thành công">Thành công</option>
+                            <option value="Đang xử lý">Đang xử lý</option>
+                            <option value="Thất bại">Thất bại</option>
+                        </select>
+                    </div>
+                    <div class="form-group mt-3 mb-3">
+                        <label>Voucher</label>
+                        <select class="form-select mt-2 list_products" name="discount_id">
+                            <option value="{{order.discount_id}}">{{discount.title}}</option>
+                            {{#each discounts}}
+                                <option 
+                                    value="{{this._id}}"
+                                    data-type="{{this.discount_type}}"
+                                    data-value="{{this.value_discount}}">
+                                    {{this.title}}
+                                </option>
+                            {{/each}}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="footer">
+    Thank you for creating with HuyHung | 2024 © 
+</div>
+

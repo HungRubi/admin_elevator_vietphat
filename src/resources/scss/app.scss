@@ -129,7 +129,7 @@ input{
     width: 50%;
 }
 .left_level{
-    #customerChart{
+    #customerChart, #orderChart{
         background-color: var(--bg-div);
         border: 1px solid var(--border-div);
         border-radius: 8px;

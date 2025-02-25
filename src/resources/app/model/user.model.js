@@ -8,7 +8,7 @@ const users = new Schema(
         avatar: { 
             type: String, 
             require: true,
-            default: 'https://www.dropbox.com/scl/fi/896n7adhufqiu2hlt94u5/default.png?rlkey=gk9thmq6u1grzss8o0c3os39f&st=n7o9qljw&dl=1'
+            default: 'https://www.dropbox.com/scl/fi/896n7adhufqiu2hlt94u5/default.png?rlkey=gk9thmq6u1grzss8o0c3os39f&st=83b9myer&dl=1'
         },
         name : { type: String, require: true},
         address: { type: String, require: true},

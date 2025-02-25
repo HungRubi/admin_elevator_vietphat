@@ -1,4 +1,4 @@
-const { mutipleMongooseoObject } = require('../../util/mongoose.util');
+const { mutipleMongooseoObject, mongooseToObject } = require('../../util/mongoose.util');
 const User = require('../model/user.model');
 const Product = require('../model/products.model');
 const Orders = require('../model/orders.model');
@@ -6,6 +6,7 @@ const OrderDetail = require('../model/orderDetail.model')
 const Discount = require('../model/discount.model');
 const {formatDate} = require('../../util/formatDate.util');
 const { v4: uuidv4 } = require('uuid');
+const moment = require('moment');
 class OdersController {
     
     /** [GET] /orders */
@@ -124,6 +125,103 @@ class OdersController {
         }catch(err){
             next(err)
         }
+    }
+
+    /** [GET] /orders/:id/edit */
+    async edit(req, res, next) {
+        try{
+            const users = await User.find({authour: 'customer'});
+            const orderId = req.params.id;
+            const orders = await Orders.findById(orderId);
+            const discountId = orders.discount_id;
+            const discounts = await Discount.find();
+            const discount = await Discount.findById(discountId);
+            res.render('orders/editOrder',{
+                users: mutipleMongooseoObject(users),
+                order: mongooseToObject(orders),
+                discounts: mutipleMongooseoObject(discounts),
+                discount: mongooseToObject(discount),
+            });
+        }catch(err){
+            next(err);
+        }
+    }
+
+    /** [PUT] /orders/:id/ */
+    update(req, res, next) {
+        Orders.updateOne({_id: req.params.id}, req.body)
+        .then(() => {
+            console.log(req.params.id);
+            res.redirect('/orders');
+        })
+        .catch(next);
+    }
+
+    
+
+    /** [GET] .orders/details/:id */
+    async details(req, res, next){
+        const orderId = req.params.id;
+        const detailsOrder = await OrderDetail.find({order_id: orderId});
+        console.log(detailsOrder)
+
+        if (!detailsOrder) {
+            return res.status(404).send("Order details not found");
+        }
+
+        const orderDetailsFormat = await Promise.all(
+            detailsOrder.map(async (details) => {
+                const product = await Product.findById(details.product_id);
+                return {
+                    ...details.toObject(),
+                    productName: product ? product.name : 'Unknown',
+                    productPrice: product ? product.price : 'Unknown',
+                    productImage: product ? product.thumbnail_main : 'Unknown',
+                };
+            })
+        );
+
+        res.render('orders/detailOrder', { orderDetailsFormat });
+    }
+
+    /** [GET] /order/api/count  */
+    async getOrderLast7Days(req, res, next) {
+        try{
+            const sevenDaysAgo = moment().subtract(7, 'days').startOf('day').toDate();
+            const today = moment().endOf('day').toDate();
+            const order = await Orders.aggregate([
+                {
+                    $match: {
+                        createdAt: { $gte: sevenDaysAgo, $lte: today } 
+                    }
+                },{
+                    $group: {
+                        _id: {
+                            year: { $year: "$createdAt" },
+                            month: { $month: "$createdAt" },
+                            day: { $dayOfMonth: "$createdAt" }
+                        },
+                        count: { $sum: 1 }
+                    }
+                },{
+                    $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 }
+                }
+            ])
+            res.json(order);
+        }catch(err) {   
+            next(err);
+        }
+    }
+
+    /** [DELETE] /orders/details/:id/ */
+    deleteDetails(req, res, next) {
+        OrderDetail.deleteOne({_id: req.params.id})
+        .then(() => {
+            res.redirect('/orders')
+        })
+        .catch(err => {
+            next(err);
+        })
     }
 }
 

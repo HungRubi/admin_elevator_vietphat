@@ -415,6 +415,52 @@ document.addEventListener("DOMContentLoaded", () => {
         renderChart(labels, data);
     }
 
+    function renderChartOrder(labels, data) {
+        const ctx = document.getElementById("orderChart").getContext("2d");
+    
+        new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: labels, // Mảng ngày
+                datasets: [{
+                    label: "Số lượng đơn hàng",
+                    data: data, // Mảng số lượng khách hàng
+                    borderColor: "blue",
+                    backgroundColor: "rgba(0, 0, 255, 0.2)",
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true }
+                },
+                scales: {
+                    // x: {
+                    //     title: { display: true, text: "Day" }
+                    // },
+                    // y: {
+                    //     beginAtZero: true,
+                    //     title: { display: true, text: "Count" }
+                    // }
+                }
+            }
+        });
+    }
+    async function renderChartCountOrder() {
+        const response = await fetch(`http://localhost:4000/orders/api/count`);
+        const result = await response.json();
+
+        const labels = result.map(item => 
+            `${item._id.year}-${String(item._id.month).padStart(2, "0")}-${String(item._id.day).padStart(2, "0")}`
+        );
+        const data = result.map(item => item.count);
+
+        renderChartOrder(labels, data);
+    }
     function autoFillShippingAdress(){
         const userList = document.querySelector('.user_list_js');
         const labelPhone = document.querySelector('.lb_phone');
@@ -590,6 +636,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             document.querySelector('.login_container').style.display = 'none';
             renderChartCount();
+            renderChartCountOrder();
 
         }else if(currentPath.startsWith('/orders')){
             document.querySelector('.tab-1').classList.remove('active');
