@@ -20,4 +20,12 @@ route.get('/discount/:id/edit', categoryController.editDiscount);
 route.get('/discount/add', categoryController.addDiscount);
 route.get('/discount', categoryController.discount);
 
+/** === BANNER === */
+route.put('/banner/:id', categoryController.updateBanner);
+route.get('/banner/add', categoryController.addBanner);
+route.get('/banner/:id/edit', categoryController.editBanner);
+route.post('/banner/store', categoryController.storeBanner);
+route.get('/banner', categoryController.banner);
+
+
 module.exports = route;

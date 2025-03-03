@@ -6,6 +6,7 @@ const { mutipleMongooseoObject } = require('../../util/mongoose.util');
 const { formatDate } = require('../../util/formatDate.util');
 const {createSlug} = require('../../util/createSlug.util');
 const {importDate} = require('../../util/importDate.util');
+const Banner = require('../model/banner.model')
 
 class CategoryController{
 
@@ -127,6 +128,7 @@ class CategoryController{
             next(error);
         }
     }
+
     /** ===== DISCOUNT ===== */
 
     /** [GET] /category/discount */
@@ -194,6 +196,7 @@ class CategoryController{
         })
     }
 
+
     /** [POST] /category/discount/store */
     storeDiscount = async (req, res , next) => {
         try{
@@ -246,13 +249,125 @@ class CategoryController{
         }
     }
 
-    
+    /** [UPDATE] /category/discount/:id */
     updateDiscount(req, res, next) {
         Discount.updateOne({_id: req.params.id}, req.body)
         .then(() => {
             res.redirect('/category/discount');
         })
         .catch(next);
+    }
+
+    /** ===== BANNER ===== */
+
+    /** [GET] /category/banner */
+    banner = async(req, res, next) => {
+        let page = parseInt(req.query.page) || 1;
+        let limit = 10;
+        let skip = (page - 1) * limit;
+        let sortField = req.query.sort || 'name'; 
+        let sortOrder = req.query.order === 'desc' ? -1 : 1;
+        try{
+            const searchQuery = req.query.timkiem?.trim() || '';
+            if(searchQuery){
+                const banner = await Banner.find({
+                        name: { $regex: searchQuery, $options: 'i' }
+                }).sort({ [sortField]: sortOrder }).lean();
+                const bannerFormat = banner.map(ban => ({
+                    ...ban,
+                    lastUpdate: formatDate(ban.updatedAt),
+                }));
+                return res.render('category/banner/banner', {
+                    searchType: true,
+                    searchBanner: bannerFormat,
+                    currentSort: sortField,
+                    currentOrder: sortOrder === 1 ? 'asc' : 'desc',
+                })
+            }
+            const banner = await Banner.find()
+                .skip(skip)
+                .limit(limit)
+                .sort({ [sortField]: sortOrder })
+                .lean();
+    
+            const formatBanner = banner.map(discount => ({
+                ...discount,
+                lastUpdate: formatDate(discount.updatedAt),
+            }));
+    
+            const totalBanner = await Banner.countDocuments();
+            const totalPage = Math.ceil(totalBanner / limit);
+    
+            res.render('category/banner/banner', {
+                formatBanner,
+                currentPage: page,
+                totalPage,
+                searchType: false,
+                currentSort: sortField,
+                currentOrder: sortOrder === 1 ? 'asc' : 'desc'
+            });
+        }catch(err){
+            next(err)
+        }
+    }
+
+    /** [GET] /category/banner/add */
+    addBanner(req, res, next) {
+        res.render('category/banner/addBanner');
+    }
+
+    /** [POST] /category/banner/store */
+    storeBanner = async (req, res , next) => {
+        try{
+            const{
+                name,
+                thumbnail,
+                status,
+            } = req.body;
+            const slug = createSlug(name);
+            const banner = new Banner({
+                name,
+                thumbnail,
+                status,
+                slug
+            })
+
+            await banner.save();
+            res.redirect('/category/banner');
+
+        }catch(err){
+            next(err)
+        }
+    }
+
+    /** [GET] /category/banner/:id/edit */
+    async editBanner(req, res, next) {
+        const banner = await Banner.findById({_id: req.params.id});
+        res.render('category/banner/editBanner', {
+            banner: mongooseToObject(banner)
+        })
+    }
+
+    /** [PUT] /category/banner/:id */
+    updateBanner(req, res, next) {
+        Banner.updateOne({_id: req.params.id}, req.body)
+        .then(() => {
+            res.redirect('/category/banner')
+        })
+        .catch(err => {
+            next(err);
+        })
+    }
+
+    /** [DELETE] /category/banner/:id */
+    destroyBanner(req, res, next) {
+        Banner.deleteOne({_id: req.params.id})
+        .then(() => {
+            res.redirect('/category/banner')
+        })
+        .catch(err => {
+            next(err);
+        })
     }
 }
 

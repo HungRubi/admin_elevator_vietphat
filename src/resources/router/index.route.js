@@ -6,8 +6,10 @@ const articleRoute = require('./article.route');
 const reportRoute = require('./report.route');
 const loginRoute = require('./login.route');
 const categoryRoute = require('./category.route');
+const apiRoute = require('./api.route');
 
 function route(app) {
+    app.use('/api', apiRoute);
     app.use('/category', categoryRoute);
     app.use('/login', loginRoute);
     app.use('/report', reportRoute);
