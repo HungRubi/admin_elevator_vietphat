@@ -606,18 +606,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelectorAll('.discount_product')[1].classList.remove('active');
         }
     }
-    tinymce.init({
-        selector: 'textarea',
-        height: 450,
-        menubar: true,
-        plugins: 'lists link image table code',
-        toolbar: 'undo redo | formatselect | bold italic underline | alignleft aligncenter alignright | bullist numlist outdent indent | link image',
-        content_css: '//www.tiny.cloud/css/codepen.min.css',
-        content_style: `
-            .mce-content-body:not([dir=rtl])[data-mce-placeholder]:not(.mce-visualblocks)::before {
-                left: unset !important;
-            }`,
-    });
+    
     function tabUi(){
         const currentPath = window.location.pathname;
         if(currentPath === '/'){
