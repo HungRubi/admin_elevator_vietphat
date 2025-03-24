@@ -6,53 +6,58 @@ const { mutipleMongooseoObject } = require('../../util/mongoose.util');
 const { formatDate } = require('../../util/formatDate.util');
 const {createSlug} = require('../../util/createSlug.util');
 const {importDate} = require('../../util/importDate.util');
-const Banner = require('../model/banner.model')
+const Banner = require('../model/banner.model');
+const Video = require('../model/video.model');
+const Article = require('../model/article.model');
 
 class CategoryController{
 
     /** ===== PRODUCT ===== */
 
     /** [GET] /category/product */
-    product(req, res, next) {
-        const searchQuery = req.query.timkiem?.trim() || '';
-        if(searchQuery) {
-            CategoryProduct.find({
-                name: { $regex: searchQuery, $options: 'i' }
-            })
-            .then(searchProduct => {
-                const formatType = searchProduct.map(type => {
-                    return{
-                        ...type.toObject(),
-                        lastUpdate: formatDate(type.updatedAt)
-                    }
+    async product(req, res, next) {
+        try {
+            const searchQuery = req.query.timkiem?.trim() || '';
+    
+            if (searchQuery) {
+                const searchProduct = await CategoryProduct.find({
+                    name: { $regex: searchQuery, $options: 'i' }
                 });
-                res.render('category/product/product', {
+    
+                const formatType = searchProduct.map(type => ({
+                    ...type.toObject(),
+                    lastUpdate: formatDate(type.updatedAt)
+                }));
+    
+                const data = {
                     searchType: true,
                     searchProduct: formatType,
                     searchQuery
-                })
-            })
-            .catch(next)
-        }else{
-            CategoryProduct.find({})
-            .then(categoryProduct => {
-                const formatType = categoryProduct.map(type => {
-                    return{
-                        ...type.toObject(),
-                        lastUpdate: formatDate(type.updatedAt)
-                    }
-                });
-                res.render('category/product/product', {
-                    categoryProduct: formatType,
-                    searchType: false,
-                })
-            }).catch(next)
+                };
+    
+                return res.status(200).json({ data });
+            } 
+            
+            const categoryProduct = await CategoryProduct.find({});
+            const totalOrder = await CategoryProduct.countDocuments();
+            const totalPage = Math.ceil(totalOrder / 10);
+    
+            const formatType = categoryProduct.map(type => ({
+                ...type.toObject(),
+                lastUpdate: formatDate(type.updatedAt)
+            }));
+    
+            const data = {
+                totalPage,
+                categoryProduct: formatType,
+                searchType: false
+            };
+    
+            res.status(200).json({ data });
+    
+        } catch (error) {
+            res.status(500).json({ message: err });
         }
-    }
-
-    /** [GET] /category/product/add */
-    addProduct(req, res, next) {
-        res.render('category/product/addProduct');
     }
 
     /** [POST] /category/product/store */
@@ -66,40 +71,46 @@ class CategoryController{
                 slug
             })
             await categoryProduct.save();
-            res.redirect('/category/product')
+            res.status(200).json({message: "Thành công"});
         }catch(err){
-            next(err);
+            res.status(200).json({message: "Thất bại"});
         }
     }
 
     /** [GET] /category/product/:id/edit */
-    editProduct(req, res, next) {
-        CategoryProduct.findById(req.params.id)
-        .then(categoryProduct => {
-            res.render('category/product/editProduct', {
-                categoryProduct: mongooseToObject(categoryProduct)
-            })
-        })
+    async editProduct(req, res, next) {
+        try{
+            const categoryProduct = await CategoryProduct.findById(req.params.id);
+            const data = {categoryProduct}
+            res.status(200).json({data});
+        }catch(err){
+            res.status(200).json({message: err})
+        }
     }
 
-    /** [PUT] /category/product/:id/edit */
+    /** [PUT] /category/product/:id */
     updateProduct(req, res, next) {
         const {name, description} = req.body;
+        console.log(req.body)
         const slug = createSlug(name);
         CategoryProduct.updateOne({_id: req.params.id},{name,description,slug})
         .then(() => {
-            res.redirect('/category/product');
+            res.status(200).json({message: "Thành công"});
         })
-        .catch(next);
+        .catch(err => {
+            res.status(200).json({message: "Thất bại: ", err});
+        });
     }
 
-    /** [DELETE] /category/product/:id/deleted*/
+    /** [DELETE] /category/product/:id*/
     destroyProduct(req, res, next) {
         CategoryProduct.deleteOne({_id: req.params.id})
         .then(() => {
-            res.redirect('/category/product');
+            res.status(200).json({message: "Thành công"});
         })
-        .catch(next);
+        .catch(err => {
+            res.status(200).json({message: "Thất bại: ", err});
+        });
     }
 
     /** [GET] /category/product/all */
@@ -133,9 +144,6 @@ class CategoryController{
 
     /** [GET] /category/discount */
     async discount(req, res, next) {
-        let page = parseInt(req.query.page) || 1;
-        let limit = 10;
-        let skip = (page - 1) * limit;
         let sortField = req.query.sort || 'title'; 
         let sortOrder = req.query.order === 'desc' ? -1 : 1;
         try{
@@ -150,16 +158,15 @@ class CategoryController{
                     endDate: formatDate(discount.end_date),
                     lastUpdate: formatDate(discount.updatedAt),
                 }));
-                return res.render('category/discount/discount', {
+                const data = {
                     searchType: true,
                     searchDiscount: discountFormat,
                     currentSort: sortField,
                     currentOrder: sortOrder === 1 ? 'asc' : 'desc',
-                })
+                }
+                return res.status(200).json({ data})
             }
             const discounts = await Discount.find()
-                .skip(skip)
-                .limit(limit)
                 .sort({ [sortField]: sortOrder })
                 .lean();
     
@@ -171,31 +178,20 @@ class CategoryController{
             }));
     
             const totalDiscount = await Discount.countDocuments();
-            const totalPage = Math.ceil(totalDiscount / limit);
+            const totalPage = Math.ceil(totalDiscount / 10);
     
-            res.render('category/discount/discount', {
+            const data = {
                 formatDiscount,
-                currentPage: page,
                 totalPage,
                 searchType: false,
                 currentSort: sortField,
                 currentOrder: sortOrder === 1 ? 'asc' : 'desc'
-            });
+            }
+            res.status(200).json({data});
         }catch(err){
             next(err)
         }
     }
-
-    /** [GET] /category/discount/add */
-    addDiscount(req, res, next) {
-        Product.find({})
-        .then(products => {
-            res.render('category/discount/addDiscount',{
-                products: mutipleMongooseoObject(products)
-            })
-        })
-    }
-
 
     /** [POST] /category/discount/store */
     storeDiscount = async (req, res , next) => {
@@ -238,14 +234,13 @@ class CategoryController{
             const discounts = await Discount.findById({_id: req.params.id});
             const discount = {
                 ...discounts.toObject(),
-                formatDate: importDate(discounts.end_date)
+                endDate: importDate(discounts.end_date),
+                startDate: importDate(discounts.start_date),
             }
-            console.log(discount.formatDate)
-            res.render('category/discount/editDiscount', {
-                discount
-            })
+            const data = {discount}
+            res.status(200).json({data})
         }catch(err) {
-            next(err);
+            res.status(500).json({message: err})
         }
     }
 
@@ -262,9 +257,6 @@ class CategoryController{
 
     /** [GET] /category/banner */
     banner = async(req, res, next) => {
-        let page = parseInt(req.query.page) || 1;
-        let limit = 10;
-        let skip = (page - 1) * limit;
         let sortField = req.query.sort || 'name'; 
         let sortOrder = req.query.order === 'desc' ? -1 : 1;
         try{
@@ -277,16 +269,15 @@ class CategoryController{
                     ...ban,
                     lastUpdate: formatDate(ban.updatedAt),
                 }));
-                return res.render('category/banner/banner', {
+                const data = {
                     searchType: true,
                     searchBanner: bannerFormat,
                     currentSort: sortField,
                     currentOrder: sortOrder === 1 ? 'asc' : 'desc',
-                })
+                }
+                return res.status(200).json({data})
             }
             const banner = await Banner.find()
-                .skip(skip)
-                .limit(limit)
                 .sort({ [sortField]: sortOrder })
                 .lean();
     
@@ -296,24 +287,19 @@ class CategoryController{
             }));
     
             const totalBanner = await Banner.countDocuments();
-            const totalPage = Math.ceil(totalBanner / limit);
-    
-            res.render('category/banner/banner', {
+            const totalPage = Math.ceil(totalBanner / 10);
+            
+            const data = {
                 formatBanner,
-                currentPage: page,
                 totalPage,
                 searchType: false,
                 currentSort: sortField,
                 currentOrder: sortOrder === 1 ? 'asc' : 'desc'
-            });
+            }
+            res.status(200).json({data});
         }catch(err){
             next(err)
         }
-    }
-
-    /** [GET] /category/banner/add */
-    addBanner(req, res, next) {
-        res.render('category/banner/addBanner');
     }
 
     /** [POST] /category/banner/store */
@@ -340,12 +326,15 @@ class CategoryController{
         }
     }
 
-    /** [GET] /category/banner/:id/edit */
+    /** [GET] /category/banner/:id */
     async editBanner(req, res, next) {
-        const banner = await Banner.findById({_id: req.params.id});
-        res.render('category/banner/editBanner', {
-            banner: mongooseToObject(banner)
-        })
+        try{
+            const banner = await Banner.findById({_id: req.params.id});
+            const data = {banner: mongooseToObject(banner)}
+            res.status(200).json({data})
+        }catch(err){
+            res.status(500).json({message: err})
+        }
     }
 
     /** [PUT] /category/banner/:id */
@@ -369,6 +358,164 @@ class CategoryController{
             next(err);
         })
     }
+
+    /** ==== VIDEO ==== */
+
+    /** [GET] /category/video */
+    async getCategoryVideo(req, res, next) {
+        try {
+            const searchQuery = req.query.timkiem?.trim() || '';
+    
+            if (searchQuery) {
+                const searchProduct = await Video.find({
+                    name: { $regex: searchQuery, $options: 'i' }
+                });
+    
+                const formatType = searchProduct.map(type => ({
+                    ...type.toObject(),
+                    lastUpdate: formatDate(type.updatedAt)
+                }));
+    
+                const data = {
+                    searchType: true,
+                    searchVideo: formatType,
+                    searchQuery
+                };
+    
+                return res.status(200).json({ data });
+            } 
+            
+            const categoryProduct = await Video.find({});
+            const totalOrder = await Video.countDocuments();
+            const totalPage = Math.ceil(totalOrder / 10);
+    
+            const formatType = categoryProduct.map(type => ({
+                ...type.toObject(),
+                lastUpdate: formatDate(type.updatedAt)
+            }));
+    
+            const data = {
+                totalPage,
+                searchType: false,
+                categoryVideo: formatType,
+            };
+    
+            res.status(200).json({ data });
+    
+        } catch (error) {
+            res.status(500).json({ message: err });
+        }
+    }
+
+    /** [POST] /category/video/store */
+    async addCategoryVideo(req, res, next) {
+        try{
+            const {name, content, thumbnail,video_url,status} = req.body;
+            console.log(req.body);
+            if(status === ''){
+                status = 'public';
+            }
+            let slug = createSlug(name);
+            const video = new Video({
+                name,
+                content,
+                thumbnail,
+                video_url,
+                status,
+                slug
+            })
+            await video.save();
+            res.status(200).json({message: "Thành công"});
+        }catch(err){
+            res.status(500).json({message: "Thất bại"})
+        }
+    }
+
+    /** [GET] /category/video/:id/edit */
+    async editVideo(req, res, next) {
+        try{
+            const video = await Video.findById({_id: req.params.id});
+
+            res.status(200).json({video})
+        }catch(err){
+            res.status(500).json({message: err})
+        }
+    }
+
+    /** [GET] /category/video/:slug */
+    async getDetailVideo(req, res, next) {
+        try{
+            const video = await Video.findOne({slug: req.params.slug});
+            const format = {
+                ...video.toObject(),
+                formateDate: formatDate(video.createdAt)
+            }
+            const articles = await Article.find().sort({ createdAt: -1 }).limit(4);
+            const formNewArticles = articles.map(type => ({
+                ...type.toObject(),
+                formatedDate: formatDate(type.updatedAt)
+            }));
+            const product = await Product.find().sort({ createdAt: -1 }).limit(4);
+            const formNewProduct = product.map(type => ({
+                ...type.toObject(),
+                formatedDate: formatDate(type.createdAt)
+            }));
+            const videoAll = await Video.find({}).sort({createdAt: -1})
+            const formatVideo = videoAll.map(item => ({
+                ...item.toObject(),
+                format: formatDate(item.createdAt)
+            }))
+            const data = {
+                video: format,
+                videos: formatVideo,
+                articleSuggest: formNewArticles,
+                productSuggest: formNewProduct,
+            }
+            res.status(200).json({data})
+        }catch(err){
+            res.status(500).json({message: err})
+        }
+    }
+
+    /** [PUT] /category/video/:id */
+    updateVideo(req, res, next) {
+        const {
+            name,
+            content,
+            thumbnail,
+            video_url,
+            status
+        } = req.body;
+        console.log(req.body)
+        console.log(req.params.id)
+        const slug = createSlug(name);
+        Video.updateOne({_id: req.params.id},{
+            name,
+            content,
+            thumbnail,
+            video_url,
+            status,
+            slug
+        })
+        .then(() => {
+            res.status(200).json({message: "Thành công"});
+        })
+        .catch(err => {
+            res.status(200).json({message: "Thất bại: "});
+        });
+    }
+
+    /** [DELETE] */
+    destroyProduct(req, res, next) {
+        CategoryProduct.deleteOne({_id: req.params.id})
+        .then(() => {
+            res.status(200).json({message: "Thành công"});
+        })
+        .catch(err => {
+            res.status(200).json({message: "Thất bại: ", err});
+        });
+    }
+
 }
 
 module.exports = new CategoryController();

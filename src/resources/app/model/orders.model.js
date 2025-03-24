@@ -13,12 +13,12 @@ const orders = new mongoose.Schema(
         },
         payment_method: { 
             type: String,
-            enum: ['Thanh toán khi nhận hàng', 'Visa', 'Atm nội địa'],
+            enum: ['Thanh toán khi nhận hàng', 'Ví điện tử Momo', 'Atm nội địa'],
             default: 'Thanh toán khi nhận hàng'
         }, 
         status: {
             type: String,
-            enum: ['Thành công', 'Đang xử lý', 'Thất bại'], 
+            enum: ['Thành công', 'Đang xử lý', 'Đang giao hàng' ,'Thất bại'], 
             default: 'Đang xử lý',
         },
         discount_id: {type: mongoose.Schema.Types.ObjectId, ref: 'discount'},

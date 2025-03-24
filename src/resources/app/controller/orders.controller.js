@@ -4,16 +4,14 @@ const Product = require('../model/products.model');
 const Orders = require('../model/orders.model');
 const OrderDetail = require('../model/orderDetail.model')
 const Discount = require('../model/discount.model');
+const CategoryProduct = require('../model/categoryProduct.model')
 const {formatDate} = require('../../util/formatDate.util');
 const { v4: uuidv4 } = require('uuid');
 const moment = require('moment');
 class OdersController {
     
-    /** [GET] /orders */
+    /** [GET] /order */
     async index(req, res, next) {
-        let page = parseInt(req.query.page) || 1;
-        let limit = 10;
-        let skip = (page - 1) * limit;
         let sortField = req.query.sort || 'order_code'; 
         let sortOrder = req.query.order === 'desc' ? -1 : 1;
         try{
@@ -31,20 +29,20 @@ class OdersController {
                             orderDate: formatDate(order.order_date),
                             lastUpdate: formatDate(order.updatedAt),
                             userName: user ? user.name : 'Unknown',
+                            userAvatar: user ? user.avatar : 'Unknown',
                             discountName: discount ? discount.title : 'Unknown'
                         };
                     })
                 );
-                return res.render('orders/orders', {
+                const data = {
                     searchType: true,
                     searchOrder: orderFormat,
                     currentSort: sortField,
                     currentOrder: sortOrder === 1 ? 'asc' : 'desc',
-                })
+                }
+                return res.status(200).json({data})
             }
             const orders = await Orders.find()
-                .skip(skip)
-                .limit(limit)
                 .sort({ [sortField]: sortOrder }) 
                 .lean();
     
@@ -56,24 +54,25 @@ class OdersController {
                         ...order,
                         lastUpdate: formatDate(order.updatedAt),
                         orderDate: formatDate(order.order_date),
-                        userName: user ? user.name : 'Unknown', 
+                        userName: user ? user.name : 'Unknown',
+                        userAvatar: user ? user.avatar : 'Unknown', 
                         discountName: discount ? discount.title : 'Unknown'
                     };
                 })
             );
             const totalOrder = await Orders.countDocuments();
-            const totalPage = Math.ceil(totalOrder / limit);
-    
-            res.render('orders/orders', {
+            const totalPage = Math.ceil(totalOrder / 10);
+            
+            const data = {
                 orderFormat,
-                currentPage: page,
                 totalPage,
                 searchType: false,
                 currentSort: sortField,
                 currentOrder: sortOrder === 1 ? 'asc' : 'desc'
-            });
+            }
+            res.status(200).json({data});
         }catch(err){
-            next(err);
+            next(err)
         }
     }
     
@@ -86,11 +85,10 @@ class OdersController {
             const discounts = await Discount.find({ 
                 end_date: { $gt: currentDate }
             });
-            res.render('orders/addOrder', {
-                products: mutipleMongooseoObject(products),
+            const data = {products: mutipleMongooseoObject(products),
                 discounts: mutipleMongooseoObject(discounts),
-                users: mutipleMongooseoObject(users),
-            });
+                users: mutipleMongooseoObject(users),}
+            res.status(200).json({data});
         }catch(err){
             next(err);
         }
@@ -127,23 +125,45 @@ class OdersController {
         }
     }
 
-    /** [GET] /orders/:id/edit */
+    /** [GET] /order/:id */
     async edit(req, res, next) {
         try{
-            const users = await User.find({authour: 'customer'});
             const orderId = req.params.id;
             const orders = await Orders.findById(orderId);
             const discountId = orders.discount_id;
-            const discounts = await Discount.find();
             const discount = await Discount.findById(discountId);
-            res.render('orders/editOrder',{
-                users: mutipleMongooseoObject(users),
-                order: mongooseToObject(orders),
-                discounts: mutipleMongooseoObject(discounts),
+            const detailsOrder = await OrderDetail.find({order_id: orderId});
+            console.log("detailsOrder:", detailsOrder);
+            if (!detailsOrder) {
+                return res.status(404).send("Order details not found");
+            }
+            const formatOrder = {
+                ...orders.toObject(),
+                discountName: discount ? discount.title : "Unknown"
+            };
+            const orderDetailsFormat = await Promise.all(
+                detailsOrder.map(async (details) => {
+                    const product = await Product.findById(details.product_id);
+                    const category = product ? await CategoryProduct.findById(product.category) : null;
+                    return {
+                        ...details.toObject(),
+                        name: product ? product.name : 'Unknown',
+                        price: product ? product.price : 'Unknown',
+                        thumbnail_main: product ? product.thumbnail_main : 'Unknown',
+                        category: category ? category.name : 'Unknown',
+                    };
+                })
+            );
+            console.log("Format Order: " , orderDetailsFormat)
+            const data = {
+                orderDetailsFormat,
+                orders: formatOrder,
                 discount: mongooseToObject(discount),
-            });
+            }
+            res.status(200).json({data});
         }catch(err){
-            next(err);
+            console.error("❌ Error in edit controller:", err);
+            res.status(500).json({ error: err.message || "Internal Server Error" });
         }
     }
 

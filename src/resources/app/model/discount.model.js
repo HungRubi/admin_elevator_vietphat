@@ -9,9 +9,6 @@ const discount = new mongoose.Schema(
             enum: [
                 'giảm theo phần trăm',
                 'giảm theo số tiền cố định',
-                'giảm theo khách hàng vip',
-                'giảm giá theo thời gian',
-                'giảm giá theo mã giảm giá'
             ],
             require: true,
         },

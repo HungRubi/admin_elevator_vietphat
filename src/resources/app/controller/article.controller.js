@@ -1,8 +1,10 @@
 const Article = require('../model/article.model');
+const Product = require('../model/products.model');
 const { mutipleMongooseoObject } = require('../../util/mongoose.util');
 const { mongooseToObject } = require('../../util/mongoose.util');
 const { formatDate } = require('../../util/formatDate.util');
-const { createSlug } = require('../../util/createSlug.util')
+const { createSlug } = require('../../util/createSlug.util');
+const { importDate } = require('../../util/importDate.util');
 
 function dateEnglish(date) {
     return new Date(date).toLocaleDateString('en-US', {  
@@ -11,67 +13,37 @@ function dateEnglish(date) {
 }
 class ArticleController {
     
-    /* [GET] /admin/articles */
+    /* [GET] /articles */
     async index(req, res, next) {
-        let page = parseInt(req.query.page) || 1;
-        let limit = 10;
-        let skip = (page - 1) * limit;
-        let sortField = req.query.sort || 'subject'; 
-        let sortOrder = req.query.order === 'desc' ? -1 : 1; 
-        try{
-            const searchQuery = req.query.timkiem?.trim() || '';
-            if (searchQuery) {
-                const articles = await Article.find({
-                    subject: { $regex: searchQuery, $options: 'i' }
-                }).sort({ [sortField]: sortOrder }).lean();
-    
-                const formatArticle = articles.map(article => ({
-                    ...article,
-                    lastUpdate: formatDate(article.updatedAt)
-                }));
-    
-                return res.render('articles/articles', {
-                    searchType: true,
-                    searchArticle: formatArticle,
-                    searchQuery,
-                    currentSort: sortField,
-                    currentOrder: sortOrder === 1 ? 'asc' : 'desc'
-                });
-            } 
-    
-            const articles = await Article.find()
-                .skip(skip)
-                .limit(limit)
-                .sort({ [sortField]: sortOrder }) // Sắp xếp sản phẩm
+        try {
+            const articles = await Article.find({ status: 'public' })
+                .sort({ createdAt: -1 })
                 .lean();
     
-            const formatArticleMain = articles.map(article => ({
+            const formatArticle = articles.map(article => ({
                 ...article,
                 dateFormat: formatDate(article.updatedAt)
             }));
     
             const totalArticle = await Article.countDocuments();
-            const totalPage = Math.ceil(totalArticle / limit);
-    
-            res.render('articles/articles', {
-                formatArticleMain,
-                currentPage: page,
+            const totalPage = Math.ceil(totalArticle / 8);
+            const data = {
+                articles: formatArticle,
                 totalPage,
-                searchType: false,
-                currentSort: sortField,
-                currentOrder: sortOrder === 1 ? 'asc' : 'desc'
-            });
-        }catch(err){
-            next(err);
+            };
+    
+            res.status(200).json({ data });
+        } catch (err) {
+            res.status.json({message: err});
         }
     }
 
-    /* [GET] /admin/article/add */
+    /* [GET] /article/add */
     add(req, res, next) {
         res.render('articles/addArticle')
     }
 
-    /** [POST] /admin/articles/store */
+    /** [POST] /articles/store */
     store = async (req, res, next) => {
         try{
             const {
@@ -107,14 +79,22 @@ class ArticleController {
         }
     }
     
-    /** [GET] /admin/articles/:id/edit */
-    edit(req, res, next) {
-        Article.findById(req.params.id)
-            .then(articles => {
-                res.render('articles/editArticle',{
-                    articles: mongooseToObject(articles),
-                })
-            })
+    /** [GET] /articles/:id */
+    async edit(req, res, next) {
+        try{
+            const article = await Article.findById(req.params.id)
+            const formatProduct = {
+                    ...article.toObject(),
+                    lastUpdate: importDate(article.updatedAt)
+            }
+            const data = {
+                article: formatProduct
+            }
+            res.status(200).json({data})
+        }
+        catch(err){
+            res.status(500).json({message: err})
+        }
     }
 
     /** [PUT] /admin/articles/:id */
@@ -133,33 +113,32 @@ class ArticleController {
         .catch(next)
     }
 
-    /** [GET] /admin/articles/getall */
-    getAll(req, res, next) {
-        
-        Article.find({status : 'public'})
-        .then(articles => {
-            const formatarticle = articles.map(cus => {
-                return{
-                    ...cus.toObject(),
-                    formatedDate: formatDate(cus.updatedAt),
-                }
-            })
-            res.json(formatarticle)
-        })
-        .catch(next);
-    }
-
-    /** [GET] /admin/articles/getdetail/:slug */
-    getdetailproduct(req, res, next){
-        Article.findOne({ slug: req.params.slug })
-            .then((article) => {
-                const formatarticle = {
-                    ...article.toObject(),
-                    formatedDate: formatDate(article.updatedAt),
-                };
-                res.json(formatarticle);
-            })
-            .catch(next);
+    /** [GET] /articles/fe/:slug */
+    async getdetailproduct(req, res, next){
+        try{
+            const article = await  Article.findOne({ slug: req.params.slug });
+            const formatarticle = {
+                ...article.toObject(),
+                formatedDate: formatDate(article.updatedAt),
+            };
+            const articles = await Article.find().sort({ createdAt: -1 }).limit(4);
+            const formNewArticles = articles.map(type => ({
+                ...type.toObject(),
+                formatedDate: formatDate(type.updatedAt)
+            }));
+            const product = await Product.find().sort({ createdAt: -1 }).limit(4);
+            const formNewProduct = product.map(type => ({
+                ...type.toObject(),
+                formatedDate: formatDate(type.createdAt)
+            }));
+            res.status(200).json({
+                article: formatarticle,
+                formNewProduct,
+                formNewArticles
+            });
+        }catch(err){
+            res.status(500).json({message: err});
+        }
     }
 
     /** [GET] /admin/articles/api/latest */
