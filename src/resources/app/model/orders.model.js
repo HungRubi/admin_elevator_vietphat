@@ -5,7 +5,7 @@ const orders = new mongoose.Schema(
         user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true },
         order_code: { type: String, require: true, unique:true}, 
         order_date: {type: Date, default: Date.now},
-        total_price: {type: Number, min: 0, require: true},
+        total_price: {type: Number, min: 0, required: true},
         shipping_address: {
             name: { type: String, required: true }, 
             phone: { type: String, required: true }, 
@@ -21,7 +21,10 @@ const orders = new mongoose.Schema(
             enum: ['Thành công', 'Đang xử lý', 'Đang giao hàng' ,'Thất bại'], 
             default: 'Đang xử lý',
         },
-        discount_id: {type: mongoose.Schema.Types.ObjectId, ref: 'discount'},
+        discount_id: {
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'discount'
+        },
     },
     {
         timestamps: true

@@ -3,8 +3,6 @@ const User = require('../model/user.model');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require("dotenv");
-const { token } = require('morgan');
-const { use } = require('passport');
 
 dotenv.config();
 
@@ -15,13 +13,25 @@ class AuthController {
     /** [POST] /auth/register */
     async register(req, res, next) {
         try{
+            console.log(req.body);
             const {frist,last,email,city,street,day,month,year,account,password, confirm,phone} = req.body;
+            const existingUser = await User.findOne({ $or: [{ email }, { account }] });
+            if (existingUser) {
+                return res.status(404).json('Account already exists. Please use a different email or username.');
+            }
             if(password !== confirm){
                 return res.status(404).json("Password and confirm password do not match");
             }
-            const name = frist + last;
-            const birth = new Date(`${year}-${month}-${day}T00:00:00.000Z`);
-            const address = city + street;
+            const name = `${frist} ${last}`;
+            const y = parseInt(year, 10);
+            const m = parseInt(month, 10) - 1; // Tháng trong JS bắt đầu từ 0
+            const d = parseInt(day, 10);
+
+            const birth = new Date(y, m, d);
+            if (isNaN(birth.getTime())) {
+                return res.status(400).json("Ngày sinh không hợp lệ");
+            }
+            const address = `${city}, ${street}`;
 
             const hashPassword = await bcrypt.hash(password, 10);
 

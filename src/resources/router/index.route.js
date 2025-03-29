@@ -6,10 +6,11 @@ const articleRoute = require('./article.route');
 const reportRoute = require('./report.route');
 const categoryRoute = require('./category.route');
 const authRoute = require('./auth.route');
-
+const notificaitonRoute = require('./notification.route')
 
 function route(app) {
     app.use('/auth', authRoute);
+    app.use('/notificaiton', notificaitonRoute);
     app.use('/category', categoryRoute);
     app.use('/report' ,reportRoute);
     app.use('/products', productRoute);
