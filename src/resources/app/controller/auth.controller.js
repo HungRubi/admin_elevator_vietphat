@@ -1,5 +1,7 @@
 const { formatDate } = require('../../util/formatDate.util');
 const User = require('../model/user.model');
+const Cart = require('../model/cart.model');
+const Product = require('../model/products.model');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require("dotenv");
@@ -55,7 +57,6 @@ class AuthController {
     /** [POST] /auth/login */
     async login(req, res, next) {
         try{
-            console.log(req.body);
             const user = await User.findOne({account: req.body.account});
             if(!user){
                 return res.status(404).json("Incorrect account")
@@ -102,14 +103,23 @@ class AuthController {
                     ...userWithoutPassword,
                     format: formatDate(user.birth)
                 }
+                const cart = await Cart.find({ userId: user._id });
+
+                const productId = cart.flatMap(item => item.items.map(product => product.productId));
+
+                const product = await Product.find({ _id: { $in: productId } });
+
                 res.status(200).json({
+                    cart,
+                    product,
                     message: "Login successful",
                     user: formatUser,
                     accessToken,
                 })
             }
-        }catch(err){
-            res.status(500).json({message: err})
+        }catch(error){
+            console.error("🔥 Lỗi khi đăng nhập:", error); // In lỗi ra console
+            res.status(500).json({message: error})
         }
     }
 

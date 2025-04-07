@@ -5,14 +5,14 @@ const cart = new Schema(
     {
         userId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Customer',
+            ref: 'Users',
             required: true,
         },
         items: [
             {
                 productId: {
                     type: mongoose.Schema.Types.ObjectId,
-                    ref: 'Product', // Liên kết tới model Product
+                    ref: 'Products',
                     required: true,
                 },
                 quantity: {
