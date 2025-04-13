@@ -45,5 +45,30 @@ class SiteController{
             next(err);
         }
     };
+    async querySearch(req, res, next) {
+        try {
+            const { s } = req.query;
+            const search = String(s || "").trim();
+    
+            // 1. Truy vấn lần đầu
+            let [product, video, article] = await Promise.all([
+                Product.find({ name: { $regex: search, $options: 'i' } }),
+                Video.find({ name: { $regex: search, $options: 'i' } }),
+                Article.find({ subject: { $regex: search, $options: 'i' } }),
+            ]);
+            const formatArticle = article.map(art => ({
+                ...art.toObject(),
+                dateFormat: formatDate(art.createdAt)
+            }))
+            res.status(200).json({
+                product,
+                video,
+                article: formatArticle,
+            });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json(error);
+        }
+    }
 }
 module.exports = new SiteController();

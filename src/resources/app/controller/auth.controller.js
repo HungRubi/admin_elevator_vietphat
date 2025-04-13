@@ -2,6 +2,8 @@ const { formatDate } = require('../../util/formatDate.util');
 const User = require('../model/user.model');
 const Cart = require('../model/cart.model');
 const Product = require('../model/products.model');
+const Order = require('../model/orders.model');
+const OrderDetail = require('../model/orderDetail.model');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require("dotenv");
@@ -109,7 +111,65 @@ class AuthController {
 
                 const product = await Product.find({ _id: { $in: productId } });
 
+                const orders = await Order.find({ user_id: user._id });
+                const orderIds = orders.map(item => item._id);
+
+                // Đếm số đơn hàng thất bại
+                const failedOrdersCount = orders.filter(o => o.status === 'Thất bại').length;
+
+                // Format ngày tạo
+                const formattedOrders = orders.map(order => {
+                return {
+                    ...order.toObject(),
+                    createdAtFormatted: order.createdAt.toLocaleString('vi-VN', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    }),
+                };
+                });
+
+                const orderDetails = await OrderDetail.find({ order_id: { $in: orderIds } });
+                const productIds = orderDetails.map(item => item.product_id);
+                const products = await Product.find({ _id: { $in: productIds } });
+
+                // Map nhanh product theo _id
+                const productMap = {};
+                products.forEach(p => {
+                    productMap[p._id.toString()] = p;
+                });
+
+                // Gắn product vào orderDetail
+                const orderDetailsWithProducts = orderDetails.map(detail => {
+                const product = productMap[detail.product_id.toString()];
+                return {
+                    ...detail.toObject(),
+                    product,
+                };
+                });
+
+                // Nhóm orderDetails theo order_id
+                const orderDetailMap = {};
+                orderDetailsWithProducts.forEach(detail => {
+                    const key = detail.order_id.toString();
+                    if (!orderDetailMap[key]) {
+                        orderDetailMap[key] = [];
+                    }
+                    orderDetailMap[key].push(detail);
+                });
+
+                // Gộp order + orderDetails
+                const ordersWithDetails = formattedOrders.map(order => {
+                    return {
+                        ...order,
+                        orderDetails: orderDetailMap[order._id.toString()] || [],
+                    };
+                });
                 res.status(200).json({
+                    orders: ordersWithDetails,
+                    failedOrdersCount,
                     cart,
                     product,
                     message: "Login successful",

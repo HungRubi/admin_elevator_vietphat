@@ -77,6 +77,26 @@ class UserController {
             res.status(500).json({message: err})
         }
     }
+
+    /** [PUT] /user/update/address/:id */
+    async updateAddress(req, res, next) {
+        console.log(req.body)
+        const userId = req.params.id; // hoặc req.body.id nếu bạn truyền từ body
+        try {
+            const updatedUser = await User.findByIdAndUpdate(
+            userId,
+                { $set: req.body },
+                { new: true } 
+            );
+
+            res.status(200).json({
+                updatedUser,
+                message: 'Cập nhật địa chỉ thành công',
+            });
+        } catch (err) {
+            res.status(500).json({ message: 'Lỗi khi cập nhật địa chỉ', error: err });
+        }
+    }
 }
 
 module.exports = new UserController();

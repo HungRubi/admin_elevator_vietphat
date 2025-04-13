@@ -19,6 +19,7 @@ const products = new Schema(
             ref: 'discount', 
             required: true 
         },
+        shipping_cost: { type: Number, default: 0 },
         minimum: {type: Number, index: true, default: 10},
         category: {
             type: mongoose.Schema.Types.ObjectId, 

@@ -62,6 +62,22 @@ class ProductsController {
             res.status(500).json({message: err})
         }
     }
+
+    /** [GET] /product/selected */
+    getProductSelected = async (req, res) => {
+        try{
+            console.log(req.body);
+            const productId = req.body.productId;
+            const product = await Product.find({_id : {$in: productId}});
+            if(!product){
+                return res.status(404).json({message: 'Sản phẩm không tồn tại'})
+            }
+            res.status(200).json({product})
+        }catch(error){
+            console.error(error);
+            res.status(500).json({message: error})
+        }
+    }
 }
 
 module.exports = new ProductsController();

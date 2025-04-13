@@ -85,18 +85,21 @@ class OdersController {
             const discounts = await Discount.find({ 
                 end_date: { $gt: currentDate }
             });
-            const data = {products: mutipleMongooseoObject(products),
+            const data = {
+                products: mutipleMongooseoObject(products),
                 discounts: mutipleMongooseoObject(discounts),
-                users: mutipleMongooseoObject(users),}
+                users: mutipleMongooseoObject(users),
+            }
             res.status(200).json({data});
         }catch(err){
             next(err);
         }
     }
 
-    /** [POST] /orders/store */
+    /** [POST] /order/store */
     store = async(req, res, next) => {
         try{
+            console.log("Body: ", req.body)
             const { user_id, total_price, shipping_address, payment_method, items, status, discount_id } = req.body;
 
             const order_code = uuidv4();
@@ -112,14 +115,72 @@ class OdersController {
     
             await order.save();
             const orderId = order._id;
-            const orderDetails = items.map(product => ({
+            const orderDetail = items.map(product => ({
                 order_id: orderId, 
                 product_id: product.product_id,
                 quantity: product.quantity,
                 total_price: product.price
             }));
-            await OrderDetail.insertMany(orderDetails);
-            res.redirect('/orders');
+            await OrderDetail.insertMany(orderDetail);
+            const orders = await Orders.find({ user_id: user_id });
+            const orderIds = orders.map(item => item._id);
+
+            // Format ngày tạo
+            const formattedOrders = orders.map(order => {
+            return {
+                ...order.toObject(),
+                createdAtFormatted: order.createdAt.toLocaleString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                }),
+            };
+            });
+
+            const orderDetails = await OrderDetail.find({ order_id: { $in: orderIds } });
+            const productIds = orderDetails.map(item => item.product_id);
+            const products = await Product.find({ _id: { $in: productIds } });
+
+            // Map nhanh product theo _id
+            const productMap = {};
+            products.forEach(p => {
+                productMap[p._id.toString()] = p;
+            });
+
+            // Gắn product vào orderDetail
+            const orderDetailsWithProducts = orderDetails.map(detail => {
+            const product = productMap[detail.product_id.toString()];
+            return {
+                ...detail.toObject(),
+                product,
+            };
+            });
+
+            // Nhóm orderDetails theo order_id
+            const orderDetailMap = {};
+            orderDetailsWithProducts.forEach(detail => {
+                const key = detail.order_id.toString();
+                if (!orderDetailMap[key]) {
+                    orderDetailMap[key] = [];
+                }
+                orderDetailMap[key].push(detail);
+            });
+
+            // Gộp order + orderDetails
+            const ordersWithDetails = formattedOrders.map(order => {
+                return {
+                    ...order,
+                    orderDetails: orderDetailMap[order._id.toString()] || [],
+                };
+            });
+            res.status(200).json({
+                message: 'Đặt hàng thành công',
+                order_code,
+                orders: ordersWithDetails,
+                orderId
+            });
         }catch(err){
             next(err)
         }
