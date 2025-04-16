@@ -228,19 +228,77 @@ class OdersController {
         }
     }
 
-    /** [PUT] /orders/:id/ */
-    update(req, res, next) {
-        Orders.updateOne({_id: req.params.id}, req.body)
-        .then(() => {
-            console.log(req.params.id);
-            res.redirect('/orders');
-        })
-        .catch(next);
+    /** [PUT] /order/:id/ */
+    async update(req, res, next) {
+        try{
+            await Orders.updateOne({_id: req.params.id}, req.body);
+            const orders = await Orders.find({ user_id: req.body.userId });
+            const orderIds = orders.map(item => item._id);
+
+            // Format ngày tạo
+            const formattedOrders = orders.map(order => {
+            return {
+                ...order.toObject(),
+                createdAtFormatted: order.createdAt.toLocaleString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                }),
+            };
+            });
+
+            const orderDetails = await OrderDetail.find({ order_id: { $in: orderIds } });
+            const productIds = orderDetails.map(item => item.product_id);
+            const products = await Product.find({ _id: { $in: productIds } });
+
+            // Map nhanh product theo _id
+            const productMap = {};
+            products.forEach(p => {
+                productMap[p._id.toString()] = p;
+            });
+
+            // Gắn product vào orderDetail
+            const orderDetailsWithProducts = orderDetails.map(detail => {
+            const product = productMap[detail.product_id.toString()];
+            return {
+                ...detail.toObject(),
+                product,
+            };
+            });
+
+            // Nhóm orderDetails theo order_id
+            const orderDetailMap = {};
+            orderDetailsWithProducts.forEach(detail => {
+                const key = detail.order_id.toString();
+                if (!orderDetailMap[key]) {
+                    orderDetailMap[key] = [];
+                }
+                orderDetailMap[key].push(detail);
+            });
+
+            // Gộp order + orderDetails
+            const ordersWithDetails = formattedOrders.map(order => {
+                return {
+                    ...order,
+                    orderDetails: orderDetailMap[order._id.toString()] || [],
+                };
+            });
+            res.status(200).json({
+                message: 'Hủy đơn hàng thành công',
+                orders: ordersWithDetails
+            })
+        }catch(error){
+            console.log(error);
+            res.status(500).json({message: "Lỗi hệ thống"});
+        }
+        
     }
 
     
 
-    /** [GET] .orders/details/:id */
+    /** [GET] .order/details/:id */
     async details(req, res, next){
         const orderId = req.params.id;
         const detailsOrder = await OrderDetail.find({order_id: orderId});

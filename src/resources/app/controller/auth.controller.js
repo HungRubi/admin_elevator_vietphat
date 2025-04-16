@@ -1,4 +1,5 @@
 const { formatDate } = require('../../util/formatDate.util');
+const { importDate } = require('../../util/importDate.util')
 const User = require('../model/user.model');
 const Cart = require('../model/cart.model');
 const Product = require('../model/products.model');
@@ -103,7 +104,7 @@ class AuthController {
                 const { password, ...userWithoutPassword } = user.toObject();
                 const formatUser = {
                     ...userWithoutPassword,
-                    format: formatDate(user.birth)
+                    format: importDate(user.birth)
                 }
                 const cart = await Cart.find({ userId: user._id });
 
@@ -168,12 +169,12 @@ class AuthController {
                     };
                 });
                 res.status(200).json({
+                    user: formatUser,
                     orders: ordersWithDetails,
                     failedOrdersCount,
                     cart,
                     product,
                     message: "Login successful",
-                    user: formatUser,
                     accessToken,
                 })
             }

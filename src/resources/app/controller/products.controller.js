@@ -1,6 +1,8 @@
 const Product = require('../model/products.model');
 const CategoryProduct = require('../model/categoryProduct.model');
 const {importDate} = require('../../util/importDate.util')
+const Comment = require('../model/comments.model');
+const User = require('../model/user.model');
 class ProductsController {
     /** [GET] /products */
     getProduct = async (req, res,next) => {
@@ -52,14 +54,24 @@ class ProductsController {
                     ...product.toObject(),
                     lastUpdate: importDate(product.updatedAt)
             }
+            const comment = await Comment.find({ product_id: product._id}).populate('user_id');
+            const formatComments = comment.map(comment => {
+                return {
+                    ...comment.toObject(),
+                    user: comment.user_id, // Đây là object thông tin user
+                    lastUpdate: importDate(product.updatedAt),
+                };
+            });
             const data = {
                 product: formatProduct,
+                comment: formatComments,
                 productSuggest
             }
             res.status(200).json({data})
         }
-        catch(err){
-            res.status(500).json({message: err})
+        catch(error){
+            console.log(error)
+            res.status(500).json({message: error})
         }
     }
 
