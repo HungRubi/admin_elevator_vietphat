@@ -56,7 +56,7 @@ class OdersController {
                         orderDate: formatDate(order.order_date),
                         userName: user ? user.name : 'Unknown',
                         userAvatar: user ? user.avatar : 'Unknown', 
-                        discountName: discount ? discount.title : 'Unknown'
+                        discountName: discount ? discount.title : 'Người dùng không sử dụng mã giảm giá'
                     };
                 })
             );
@@ -79,7 +79,7 @@ class OdersController {
     /** [GET] /orders/add */
     async add(req, res, next) {
         try{
-            const products = await Product.find();
+            const products = await Product.find().populate('category');
             const users = await User.find({ authour: 'customer' });
             const currentDate = new Date();
             const discounts = await Discount.find({ 
@@ -194,7 +194,6 @@ class OdersController {
             const discountId = orders.discount_id;
             const discount = await Discount.findById(discountId);
             const detailsOrder = await OrderDetail.find({order_id: orderId});
-            console.log("detailsOrder:", detailsOrder);
             if (!detailsOrder) {
                 return res.status(404).send("Order details not found");
             }
@@ -211,11 +210,11 @@ class OdersController {
                         name: product ? product.name : 'Unknown',
                         price: product ? product.price : 'Unknown',
                         thumbnail_main: product ? product.thumbnail_main : 'Unknown',
+                        shipping_cost: product ? product.shipping_cost : 0,
                         category: category ? category.name : 'Unknown',
                     };
                 })
             );
-            console.log("Format Order: " , orderDetailsFormat)
             const data = {
                 orderDetailsFormat,
                 orders: formatOrder,
@@ -296,7 +295,18 @@ class OdersController {
         
     }
 
-    
+    /** [PUT] /order/admin/:id */
+    async updateOrderAdmin(req, res) {
+        try{
+            await Orders.updateOne({_id: req.params.id}, req.body);
+            res.status(200).json({
+                message: "cập nhật đơn hàng thành công"
+            })
+        }catch(error){
+            console.log(error);
+            res.status(500).json({message: "Lỗi hệ thống"});
+        }
+    }
 
     /** [GET] .order/details/:id */
     async details(req, res, next){
@@ -353,15 +363,71 @@ class OdersController {
     }
 
     /** [DELETE] /orders/details/:id/ */
-    deleteDetails(req, res, next) {
-        OrderDetail.deleteOne({_id: req.params.id})
-        .then(() => {
-            res.redirect('/orders')
-        })
-        .catch(err => {
-            next(err);
-        })
+    async deleteDetails(req, res, next) {
+        try{
+            console.log(req.params.id);
+            const orderId = req.params.id;
+            await Orders.deleteOne({ _id: orderId });
+            res.status(200).json({
+                message: 'Xóa đơn hàng thành công',
+            })
+        }catch(error){
+            console.log(error);
+            res.status(500).json({
+                message: error
+            })
+        }
     }
+
+    /** [GET] /order/filter */
+    async filterOrders(req, res) {
+        try {
+            console.log(req.query)
+            const { status, payment_method, from_date, to_date } = req.query;
+            let query = {};
+    
+            if (status) {
+                query.status = status;
+            }
+    
+            if (payment_method) {
+                query.payment_method = payment_method;
+            }
+    
+            if (from_date && to_date) {
+                query.order_date = {
+                    $gte: new Date(from_date),
+                    $lte: new Date(to_date),
+                };
+            }
+    
+            const orders = await Orders.find(query).sort({createdAt: -1});
+            const orderFormat = await Promise.all(
+                orders.map(async (order) => {
+                    const user = await User.findById(order.user_id);
+                    const discount = await Discount.findById(order.discount_id);
+                    return {
+                        ...order.toObject(),
+                        lastUpdate: formatDate(order.updatedAt),
+                        orderDate: formatDate(order.order_date),
+                        userName: user ? user.name : 'Unknown',
+                        userAvatar: user ? user.avatar : 'Unknown', 
+                        discountName: discount ? discount.title : 'Unknown'
+                    };
+                })
+            );
+            const totalOrder = orderFormat.length;
+            const totalPage = Math.ceil(totalOrder / 10);
+            res.status(200).json({
+                orders: orderFormat,
+                totalPage
+            });
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+            res.status(500).json({ message: 'Lỗi server khi lấy danh sách đơn hàng' });
+        }
+    }
+    
 }
 
 module.exports = new OdersController();

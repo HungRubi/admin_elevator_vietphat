@@ -23,7 +23,7 @@ const products = new Schema(
         minimum: {type: Number, index: true, default: 10},
         category: {
             type: mongoose.Schema.Types.ObjectId, 
-            ref: 'categoryproducts', 
+            ref: 'categoryProduct', 
             require:true
         },
     },

@@ -1,6 +1,30 @@
 const Comments = require('../model/comments.model');
 
 class CommentController {
+
+    /** GET /comment/all */
+    async getComment (req, res) {
+        try{
+            const comment = await Comments.find()
+            .populate({
+                path: 'product_id',
+                populate: {
+                    path: 'category',
+                    model: 'categoryProduct'
+                }
+            })
+            .populate('user_id');
+            res.status(200).json({
+                comment
+            })
+        }catch(error){
+            console.log(error)
+            res.status(500).json({
+                message: 'Lỗi rồi: ' + error,
+            })
+        }
+    }
+
     async addComment (req, res) {
         try{
             const {

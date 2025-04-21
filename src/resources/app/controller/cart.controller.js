@@ -61,37 +61,27 @@ class CartController {
     /** [PUT] /cart/delete/:id */
     deleteCartItem = async (req, res) => {
         try {
-            console.log(req.body)
-            const { productId } = req.body;
+            const { productId } = req.body; 
             const userId = req.params.id;
-            console.log("userId: ", userId);
-    
+
             const cart = await Cart.findOne({ userId });
             if (!cart) {
                 return res.status(404).json({ message: 'Không tìm thấy giỏ hàng' });
             }
-    
-            const itemIndex = cart.items.findIndex(item =>
-                item.productId.toString() === productId.toString()
+
+            cart.items = cart.items.filter(item =>
+                !productId.includes(item.productId.toString())
             );
-    
-            if (itemIndex === -1) {
-                return res.status(404).json({ message: 'Sản phẩm không tồn tại trong giỏ hàng' });
-            }
-    
-            // Xoá sản phẩm khỏi mảng items
-            cart.items.splice(itemIndex, 1);
-    
-            // Cập nhật lại tổng tiền
+
             cart.totalPrice = cart.items.reduce((total, item) => {
                 return total + item.price * item.quantity;
             }, 0);
-    
+
             await cart.save();
-    
+
             const productsId = cart.items.map(item => item.productId);
             const productCart = await Product.find({ _id: { $in: productsId } });
-    
+
             res.status(200).json({
                 message: 'Xóa sản phẩm khỏi giỏ hàng thành công',
                 cart,
@@ -102,6 +92,7 @@ class CartController {
             res.status(500).json({ message: 'Lỗi server' });
         }
     };
+
     
 }
 

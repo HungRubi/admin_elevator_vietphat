@@ -58,7 +58,6 @@ class ProductsController {
             const formatComments = comment.map(comment => {
                 return {
                     ...comment.toObject(),
-                    user: comment.user_id, // Đây là object thông tin user
                     lastUpdate: importDate(product.updatedAt),
                 };
             });
