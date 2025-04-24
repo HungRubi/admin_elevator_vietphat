@@ -10,6 +10,7 @@ const mongoose = require('mongoose');
 const Product = require('../model/products.model');
 const Cart = require('../model/cart.model');
 const bcrypt = require('bcrypt');
+const { request, query } = require('express');
 class UserController {
     
     /** [GET] /api/user */
@@ -208,6 +209,59 @@ class UserController {
             console.log(error);
             res.status(404).json({
                 message: error
+            })
+        }
+    }
+
+    /** [GET] /user/filter */
+    async filterUser(req, res) {
+        try{
+            console.log(req.query);
+            const {authour, start_date, end_date} = req.query;
+            let query = {};
+            if(authour){
+                query.authour = authour
+            }
+            if (start_date && end_date) {
+                query.createdAt = {
+                    $gte: new Date(start_date),
+                    $lte: new Date(end_date),
+                };
+            }
+            const user = await User.find(query)
+            const formatUser = user.map(u => {
+                return {
+                    ...u.toObject(),
+                    birthFormat: formatDate(u.birth),
+                    lastLoginFormat: formatDate(u.lastLogin),
+                }
+            })
+            const totalPage = Math.ceil(user.length / 10);
+            res.status(200).json({
+                formatUser,
+                totalPage
+            })
+        }catch(error){
+            console.log(error);
+            res.status(404).json({
+                message: "Lỗi server hãy thử lại sau :(("
+            })
+        }
+    }
+
+    /** [DELETE] /user/:id */
+    async destroy(req, res) {
+        try{
+            const userId = req.params.id;
+            await User.deleteOne({_id: userId});
+            await Cart.deleteOne({userId: userId});
+            res.status(200).json({
+                message: "Xóa người dùng thành công",
+            })
+        }catch(error){
+            console.log(error)
+            res.status(500).json({
+                message: "Lỗi server vui lòng thử lại sau"
             })
         }
     }

@@ -144,8 +144,8 @@ class CategoryController{
 
     /** [GET] /category/discount */
     async discount(req, res, next) {
-        let sortField = req.query.sort || 'title'; 
-        let sortOrder = req.query.order === 'desc' ? -1 : 1;
+        let sortField = req.query.sort || 'createdAt'; 
+        let sortOrder = req.query.order === 'desc' ? 1 : -1;
         try{
             const searchQuery = req.query.timkiem?.trim() || '';
             if(searchQuery){
@@ -195,6 +195,7 @@ class CategoryController{
 
     /** [POST] /category/discount/store */
     storeDiscount = async (req, res , next) => {
+        console.log(req.body)
         try{
             const{
                 title,
@@ -221,15 +222,19 @@ class CategoryController{
             })
 
             await discount.save();
-            res.redirect('/category/discount');
-
-        }catch(err){
-            next(err)
+            res.status(200).json({
+                message: "Thêm voucher thành công!"
+            })
+        }catch(error){
+            console.log(error);
+            res.status(500).json({
+                message: 'Lỗi server vui lòng thử lại sau'
+            })
         }
     }
 
     /** [GET] /category/discount/:id/edit */
-    async editDiscount(req, res, next) {
+    async editDiscount(req, res) {
         try{
             const discounts = await Discount.findById({_id: req.params.id});
             const discount = {
@@ -245,12 +250,52 @@ class CategoryController{
     }
 
     /** [UPDATE] /category/discount/:id */
-    updateDiscount(req, res, next) {
+    updateDiscount(req, res) {
+        console.log(req.body, req.params.id)
         Discount.updateOne({_id: req.params.id}, req.body)
         .then(() => {
-            res.redirect('/category/discount');
+            res.status(200).json({
+                message: "Cập nhật voucher thành công!"
+            })
         })
-        .catch(next);
+        .catch(error => {
+            console.log(error);
+            res.status(500).json({
+                message: 'Lỗi server vui lòng thử lại sau'
+            })
+        });
+    }
+
+    /** [GET] /category/discount/filter */
+    async filterDiscount(req, res) {
+        try{
+            const {is_active, endDate, startDate} = req.query;
+            let query = {}
+            if(is_active){
+                query.is_active = is_active
+            }
+            if(endDate && startDate){
+                query.start_date = { $gte: new Date(startDate) };  
+                query.end_date = { $lte: new Date(endDate) };      
+            }
+            const discounts = await Discount.find(query).lean();
+            const formatType = discounts.map(type => ({
+                ...type,
+                endDate: formatDate(type.end_date),
+                startDate: formatDate(type.start_date),
+                lastUpdate: formatDate(type.updatedAt)
+            }));
+            const totalPage = Math.ceil(discounts.length / 10)
+            res.status(200).json({
+                formatDiscount: formatType,
+                totalPage
+            })
+        }catch(error){
+            console.log(error);
+            res.status(500).json({
+                message: 'Lỗi server vui lòng thử lại sau'
+            })
+        }
     }
 
     /** ===== BANNER ===== */
@@ -263,8 +308,10 @@ class CategoryController{
             const searchQuery = req.query.timkiem?.trim() || '';
             if(searchQuery){
                 const banner = await Banner.find({
-                        name: { $regex: searchQuery, $options: 'i' }
-                }).sort({ [sortField]: sortOrder }).lean();
+                    name: { $regex: searchQuery, $options: 'i' }})
+                .populate("discount")
+                .sort({ [sortField]: sortOrder })
+                .lean();
                 const bannerFormat = banner.map(ban => ({
                     ...ban,
                     lastUpdate: formatDate(ban.updatedAt),
@@ -278,6 +325,7 @@ class CategoryController{
                 return res.status(200).json({data})
             }
             const banner = await Banner.find()
+                .populate("discount")
                 .sort({ [sortField]: sortOrder })
                 .lean();
     
@@ -308,13 +356,19 @@ class CategoryController{
             const{
                 name,
                 thumbnail,
+                thumbnail_1,
+                content,
                 status,
+                disocunt
             } = req.body;
             const slug = createSlug(name);
             const banner = new Banner({
                 name,
                 thumbnail,
+                thumbnail_1,
+                content,
                 status,
+                disocunt,
                 slug
             })
 
@@ -338,14 +392,12 @@ class CategoryController{
     }
 
     /** [PUT] /category/banner/:id */
-    updateBanner(req, res, next) {
-        Banner.updateOne({_id: req.params.id}, req.body)
-        .then(() => {
-            res.redirect('/category/banner')
-        })
-        .catch(err => {
-            next(err);
-        })
+    async updateBanner(req, res, next) {
+        try{
+
+        }catch(error){
+            
+        }
     }
 
     /** [DELETE] /category/banner/:id */
@@ -373,7 +425,7 @@ class CategoryController{
     
                 const formatType = searchProduct.map(type => ({
                     ...type.toObject(),
-                    lastUpdate: formatDate(type.updatedAt)
+                    lastUpdate: formatDate(type.createdAt)
                 }));
     
                 const data = {

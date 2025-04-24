@@ -5,10 +5,17 @@ const banner = new Schema(
     {
         name: {type: String},
         thumbnail: {type: String, require},
+        thumbnail_1: {type: String},
+        content: {type: String},
         status: {
             type: String,
             default: 'public',
-            enum: ['public', 'hide']
+            enum: ['public', 'hidden']
+        },
+        discount: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'discount',
+            require,
         },
         slug: {type: String}
     },
