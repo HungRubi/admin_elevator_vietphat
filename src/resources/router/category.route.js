@@ -21,11 +21,13 @@ route.get('/discount', categoryController.discount);
 
 /** === BANNER === */
 route.put('/banner/:id', categoryController.updateBanner);
+route.get('/banner/filter', categoryController.filterBanner);
 route.get('/banner/:id', categoryController.editBanner);
 route.post('/banner/store', categoryController.storeBanner);
 route.get('/banner', categoryController.banner);
 
 /** === VIDEO === */
+route.get('/video/filter', categoryController.filterVideo);
 route.put('/video/:id', categoryController.updateVideo);
 route.get('/video/:id/edit', categoryController.editVideo);
 route.get('/video/:slug', categoryController.getDetailVideo);

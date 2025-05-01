@@ -314,7 +314,7 @@ class CategoryController{
                 .lean();
                 const bannerFormat = banner.map(ban => ({
                     ...ban,
-                    lastUpdate: formatDate(ban.updatedAt),
+                    lastUpdate: formatDate(ban.createdAt),
                 }));
                 const data = {
                     searchType: true,
@@ -331,7 +331,7 @@ class CategoryController{
     
             const formatBanner = banner.map(discount => ({
                 ...discount,
-                lastUpdate: formatDate(discount.updatedAt),
+                lastUpdate: formatDate(discount.createdAt),
             }));
     
             const totalBanner = await Banner.countDocuments();
@@ -371,12 +371,15 @@ class CategoryController{
                 disocunt,
                 slug
             })
-
             await banner.save();
-            res.redirect('/category/banner');
-
-        }catch(err){
-            next(err)
+            res.status(200).json({
+                message: "Thêm banner thành công!"
+            })
+        }catch(error){
+            console.log(error);
+            res.status(500).json({
+                message: "Lỗi server vui lòng thử lại sau"
+            })
         }
     }
 
@@ -394,9 +397,21 @@ class CategoryController{
     /** [PUT] /category/banner/:id */
     async updateBanner(req, res, next) {
         try{
-
+            const {name, ...rest} = req.body
+            const slug = createSlug(name);
+            await Banner.updateOne(
+                {_id: req.params.id},
+                {...rest, name ,slug }
+            )
+            res.status(200).json({
+                message: "Cập nhật banner thành công!"
+            })
         }catch(error){
-            
+            console.log(error)
+            res.status(500).json({
+                message: "Lỗi server vui lòng thử lại sau",
+            })
+
         }
     }
 
@@ -409,6 +424,39 @@ class CategoryController{
         .catch(err => {
             next(err);
         })
+    }
+
+    /** [GET] /category/banner/filter */
+    async filterBanner(req, res) {
+        try{
+            console.log(req.query)
+            const {status, startDate, endDate} = req.query;
+            let query = {};
+            if(status) {
+                query.status = status;
+            }
+            if(startDate && endDate) {
+                query.createdAt = {
+                    $gte: new Date(startDate),
+                    $lte: new Date(endDate)
+                }
+            }
+            const banners = await Banner.find(query).lean();
+            const bannerFormat = banners.map(v => ({
+                ...v,
+                lastUpdate: formatDate(v.createdAt),
+            }))
+            const totalPage = Math.ceil(banners.length / 10)
+            res.status(200).json({
+                bannerFormat,
+                totalPage
+            })
+        }catch(error){
+            console.log(error);
+            res.status(500).json({
+                message: "Lỗi server vui lòng thử lại sau"
+            })
+        }
     }
 
     /** ==== VIDEO ==== */
@@ -443,7 +491,7 @@ class CategoryController{
     
             const formatType = categoryProduct.map(type => ({
                 ...type.toObject(),
-                lastUpdate: formatDate(type.updatedAt)
+                lastUpdate: formatDate(type.createdAt)
             }));
     
             const data = {
@@ -477,9 +525,9 @@ class CategoryController{
                 slug
             })
             await video.save();
-            res.status(200).json({message: "Thành công"});
+            res.status(200).json({message: "Thêm video thành công!"});
         }catch(err){
-            res.status(500).json({message: "Thất bại"})
+            res.status(500).json({message: "Lỗi server vui lòng thử lại sau"})
         }
     }
 
@@ -538,8 +586,6 @@ class CategoryController{
             video_url,
             status
         } = req.body;
-        console.log(req.body)
-        console.log(req.params.id)
         const slug = createSlug(name);
         Video.updateOne({_id: req.params.id},{
             name,
@@ -550,10 +596,10 @@ class CategoryController{
             slug
         })
         .then(() => {
-            res.status(200).json({message: "Thành công"});
+            res.status(200).json({message: "Cập nhật video thành công!"});
         })
         .catch(err => {
-            res.status(200).json({message: "Thất bại: "});
+            res.status(500).json({message: "Thất bại: "});
         });
     }
 
@@ -566,6 +612,39 @@ class CategoryController{
         .catch(err => {
             res.status(200).json({message: "Thất bại: ", err});
         });
+    }
+
+    /** [GET] /category/video/filter */
+    async filterVideo (req, res) {
+        try{
+            console.log(req.query)
+            const {status, startDate, endDate} = req.query;
+            let query = {};
+            if(status) {
+                query.status = status;
+            }
+            if(startDate && endDate) {
+                query.createdAt = {
+                    $gte: new Date(startDate),
+                    $lte: new Date(endDate)
+                }
+            }
+            const videos = await Video.find(query).lean();
+            const videoFormat = videos.map(v => ({
+                ...v,
+                lastUpdate: formatDate(v.createdAt),
+            }))
+            const totalPage = Math.ceil(videos.length / 10)
+            res.status(200).json({
+                videoFormat,
+                totalPage
+            })
+        }catch(error){
+            console.log(error);
+            res.status(500).json({
+                message: "Lỗi server vui lòng thử lại sau"
+            })
+        }
     }
 
 }

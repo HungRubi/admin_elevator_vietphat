@@ -12,8 +12,8 @@ class OdersController {
     
     /** [GET] /order */
     async index(req, res, next) {
-        let sortField = req.query.sort || 'order_code'; 
-        let sortOrder = req.query.order === 'desc' ? -1 : 1;
+        let sortField = req.query.sort || 'createdAt'; 
+        let sortOrder = req.query.order === 'desc' ? 1 : -1;
         try{
             const searchQuery = req.query.timkiem?.trim() || '';
             if(searchQuery){
