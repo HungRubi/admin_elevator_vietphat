@@ -9,8 +9,10 @@ const authRoute = require('./auth.route');
 const notificaitonRoute = require('./notification.route');
 const cartRoute = require('./cart.route');
 const commentRoute = require('./comments.route');
+const supplierRoute = require('./supplier.route');
 
 function route(app) {
+    app.use('/supplier', supplierRoute);
     app.use('/comment', commentRoute);
     app.use('/cart', cartRoute);
     app.use('/auth', authRoute);
