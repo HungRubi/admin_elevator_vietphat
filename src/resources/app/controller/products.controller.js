@@ -16,7 +16,11 @@ class ProductsController {
             if(searchQuery){
                 const products = await Product.find({
                     name: { $regex: searchQuery, $options: 'i' }
-                }).sort({ [sortField]: sortProduct }).populate('category').lean();
+                })
+                .sort({ [sortField]: sortProduct })
+                .populate('category')
+                .populate('supplier')
+                .lean();
                 const productFormat = products.map(p => ({
                     ...p,
                     formatDate: importDate(p.createdAt)
@@ -31,6 +35,7 @@ class ProductsController {
             }
             const products = await Product.find()
                 .populate('category')
+                .populate('supplier')
                 .sort({ [sortField]: sortProduct }) 
                 .lean();
     
@@ -153,7 +158,7 @@ class ProductsController {
                 sale,
                 price,
                 shipping_cost,
-                stock,
+                supplier,
                 unit,
                 category,
                 minimum,
@@ -169,7 +174,7 @@ class ProductsController {
                 sale,
                 price,
                 shipping_cost,
-                stock,
+                supplier,
                 unit,
                 category,
                 minimum,
