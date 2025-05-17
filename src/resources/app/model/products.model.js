@@ -5,7 +5,8 @@ const products = new Schema(
     {
         name: { type: String, required: true, index: true }, 
         slug: { type: String, unique: true }, 
-        price: { type: Number, index: true }, 
+        price: { type: Number, index: true },
+        cog: { type: Number, default: 0 }, 
         description: { type: String },
         thumbnail_main: { type: String, required: true },
         thumbnail_1: { type: String, required: true },
@@ -15,6 +16,7 @@ const products = new Schema(
         sale: {type: Number, default: 0},
         shipping_cost: { type: Number, default: 0 },
         minimum: {type: Number, index: true, default: 10},
+
         supplier: {
             type: mongoose.Schema.Types.ObjectId, 
             ref: 'supplier', 

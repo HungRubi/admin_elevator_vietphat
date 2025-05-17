@@ -1,5 +1,6 @@
 const Suppliers = require('../model/supplier.model');
 const { formatDate } = require('../../util/formatDate.util');
+const Products = require('../model/products.model');
 
 class Supplier {
 
@@ -125,6 +126,7 @@ class Supplier {
         }
     }
 
+    /** [DELETE] /supplier/delete/:id */
     async delete(req, res) {
         try{
             const { id } = req.params;
@@ -151,6 +153,32 @@ class Supplier {
         }
     }
 
+
+    /** [GET] /supplier/product/:id */
+    async getProductBySupplier(req, res) {
+        try{
+            const { id } = req.params;
+            const supplier = await Suppliers.findById(id);
+            if(!supplier){
+                return res.status(404).json({
+                    message: 'Nhà cung cấp không tồn tại',
+                })
+            }
+            const products = await Products
+                .find({ supplier: id })
+                .populate('supplier')
+                .populate('category')
+                .lean();
+            res.status(200).json({
+                products,
+            })
+        }catch(error){
+            console.log(error)
+            res.status(500).json({
+                message: 'Lỗi rồi: ' + error,
+            })
+        }
+    }
 }
 
 module.exports = new Supplier();

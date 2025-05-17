@@ -6,17 +6,21 @@ const articleRoute = require('./article.route');
 const reportRoute = require('./report.route');
 const categoryRoute = require('./category.route');
 const authRoute = require('./auth.route');
-const notificaitonRoute = require('./notification.route');
+const notificationRoute = require('./notification.route');
 const cartRoute = require('./cart.route');
 const commentRoute = require('./comments.route');
 const supplierRoute = require('./supplier.route');
+const receiptRoute = require('./receipt.route');
+const warehouseRoute = require('./warehouse.route');
 
 function route(app) {
+    app.use('/receipt', receiptRoute);
+    app.use('/warehouse', warehouseRoute);
     app.use('/supplier', supplierRoute);
     app.use('/comment', commentRoute);
     app.use('/cart', cartRoute);
     app.use('/auth', authRoute);
-    app.use('/notificaiton', notificaitonRoute);
+    app.use('/notification', notificationRoute);
     app.use('/category', categoryRoute);
     app.use('/report' ,reportRoute);
     app.use('/products', productRoute);

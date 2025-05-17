@@ -23,8 +23,8 @@ const receipt = new Schema(
         },
         status: {
             type: String,
-            enum: ['chờ xử lý', 'chưa xác nhận', 'đã xác nhận', 'đã hủy'],
-            default: 'chờ xử lý',
+            enum: ['chưa xác nhận', 'đã xác nhận', 'đã hủy'],
+            default: 'chưa xác nhận',
         }
 
     },{
