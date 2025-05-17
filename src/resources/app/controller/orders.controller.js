@@ -121,22 +121,29 @@ class OdersController {
                 quantity: product.quantity,
                 total_price: product.price
             }));
+            for (const i of items) {
+                await Warehouse.findOneAndUpdate(
+                    { productId: i.product },
+                    { $inc: { stock: -i.quantity } },
+                    { upsert: true, new: true }
+                );
+            }
             await OrderDetail.insertMany(orderDetail);
             const orders = await Orders.find({ user_id: user_id });
             const orderIds = orders.map(item => item._id);
 
             // Format ngày tạo
             const formattedOrders = orders.map(order => {
-            return {
-                ...order.toObject(),
-                createdAtFormatted: order.createdAt.toLocaleString('vi-VN', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                }),
-            };
+                return {
+                    ...order.toObject(),
+                    createdAtFormatted: order.createdAt.toLocaleString('vi-VN', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    }),
+                };
             });
 
             const orderDetails = await OrderDetail.find({ order_id: { $in: orderIds } });
@@ -152,10 +159,10 @@ class OdersController {
             // Gắn product vào orderDetail
             const orderDetailsWithProducts = orderDetails.map(detail => {
             const product = productMap[detail.product_id.toString()];
-            return {
-                ...detail.toObject(),
-                product,
-            };
+                return {
+                    ...detail.toObject(),
+                        product,
+                    };
             });
 
             // Nhóm orderDetails theo order_id
@@ -236,16 +243,16 @@ class OdersController {
 
             // Format ngày tạo
             const formattedOrders = orders.map(order => {
-            return {
-                ...order.toObject(),
-                createdAtFormatted: order.createdAt.toLocaleString('vi-VN', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                }),
-            };
+                return {
+                    ...order.toObject(),
+                    createdAtFormatted: order.createdAt.toLocaleString('vi-VN', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                    }),
+                };
             });
 
             const orderDetails = await OrderDetail.find({ order_id: { $in: orderIds } });
@@ -261,10 +268,10 @@ class OdersController {
             // Gắn product vào orderDetail
             const orderDetailsWithProducts = orderDetails.map(detail => {
             const product = productMap[detail.product_id.toString()];
-            return {
-                ...detail.toObject(),
-                product,
-            };
+                return {
+                    ...detail.toObject(),
+                    product,
+                };
             });
 
             // Nhóm orderDetails theo order_id
@@ -308,7 +315,7 @@ class OdersController {
         }
     }
 
-    /** [GET] .order/details/:id */
+    /** [GET] order/details/:id */
     async details(req, res, next){
         const orderId = req.params.id;
         const detailsOrder = await OrderDetail.find({order_id: orderId});
@@ -368,6 +375,15 @@ class OdersController {
             console.log(req.params.id);
             const orderId = req.params.id;
             await Orders.deleteOne({ _id: orderId });
+            await OrderDetail.deleteMany({ order_id: orderId })
+            const orderDetail = await OrderDetail.find({ order_id: orderId });
+            for(const i in orderDetail){
+                await Warehouse.findOneAndUpdate(
+                    { productId: i.product },
+                    { $inc: { stock: -i.quantity } },
+                    { upsert: true, new: true }
+                );
+            }
             res.status(200).json({
                 message: 'Xóa đơn hàng thành công',
             })

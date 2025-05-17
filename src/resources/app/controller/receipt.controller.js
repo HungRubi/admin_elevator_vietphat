@@ -78,13 +78,6 @@ class ReceiptController {
                 quantity: item.quantity,
                 price: item.price   
             }))
-            for (const i of item) {
-                await Warehouse.findOneAndUpdate(
-                    { productId: i.product },
-                    { $inc: { stock: i.quantity } },
-                    { upsert: true, new: true }
-                );
-            }
             await ReceiptDetail.insertMany(receiptDetails);
             res.status(200).json({
                 message: 'Thêm phiếu nhập thành công',
@@ -157,12 +150,14 @@ class ReceiptController {
                 price: item.price   
             }))
             await ReceiptDetail.insertMany(receiptDetails);
-            for (const i of item) {
-                await Warehouse.findOneAndUpdate(
-                    { productId: i.product },
-                    { $inc: { stock: i.quantity } },
-                    { upsert: true, new: true }
-                );
+            if(status === "đã xác nhận"){
+                for (const i of item) {
+                    await Warehouse.findOneAndUpdate(
+                        { productId: i.product },
+                        { $inc: { stock: i.quantity } },
+                        { upsert: true, new: true }
+                    );
+                }
             }
             res.status(200).json({
                 message: 'Cập nhật phiếu nhập thành công',
@@ -177,26 +172,41 @@ class ReceiptController {
 
     /** [DELETE] /receipt/:id */
     async deleteReceipt(req, res) {
-        try{
+        try {
             const { id } = req.params;
+
             const receipt = await Receipts.findById(id);
-            if(!receipt) {
+            if (!receipt) {
                 return res.status(404).json({
                     message: 'Không tìm thấy phiếu nhập',
-                })
+                });
             }
+
+            // Lấy chi tiết phiếu nhập
+            const details = await ReceiptDetail.find({ receipt: id });
+
+            // Trừ lại tồn kho
+            for (const detail of details) {
+                await Warehouse.findOneAndUpdate(
+                    { productId: detail.product_id },
+                    { $inc: { stock: -detail.quantity } }
+                );
+            }
+
             await ReceiptDetail.deleteMany({ receipt: id });
             await Receipts.deleteOne({ _id: id });
+
             res.status(200).json({
                 message: 'Xóa phiếu nhập thành công',
-            })
-        }catch(error){
-            console.log(error)
+            });
+        } catch (error) {
+            console.log(error);
             res.status(500).json({
                 message: 'Lỗi rồi: ' + error,
-            })
+            });
         }
     }
+
 }
 
 module.exports = new ReceiptController();
