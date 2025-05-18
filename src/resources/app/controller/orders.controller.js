@@ -5,6 +5,8 @@ const Orders = require('../model/orders.model');
 const OrderDetail = require('../model/orderDetail.model')
 const Discount = require('../model/discount.model');
 const CategoryProduct = require('../model/categoryProduct.model')
+const Notification = require('../model/notification.model');
+const Warehouse = require("../model/warehouse.model");
 const {formatDate} = require('../../util/formatDate.util');
 const { v4: uuidv4 } = require('uuid');
 const moment = require('moment');
@@ -115,6 +117,27 @@ class OdersController {
     
             await order.save();
             const orderId = order._id;
+
+            // Create notification for customer
+            const customerNotification = new Notification({
+                type: 'Thông báo đơn hàng',
+                message: `Đơn hàng ${order_code} đã được đặt thành công`,
+                relatedId: orderId,
+                typeRef: 'Order',
+                recipients: [user_id]
+            });
+            await customerNotification.save();
+
+            // Create notification for admin and employee
+            const user = await User.findById(user_id);
+            const adminEmployeeNotification = new Notification({
+                type: 'Thông báo đơn hàng',
+                message: `Bạn có một đơn hàng mới từ người dùng ${user.name}`,
+                relatedId: orderId,
+                typeRef: 'Order'
+            });
+            await adminEmployeeNotification.save();
+
             const orderDetail = items.map(product => ({
                 order_id: orderId, 
                 product_id: product.product_id,
@@ -123,7 +146,7 @@ class OdersController {
             }));
             for (const i of items) {
                 await Warehouse.findOneAndUpdate(
-                    { productId: i.product },
+                    { productId: i.product_id },
                     { $inc: { stock: -i.quantity } },
                     { upsert: true, new: true }
                 );
