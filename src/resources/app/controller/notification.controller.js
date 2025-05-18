@@ -12,7 +12,6 @@ class NotificationController {
                 lastUpdate: formatDate(item.createdAt)
             }))
             res.status(200).json({
-                message: "Thành công",
                 notifications: format,
             })
         }catch(err){
