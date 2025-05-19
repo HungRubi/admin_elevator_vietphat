@@ -4,42 +4,53 @@ const Notification = require('../model/notification.model');
 class NotificationController {
 
     /** [GET] /notification */
-    async getNotification(req, res, next) {
+    async getNotification(req, res) {
+        let sortField = req.query.sort || 'createdAt'; 
+        let sortNotification = req.query.notification === 'desc' ? 1 : -1;
         try{
-            const notifications = await Notification.find().sort({created: -1});
+            const searchQuery = req.query.timkiem?.trim() || "";
+            if(searchQuery) {
+                const notifications = await Notification
+                .find()
+                .sort({ [sortField]: sortNotification })
+                .populate({
+                    path: "user_id",
+                    match: {name: { $regex: searchQuery, $options: 'i' }}
+                })
+                .lean();
+                const format = notifications.map(item => ({
+                    ...item,
+                    lastUpdate: formatDate(item.createdAt)
+                }))
+                res.status(200).json({
+                    searchType: true,
+                    searchNotification: format,
+                    currentSort: sortField,
+                    currentNotifition: sortNotification === 1 ? 'asc' : 'desc'
+                })
+            }
+            const notifications = await Notification
+            .find()
+            .sort({ [sortField]: sortNotification })
+            .populate("user_id")
+            .lean();
             const format = notifications.map(item => ({
-                ...item.toObject(),
+                ...item,
                 lastUpdate: formatDate(item.createdAt)
             }))
+            const totalNotification = await Notification.countDocuments();
+            const totalPage = Math.ceil(totalNotification / 10);
             res.status(200).json({
                 notifications: format,
+                totalPage,
+                currentSort: sortField,
+                sortNotification: sortNotification === 1 ? 'asc' : 'desc'
             })
         }catch(err){
-            res.status(500).json(err);
-        }
-    }
-
-    async addNotification(req, res) {
-        try{
-            const {type, message, relatedId} = req.body;
-            if (!type || !message) {
-                return res.status(400).json({ error: 'Loại thông báo và nội dung thông báo là bắt buộc!' });
-            }
-    
-            const notification = new Notification({
-                type,
-                message,
-                relatedId: relatedId || null,
-                typeRef: type === 'Thông báo đơn hàng' ? 'Order' : type === 'Thông báo khách hàng' ? 'User' : null
+            console.log(err)
+            res.status(500).json({
+                message: "Lỗi server: " + err
             });
-            await notification.save();
-            res.status(200).json({
-                message:"Thành công",
-                notification
-            })
-        }catch(error){
-            console.error("🔥 Lỗi khi thêm thông báo:", error); // In lỗi ra console
-            res.status(500).json({ success: false, message: error.message });
         }
     }
 }

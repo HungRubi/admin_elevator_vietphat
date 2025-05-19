@@ -119,24 +119,24 @@ class OdersController {
             const orderId = order._id;
 
             // Create notification for customer
-            const customerNotification = new Notification({
-                type: 'Thông báo đơn hàng',
-                message: `Đơn hàng ${order_code} đã được đặt thành công`,
-                relatedId: orderId,
-                typeRef: 'Order',
-                recipients: [user_id]
+            const admin = await User.find({ authour: { $in: ['admin', 'employee'] } });
+            const notificationUser = new Notification({
+                user_id: user_id,
+                type: "Thông báo đơn hàng",
+                message: "Bạn vừa đặt hàng thành công. Mã đơn hàng của bạn là: " + order_code,
+                isRead: false
+            })
+            await notificationUser.save();
+            const userNotificaiton = await User.findById(user_id)
+            admin.forEach(async (a) => {
+                const notificationAdmin = new Notification({
+                    user_id: a._id,
+                    type: "Thông báo đơn hàng",
+                    message: "Có đơn hàng mới từ tài khoản: " + userNotificaiton.account + ", với mã đơn hàng: order_code",
+                    isRead: false
+                });
+                await notificationAdmin.save();
             });
-            await customerNotification.save();
-
-            // Create notification for admin and employee
-            const user = await User.findById(user_id);
-            const adminEmployeeNotification = new Notification({
-                type: 'Thông báo đơn hàng',
-                message: `Bạn có một đơn hàng mới từ người dùng ${user.name}`,
-                relatedId: orderId,
-                typeRef: 'Order'
-            });
-            await adminEmployeeNotification.save();
 
             const orderDetail = items.map(product => ({
                 order_id: orderId, 
