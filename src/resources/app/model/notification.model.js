@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Orders = require('../model/orders.model');
-const Users = require('../model/user.model')
+const Users = require('../model/user.model');
 const notification = new mongoose.Schema(
     {
         type: {

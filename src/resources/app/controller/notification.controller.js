@@ -53,6 +53,38 @@ class NotificationController {
             });
         }
     }
+
+    /** [POST] /notification/add */
+    async addNotification(req, res) {
+        try{
+            const {type, message, user_id} = req.body;
+            console.log(req.body)
+            const notification = new Notification({
+                type,
+                message,
+                user_id
+            })
+            await notification.save();
+            res.status(200).json({
+                message: "Thêm thông báo thành công",
+            })
+        }catch(error){
+            console.log(error);
+            res.status(500).json({
+                message: "Lỗi server vui lòng thử lại sau"
+            })
+        }
+    }
+
+    /** [DELETE] /notification/:id */
+    async deleteNotification(req,res){
+        const notificationId = req.params.id;
+        try {
+            
+        } catch (error) {
+            
+        }
+    }
 }
 
 module.exports = new NotificationController();
