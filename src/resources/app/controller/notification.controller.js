@@ -58,11 +58,17 @@ class NotificationController {
     async addNotification(req, res) {
         try{
             const {type, message, user_id} = req.body;
-            console.log(req.body)
+            if(user_id) {
+                const notification = new Notification({
+                    type,
+                    message,
+                    user_id
+                })
+                await notification.save();
+            }
             const notification = new Notification({
                 type,
                 message,
-                user_id
             })
             await notification.save();
             res.status(200).json({
@@ -76,13 +82,68 @@ class NotificationController {
         }
     }
 
+    /** [GET] /notification/:id */
+    async editNotification(req,res){
+        try {
+            const notificationId = req.params.id;
+            const notifi = await Notification.findById(notificationId);
+            if(!notifi) {
+                return res.status(500).json({
+                    message: "Thông báo không tồn tại"
+                })
+            }
+            return res.status(200).json({
+                notification: notifi
+            })
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                message: "Lỗi server vui lòng thử lại sau"
+            })
+        }
+    }
+
+    /** [UPDATE] /notification/:id */
+    async updateNotification(req,res){
+        try {
+            const notificationId = req.params.id;
+            const notifi = await Notification.findById(notificationId);
+            if(!notifi) {
+                return res.status(500).json({
+                    message: "Thông báo không tồn tại"
+                })
+            }
+            await Notification.updateOne({_id: notificationId})
+            return res.status(200).json({
+                message: "Cập nhật thông báo thành công"
+            })
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                message: "Lỗi server vui lòng thử lại sau"
+            })
+        }
+    }
+
     /** [DELETE] /notification/:id */
     async deleteNotification(req,res){
-        const notificationId = req.params.id;
         try {
-            
+            const notificationId = req.params.id;
+            const notifi = await Notification.findById(notificationId);
+            if(!notifi) {
+                return res.status(500).json({
+                    message: "Thông báo không tồn tại"
+                })
+            }
+            await Notification.deleteOne({_id: notificationId})
+            return res.status(200).json({
+                message: "Xóa thông báo thành công"
+            })
         } catch (error) {
-            
+            console.log(error);
+            res.status(500).json({
+                message: "Lỗi server vui lòng thử lại sau"
+            })
         }
     }
 }
