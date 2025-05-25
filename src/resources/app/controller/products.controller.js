@@ -167,12 +167,14 @@ class ProductsController {
                 thumbnail_1,
                 thumbnail_2,
                 thumbnail_3,
+                warranty_period
             } = req.body;
             const slug = createSlug(name);
             const product = new Product({
                 name,
                 description,
                 sale,
+                warranty_period,
                 price,
                 shipping_cost,
                 supplier,

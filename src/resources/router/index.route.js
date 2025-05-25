@@ -12,8 +12,10 @@ const commentRoute = require('./comments.route');
 const supplierRoute = require('./supplier.route');
 const receiptRoute = require('./receipt.route');
 const warehouseRoute = require('./warehouse.route');
+const warrantyRoute = require('./warranty.route');
 
 function route(app) {
+    app.use('/warranty', warrantyRoute);
     app.use('/receipt', receiptRoute);
     app.use('/warehouse', warehouseRoute);
     app.use('/supplier', supplierRoute);

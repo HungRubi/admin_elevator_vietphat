@@ -16,7 +16,11 @@ const products = new Schema(
         sale: {type: Number, default: 0},
         shipping_cost: { type: Number, default: 0 },
         minimum: {type: Number, index: true, default: 10},
-
+        warranty_period: {
+            type: Number,
+            required: true,
+            default: 1
+        },
         supplier: {
             type: mongoose.Schema.Types.ObjectId, 
             ref: 'supplier', 
