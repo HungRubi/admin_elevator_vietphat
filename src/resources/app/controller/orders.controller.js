@@ -234,6 +234,7 @@ class OdersController {
             const orderDetailsFormat = await Promise.all(
                 detailsOrder.map(async (details) => {
                     const product = await Product.findById(details.product_id);
+                    const discount = await Discount.findById(details.discount_id);
                     const category = product ? await CategoryProduct.findById(product.category) : null;
                     return {
                         ...details.toObject(),
@@ -242,6 +243,8 @@ class OdersController {
                         thumbnail_main: product ? product.thumbnail_main : 'Unknown',
                         shipping_cost: product ? product.shipping_cost : 0,
                         category: category ? category.name : 'Unknown',
+                        unit: product ? product.unit : 'Unknown',
+                        discount: discount ? discount.title : 'Không có mã giảm giá'
                     };
                 })
             );
@@ -365,29 +368,139 @@ class OdersController {
 
     /** [GET] /order/api/count  */
     async getOrderLast7Days(req, res, next) {
-        try{
-            const sevenDaysAgo = moment().subtract(7, 'days').startOf('day').toDate();
+        try {
+            const sevenDaysAgo = moment().subtract(6, 'days').startOf('day').toDate();
             const today = moment().endOf('day').toDate();
-            const order = await Orders.aggregate([
+            
+            const orderData = await Orders.aggregate([
                 {
                     $match: {
-                        createdAt: { $gte: sevenDaysAgo, $lte: today } 
+                        createdAt: { $gte: sevenDaysAgo, $lte: today }
                     }
-                },{
+                },
+                {
                     $group: {
                         _id: {
                             year: { $year: "$createdAt" },
                             month: { $month: "$createdAt" },
-                            day: { $dayOfMonth: "$createdAt" }
+                            day: { $dayOfMonth: "$createdAt" },
+                            dayOfWeek: { $dayOfWeek: "$createdAt" }
                         },
-                        count: { $sum: 1 }
+                        completed: {
+                            $sum: {
+                                $cond: [
+                                    { $eq: ["$status", "Thành công"] },
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+                        pending: {
+                            $sum: {
+                                $cond: [
+                                    { 
+                                        $or: [
+                                            { $eq: ["$status", "Đang xử lý"] },
+                                            { $eq: ["$status", "Đang giao hàng"] }
+                                        ]
+                                    },
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+                        failed: {
+                            $sum: {
+                                $cond: [
+                                    { $eq: ["$status", "Thất bại"] },
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+                        total: { $sum: 1 },
+                        totalRevenue: {
+                            $sum: {
+                                $cond: [
+                                    { $eq: ["$status", "Thành công"] },
+                                    "$total_price",
+                                    0
+                                ]
+                            }
+                        }
                     }
-                },{
+                },
+                {
                     $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 }
                 }
-            ])
-            res.json(order);
-        }catch(err) {   
+            ]);
+
+            // Tạo array các ngày trong tuần
+            const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            
+            // Tạo array 7 ngày với data mặc định
+            const last7Days = [];
+            for (let i = 6; i >= 0; i--) {
+                const date = moment().subtract(i, 'days');
+                const dayName = daysOfWeek[date.day()];
+                
+                // Tìm data cho ngày này
+                const dayData = orderData.find(item => 
+                    item._id.year === date.year() &&
+                    item._id.month === date.month() + 1 &&
+                    item._id.day === date.date()
+                );
+
+                last7Days.push({
+                    day: dayName,
+                    completed: dayData ? dayData.completed : 0,
+                    pending: dayData ? dayData.pending : 0,
+                    failed: dayData ? dayData.failed : 0,
+                    total: dayData ? dayData.total : 0,
+                    revenue: dayData ? dayData.totalRevenue : 0
+                });
+            }
+
+            // Tính tổng và phần trăm
+            const totalOrders = last7Days.reduce((sum, day) => sum + day.total, 0);
+            const totalCompleted = last7Days.reduce((sum, day) => sum + day.completed, 0);
+            const totalPending = last7Days.reduce((sum, day) => sum + day.pending, 0);
+            const totalFailed = last7Days.reduce((sum, day) => sum + day.failed, 0);
+            const totalRevenue = last7Days.reduce((sum, day) => sum + day.revenue, 0);
+            
+            const completedPercent = totalOrders > 0 ? Math.round((totalCompleted / totalOrders) * 100) : 0;
+            const pendingPercent = totalOrders > 0 ? Math.round((totalPending / totalOrders) * 100) : 0;
+            const failedPercent = totalOrders > 0 ? Math.round((totalFailed / totalOrders) * 100) : 0;
+
+            // So sánh với tuần trước để tính % thay đổi
+            const previousWeekStart = moment().subtract(13, 'days').startOf('day').toDate();
+            const previousWeekEnd = moment().subtract(7, 'days').endOf('day').toDate();
+            
+            const previousWeekOrders = await Orders.countDocuments({
+                createdAt: { $gte: previousWeekStart, $lte: previousWeekEnd }
+            });
+
+            const changePercent = previousWeekOrders > 0 
+                ? ((totalOrders - previousWeekOrders) / previousWeekOrders * 100).toFixed(1)
+                : 0;
+
+            res.status(200).json({
+                success: true,
+                data: last7Days,
+                summary: {
+                    totalOrders,
+                    totalCompleted,
+                    totalPending,
+                    totalFailed,
+                    totalRevenue,
+                    completedPercent,
+                    pendingPercent,
+                    failedPercent,
+                    changePercent: parseFloat(changePercent),
+                    changeDirection: changePercent > 0 ? 'increase' : 'decrease'
+                }
+            });
+        } catch (err) {
             next(err);
         }
     }
@@ -466,7 +579,198 @@ class OdersController {
             res.status(500).json({ message: 'Lỗi server khi lấy danh sách đơn hàng' });
         }
     }
+
+    /** [GET] /order/discount-chart */
+    async getOrderDiscount (req, res) {
+        try {
+            // Lấy các đơn hàng trong 7 ngày qua
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            const today = moment().endOf('day').toDate();
+            const orders = await Orders.find({
+                createdAt: { $gte: sevenDaysAgo, $lte: today },
+            }).populate('discount_id');
+            console.log(orders)
+            let typeCount = {
+                'giảm theo phần trăm': 0,
+                'giảm theo số tiền cố định': 0,
+                'khác': 0
+            };
+
+            orders.forEach(order => {
+                const discount = order.discount_id;
+                if (!discount || !discount.discount_type) {
+                    typeCount['khác'] += 1;
+                    return;
+                }
+                if (discount.discount_type === 'giảm theo phần trăm') {
+                    typeCount['giảm theo phần trăm'] += 1;
+                } else if (discount.discount_type === 'giảm theo số tiền cố định') {
+                    typeCount['giảm theo số tiền cố định'] += 1;
+                } else {
+                    typeCount['khác'] += 1;
+                }
+            });
+
+            const total = Object.values(typeCount).reduce((sum, val) => sum + val, 0) || 1;
+
+            const data = [
+                {
+                    name: 'Percentage discount',
+                    value: Math.round((typeCount['giảm theo phần trăm'] / total) * 100),
+                    color: '#4F7DF2'
+                },
+                {
+                    name: 'Fixed card discount',
+                    value: Math.round((typeCount['giảm theo số tiền cố định'] / total) * 100),
+                    color: '#93C5FD'
+                },
+                {
+                    name: 'No discount used',
+                    value: Math.round((typeCount['khác'] / total) * 100),
+                    color: '#1E40AF'
+                }
+            ];
+
+            res.status(200).json({ data });
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+            res.status(500).json({ message: 'Lỗi server khi lấy danh sách đơn hàng' });
+        }
+    }
     
+    /** [GET] /order/payment-chart */
+    async  getOrderDiscountSummary(req, res) {
+        try {
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            sevenDaysAgo.setHours(0, 0, 0, 0);
+
+            const payingOrdersCount = await Orders.countDocuments({
+                createdAt: { $gte: sevenDaysAgo }, 
+                discount_id: { $ne: null }         
+            });
+
+            const nonPayingOrdersCount = await Orders.countDocuments({
+                createdAt: { $gte: sevenDaysAgo }, 
+                discount_id: null                  
+            });
+
+            const totalOrders = payingOrdersCount + nonPayingOrdersCount;
+
+            let payingPercentage = 0;
+            let nonPayingPercentage = 0;
+
+            if (totalOrders > 0) {
+                payingPercentage = Math.round((payingOrdersCount / totalOrders) * 100);
+                nonPayingPercentage = Math.round((nonPayingOrdersCount / totalOrders) * 100);
+            }
+
+            const data = [
+                {
+                    name: 'Paying customer',
+                    value: payingPercentage,
+                    count: payingOrdersCount, 
+                    color: '#4F7DF2' 
+                },
+                {
+                    name: 'Non-paying customer',
+                    value: nonPayingPercentage,
+                    count: nonPayingOrdersCount, 
+                    color: '#E5EBF9' 
+                }
+            ];
+
+            res.status(200).json({ data });
+
+        } catch (error) {
+            console.error('Error fetching discount summary:', error);
+            res.status(500).json({ message: 'Server error while fetching discount summary data.' });
+        }
+    }
+
+    /** [GET] /order/monthly-chart */
+    async getMonthlyRevenue(req, res) {
+        try {
+            const endDate = new Date(); // Thời điểm hiện tại (ví dụ: 2025-05-29)
+            // Đặt endDate về cuối ngày để bao gồm tất cả các đơn hàng trong ngày hiện tại
+            endDate.setHours(23, 59, 59, 999); 
+
+            const startDate = new Date(endDate); // Bắt đầu từ endDate
+            startDate.setMonth(endDate.getMonth() - 11); // Lùi lại 11 tháng để có tổng 12 tháng
+            startDate.setDate(1); // Đặt ngày về 1 để bắt đầu từ đầu tháng đó
+            startDate.setHours(0, 0, 0, 0); // Đặt giờ về 0 để bao gồm toàn bộ ngày đầu tiên của tháng
+
+            const monthlyOrderCounts = {};
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+            // Khởi tạo monthlyOrderCounts cho đúng 12 tháng
+            let currentMonthIterator = new Date(startDate); // Bắt đầu từ startDate (đầu tháng đầu tiên)
+            for (let i = 0; i < 12; i++) {
+                const monthKey = `${currentMonthIterator.getFullYear()}-${(currentMonthIterator.getMonth() + 1).toString().padStart(2, '0')}`;
+                monthlyOrderCounts[monthKey] = 0;
+                
+                // Debug: In ra các monthKey được khởi tạo
+                // console.log(`Initialized monthKey[${i}]: ${monthKey}`);
+
+                // Di chuyển đến tháng tiếp theo
+                currentMonthIterator.setMonth(currentMonthIterator.getMonth() + 1);
+                currentMonthIterator.setDate(1); // Đảm bảo luôn ở ngày 1 của tháng mới
+            }
+
+            // Debug: Kiểm tra tất cả các key đã khởi tạo và số lượng của chúng
+            const initializedKeys = Object.keys(monthlyOrderCounts).sort();
+            console.log('Number of Initialized monthlyOrderCounts keys:', initializedKeys.length);
+            console.log('Initialized monthlyOrderCounts keys:', initializedKeys);
+
+
+            // Lấy tất cả các đơn hàng trong khoảng thời gian đã định
+            const orders = await Orders.find({
+                createdAt: { $gte: startDate, $lte: endDate },
+                status: 'Thành công' // Chỉ đếm đơn hàng thành công
+            });
+
+            console.log(`Found ${orders.length} successful orders in the query range.`);
+
+            // Đếm số lượng đơn hàng cho mỗi tháng
+            orders.forEach(order => {
+                const orderMonth = order.createdAt.getMonth() + 1;
+                const orderYear = order.createdAt.getFullYear();
+                const monthKey = `${orderYear}-${orderMonth.toString().padStart(2, '0')}`;
+                
+                // Debug: Kiểm tra từng order và monthKey của nó
+                // console.log(`Processing Order ID: ${order._id}, CreatedAt: ${order.createdAt.toISOString()}, Calculated MonthKey: ${monthKey}`);
+
+                if (monthlyOrderCounts.hasOwnProperty(monthKey)) {
+                    monthlyOrderCounts[monthKey] += 1;
+                } else {
+                    // Điều này có thể xảy ra nếu một đơn hàng nằm ngoài 12 tháng được khởi tạo
+                    // hoặc nếu logic khởi tạo tháng bị sai.
+                    console.warn(`Order from monthKey (${monthKey}) not found in initialized counts. This order might be outside the 12-month window: ${order._id}`);
+                }
+            });
+
+            // Chuyển đổi dữ liệu sang định dạng mà Recharts mong muốn
+            const chartData = Object.keys(monthlyOrderCounts)
+                .sort() // Đảm bảo sắp xếp theo thứ tự thời gian
+                .map(key => {
+                    const [year, monthNum] = key.split('-');
+                    const monthAbbr = monthNames[parseInt(monthNum, 10) - 1];
+                    return {
+                        month: monthAbbr,
+                        value: monthlyOrderCounts[key]
+                    };
+                });
+            
+            console.log('Final chartData sent to frontend (elements:', chartData.length, '):', chartData);
+
+            res.status(200).json({ data: chartData });
+
+        } catch (error) {
+            console.error('Error fetching monthly order count:', error);
+            res.status(500).json({ message: 'Lỗi server khi lấy dữ liệu số lượng đơn hàng hàng tháng.' });
+        }
+    }
 }
 
 module.exports = new OdersController();

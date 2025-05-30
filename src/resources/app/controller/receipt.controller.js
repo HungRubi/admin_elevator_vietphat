@@ -15,17 +15,21 @@ class ReceiptController {
             const searchQuery = req.query.timkiem?.trim() || '';
             if(searchQuery) {
                 const receipts = await Receipts.find({
-                    $or: [
-                        { code: { $regex: searchQuery, $options: 'i' } },
-                        { supplier: { $regex: searchQuery, $options: 'i' } },
-                    ]
+                    code: { $regex: searchQuery, $options: 'i' },
                 })
                 .sort({ [sortField]: sortReceipt })
                 .populate('supplier')
                 .lean();
-                res.status(200).json({
+                const formatReceipts = receipts.map(receipt => {
+                    return {
+                        ...receipt,
+                        dateFormat: formatDate(receipt.dateEntry),
+                        updateFormat: formatDate(receipt.updatedAt),
+                    }
+                });
+                return res.status(200).json({
                     searchType: true,
-                    receiptSearch: receipts,
+                    receiptSearch: formatReceipts,
                     currentSort: sortField,
                     currentReceipt: sortReceipt === 1 ? 'asc' : 'desc',
                 })
@@ -44,7 +48,7 @@ class ReceiptController {
             });
             const totalReceipts = await Receipts.countDocuments();
             const totalPages = Math.ceil(totalReceipts / 10);   
-            res.status(200).json({
+            return res.status(200).json({
                 receipts: formatReceipts,
                 totalPages,
                 searchType: false,
@@ -203,6 +207,47 @@ class ReceiptController {
             console.log(error);
             res.status(500).json({
                 message: 'Lỗi rồi: ' + error,
+            });
+        }
+    }
+
+    /** [GET] /receipt/filter */
+    async filterReceipt(req, res) {
+        try {
+            console.log(req.query)
+            const { status, startDate, endDate } = req.query;
+            let query = {};
+            if (status) {
+                query.status = status;
+            }
+            if (startDate && endDate) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999); 
+
+                query.createdAt = {
+                    $gte: start,
+                    $lte: end
+                };
+            }
+            const receipts = await Receipts
+            .find(query)
+            .populate('supplier')
+            .lean();    
+            const formatReceipts = receipts.map(receipt => {
+                return {
+                    ...receipt,
+                    dateFormat: formatDate(receipt.dateEntry),
+                    updateFormat: formatDate(receipt.updatedAt),
+                }
+            });
+            res.status(200).json({
+                receipts: formatReceipts
+            });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                message: "Lỗi server vui lòng thử lại sau"
             });
         }
     }

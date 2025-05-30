@@ -6,9 +6,10 @@ class CartController {
     /** [PUT] /cart/update/:id */
     updateCart = async (req, res) => {
         try {
-            
-            const { productId, quantity } = req.body;
+            console.log(req.body);
+            const { productId, quantity, items, totalPrice } = req.body;
             const userId = req.params.id;
+            console.log(userId)
             const product = await Product.findById(productId);
             if (!product) {
                 return res.status(404).json({ message: 'Sản phẩm không tồn tại' });
@@ -17,12 +18,12 @@ class CartController {
             if (!cart) {
                 cart = new Cart({
                     userId,
-                    items: [{
-                        productId,
-                        quantity,
-                        price: product.price
-                    }],
-                    totalPrice: product.price * quantity
+                    items: items.map(item => ({
+                        productId: item.productId,
+                        quantity: item.quantity,
+                        price: item.price,
+                    })),
+                    totalPrice,
                 });
             } else {
                 const existingItemIndex = cart.items.findIndex(item =>
@@ -30,7 +31,7 @@ class CartController {
                 );
     
                 if (existingItemIndex !== -1) {
-                    cart.items[existingItemIndex].quantity += quantity;
+                    cart.items[existingItemIndex].quantity += Number(quantity);
                 } else {
                     cart.items.push({
                         productId,

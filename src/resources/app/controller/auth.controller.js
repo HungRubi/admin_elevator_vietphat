@@ -8,7 +8,7 @@ const OrderDetail = require('../model/orderDetail.model');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require("dotenv");
-
+const Notification = require("../model/notification.model");
 dotenv.config();
 
 let refreshTokens = [];
@@ -135,7 +135,7 @@ class AuthController {
                 const orderDetails = await OrderDetail.find({ order_id: { $in: orderIds } });
                 const productIds = orderDetails.map(item => item.product_id);
                 const products = await Product.find({ _id: { $in: productIds } });
-
+                const notification = await Notification.find({user_id: user._id});
                 // Map nhanh product theo _id
                 const productMap = {};
                 products.forEach(p => {
@@ -169,6 +169,7 @@ class AuthController {
                     };
                 });
                 res.status(200).json({
+                    notification,
                     user: formatUser,
                     orders: ordersWithDetails,
                     failedOrdersCount,

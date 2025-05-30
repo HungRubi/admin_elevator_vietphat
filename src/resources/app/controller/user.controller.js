@@ -265,6 +265,115 @@ class UserController {
             })
         }
     }
+
+    /** [GET] /user/new */
+    async getNewUser(req, res) {
+        try {
+            const { startDate, endDate, days = 7 } = req.query;
+            
+            let start, end;
+            
+            if (startDate && endDate) {
+                start = new Date(startDate);
+                end = new Date(endDate);
+            } else {
+                // Mặc định lấy 7 ngày gần nhất
+                end = new Date();
+                start = new Date();
+                start.setDate(end.getDate() - (days - 1));
+            }
+            
+            // Set time to start and end of day
+            start.setHours(0, 0, 0, 0);
+            end.setHours(23, 59, 59, 999);
+            
+            // Aggregate để đếm số khách hàng mới mỗi ngày
+            const customerStats = await User.aggregate([
+                {
+                    $match: {
+                        createdAt: { $gte: start, $lte: end },
+                        authour: 'customer' // Chỉ lấy khách hàng
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            year: { $year: '$createdAt' },
+                            month: { $month: '$createdAt' },
+                            day: { $dayOfMonth: '$createdAt' }
+                        },
+                        customers: { $sum: 1 },
+                        date: { $first: '$createdAt' }
+                    }
+                },
+                {
+                    $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1 }
+                }
+            ]);
+            
+            // Tính tổng số khách hàng để tính trung bình
+            const totalCustomers = customerStats.reduce((sum, stat) => sum + stat.customers, 0);
+            const average = Math.round(totalCustomers / days);
+            
+            // Format dữ liệu để phù hợp với frontend
+            const formattedData = [];
+            const currentDate = new Date(start);
+            
+            for (let i = 0; i < days; i++) {
+                const dateStr = formatDate(currentDate);
+                const existingStat = customerStats.find(stat => {
+                    const statDate = new Date(stat.date);
+                    return statDate.toDateString() === currentDate.toDateString();
+                });
+                
+                formattedData.push({
+                    day: dateStr,
+                    customers: existingStat ? existingStat.customers : 0,
+                    average: average
+                });
+                
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            // Tính tổng khách hàng trong khoảng thời gian
+            const totalNewCustomers = formattedData.reduce((sum, data) => sum + data.customers, 0);
+            
+            // Tính phần trăm tăng trưởng (so với kỳ trước)
+            const previousPeriodStart = new Date(start);
+            previousPeriodStart.setDate(previousPeriodStart.getDate() - days);
+            const previousPeriodEnd = new Date(start);
+            previousPeriodEnd.setDate(previousPeriodEnd.getDate() - 1);
+            
+            const previousCustomers = await User.countDocuments({
+                createdAt: { $gte: previousPeriodStart, $lte: previousPeriodEnd },
+                authour: 'customer'
+            });
+            
+            const growthPercentage = previousCustomers > 0 
+                ? ((totalNewCustomers - previousCustomers) / previousCustomers * 100).toFixed(1)
+                : 100;
+            
+            res.status(200).json({
+                success: true,
+                chartData: formattedData,
+                summary: {
+                    totalNewCustomers,
+                    growthPercentage: growthPercentage,
+                    startDate: formatDate(start),
+                    endDate: formatDate(end),
+                    averagePerDay: average
+                }
+            });
+            
+        } catch (error) {
+            console.error('Error fetching customer analytics:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Lỗi khi lấy thống kê khách hàng',
+                error: error.message
+            });
+        }
+    }
 }
 
 module.exports = new UserController();

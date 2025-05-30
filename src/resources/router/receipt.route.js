@@ -3,6 +3,7 @@ const router = express.Router();
 const ReceiptController = require('../app/controller/receipt.controller');
 
 router.post('/add', ReceiptController.add);
+router.get('/filter', ReceiptController.filterReceipt);
 router.delete('/:id', ReceiptController.deleteReceipt);
 router.put('/:id', ReceiptController.updateReceipt);
 router.get('/:id', ReceiptController.getReceipt);
