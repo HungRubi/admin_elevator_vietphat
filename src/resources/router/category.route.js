@@ -15,6 +15,7 @@ route.delete('/product/:id', categoryController.destroyProduct);
 /** === DISCOUNT === */
 route.post('/discount/store',categoryController.storeDiscount);
 route.get('/discount/filter',categoryController.filterDiscount);
+route.delete('/discount/:id', categoryController.deleteDiscount);
 route.put('/discount/:id', categoryController.updateDiscount);
 route.get('/discount/:id', categoryController.editDiscount);
 route.get('/discount', categoryController.discount);

@@ -179,7 +179,6 @@ class CategoryController{
     
             const totalDiscount = await Discount.countDocuments();
             const totalPage = Math.ceil(totalDiscount / 10);
-    
             const data = {
                 formatDiscount,
                 totalPage,
@@ -250,20 +249,72 @@ class CategoryController{
     }
 
     /** [UPDATE] /category/discount/:id */
-    updateDiscount(req, res) {
-        console.log(req.body, req.params.id)
-        Discount.updateOne({_id: req.params.id}, req.body)
-        .then(() => {
+    async updateDiscount(req, res) {
+        try {
+            const discountId = req.params.id;
+            const updateData = { ...req.body };
+            
+            // Kiểm tra và set is_active dựa trên end_date
+            if (updateData.end_date) {
+                const endDate = new Date(updateData.end_date);
+                const now = new Date();
+                if (endDate > now) {
+                    updateData.is_active = 'active';
+                } else {
+                    updateData.is_active = 'stop';
+                }
+            }
+            const updatedDiscount = await Discount.findByIdAndUpdate(
+                discountId, 
+                updateData, 
+                { new: true }
+            );
+            
+            if (!updatedDiscount) {
+                return res.status(404).json({
+                    message: "Không tìm thấy voucher!"
+                });
+            }
+            
+            if (updatedDiscount.use_count >= updatedDiscount.use_limit && updatedDiscount.is_active === 'active') {
+                updatedDiscount.is_active = 'stop';
+                await updatedDiscount.save();
+            }
             res.status(200).json({
-                message: "Cập nhật voucher thành công!"
-            })
-        })
-        .catch(error => {
+                message: "Cập nhật voucher thành công!",
+                discount: updatedDiscount
+            });
+        } catch(error) {
             console.log(error);
             res.status(500).json({
                 message: 'Lỗi server vui lòng thử lại sau'
-            })
-        });
+            });
+        }
+    }
+
+    /** [DELETE] /category/discount/:id */
+    async deleteDiscount(req, res) {
+        try {
+            const { id } = req.params;
+            
+            const deletedDiscount = await Discount.findByIdAndDelete(id);
+            
+            if (!deletedDiscount) {
+                return res.status(404).json({
+                    message: "Voucher không tồn tại"
+                });
+            }
+            
+            res.status(200).json({
+                message: "Xóa voucher thành công!",
+            });
+            
+        } catch(error) {
+            console.log(error);
+            res.status(500).json({
+                message: 'Lỗi server vui lòng thử lại sau'
+            });
+        }
     }
 
     /** [GET] /category/discount/filter */

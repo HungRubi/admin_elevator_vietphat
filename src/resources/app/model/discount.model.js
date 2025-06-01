@@ -36,7 +36,27 @@ const discount = new mongoose.Schema(
 discount.virtual('current_status').get(function() {
     return (new Date() > this.end_date) ? 'stop' : this.is_active;
 });
-  
+
+// Cập nhật trạng thái khi save document
+discount.pre('save', function(next) {
+    if (this.end_date < new Date() && this.is_active === 'active') {
+        this.is_active = 'stop';
+    }
+    next();
+});
+
+// Cập nhật trạng thái khi dùng findOneAndUpdate, findByIdAndUpdate,...
+discount.pre('findOneAndUpdate', function(next) {
+    const update = this.getUpdate();
+    if (update && update.end_date) {
+        if (new Date(update.end_date) < new Date()) {
+            update.is_active = 'stop';
+        }
+    }
+    next();
+});
+
+// Các middleware 'find' và 'findOne' vẫn giữ để cập nhật hàng loạt khi query
 discount.pre('find', async function() {
     await mongoose.model('discount').updateMany(
         { 
@@ -48,7 +68,7 @@ discount.pre('find', async function() {
         }
     );
 });
-  
+
 discount.pre('findOne', async function() {
     await mongoose.model('discount').updateMany(
         { 
@@ -60,16 +80,7 @@ discount.pre('findOne', async function() {
         }
     );
 });
-  
-discount.methods.checkActiveStatus = function() {
-    const now = new Date();
-    if (this.end_date < now && this.is_active === 'active') {
-        this.is_active = 'stop';
-        return true; 
-    }
-    return false; 
-};
-  
+
 discount.statics.updateAllStatus = async function() {
     const now = new Date();
     return this.updateMany(
@@ -77,5 +88,6 @@ discount.statics.updateAllStatus = async function() {
         { is_active: 'stop' }
     );
 };
+
 
 module.exports = mongoose.model('discount', discount);
