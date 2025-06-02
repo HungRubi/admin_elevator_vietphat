@@ -118,7 +118,6 @@ class OdersController {
             }
             if (discount_id) {
                 let discount = await Discount.findById(discount_id);
-                await discount.checkAndUpdateStatus();
                 if (!discount) {
                     return res.status(400).json({ message: 'Mã giảm giá không tồn tại' });
                 }
@@ -185,12 +184,14 @@ class OdersController {
             }));
 
             // Trừ kho
-            for (const i of items) {
-                await Warehouse.findOneAndUpdate(
-                    { productId: i.product_id },
-                    { $inc: { stock: -i.quantity } },
-                    { upsert: true, new: true }
-                );
+            if(status !== "Thất bại") {
+                for (const i of items) {
+                    await Warehouse.findOneAndUpdate(
+                        { productId: i.product_id },
+                        { $inc: { stock: -i.quantity } },
+                        { upsert: true, new: true }
+                    );
+                }
             }
 
             await OrderDetail.insertMany(orderDetail);
@@ -256,7 +257,6 @@ class OdersController {
             });
         }
     };
-
 
     /** [GET] /order/:id */
     async edit(req, res, next) {
@@ -372,14 +372,61 @@ class OdersController {
 
     /** [PUT] /order/admin/:id */
     async updateOrderAdmin(req, res) {
-        try{
-            await Orders.updateOne({_id: req.params.id}, req.body);
-            res.status(200).json({
-                message: "cập nhật đơn hàng thành công"
-            })
-        }catch(error){
-            console.log(error);
-            res.status(500).json({message: "Lỗi hệ thống"});
+        try {
+            const { status, items } = req.body;
+            const orderId = req.params.id;
+
+            const oldOrder = await Orders.findById(orderId);
+            if (!oldOrder) {
+                return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
+            }
+
+            const oldStatus = oldOrder.status;
+            await Orders.updateOne({ _id: orderId }, req.body);
+
+            if (items && Array.isArray(items)) {
+                for (const i of items) {
+                    if (!i.product_id || !i.quantity) {
+                        return res.status(400).json({ message: `Dữ liệu sản phẩm không hợp lệ: ${JSON.stringify(i)}` });
+                    }
+
+                    const warehouseItem = await Warehouse.findOne({ productId: i.product_id });
+
+                    if (!warehouseItem) {
+                        return res.status(404).json({ 
+                            message: `Sản phẩm với productId ${i.product_id} không tồn tại trong kho` 
+                        });
+                    }
+
+                    // Cập nhật stock dựa trên trạng thái
+                    if (oldStatus === "Thất bại" && status !== "Thất bại") {
+                        // Trừ stock
+                        if (warehouseItem.stock < i.quantity) {
+                            return res.status(400).json({ 
+                                message: `Số lượng tồn kho không đủ cho sản phẩm ${i.product_id}` 
+                            });
+                        }
+                        await Warehouse.findOneAndUpdate(
+                            { productId: i.product_id },
+                            { $inc: { stock: -i.quantity } },
+                            { new: true }
+                        );
+                    } else if (oldStatus !== "Thất bại" && status === "Thất bại") {
+                        await Warehouse.findOneAndUpdate(
+                            { productId: i.product_id },
+                            { $inc: { stock: i.quantity } },
+                            { new: true }
+                        );
+                    }
+                }
+            } else {
+                console.log("No items provided or items is not an array");
+            }
+
+            res.status(200).json({ message: "Cập nhật đơn hàng thành công" });
+        } catch (error) {
+            console.error("Error in updateOrderAdmin:", error);
+            res.status(500).json({ message: "Lỗi hệ thống", error: error.message });
         }
     }
 

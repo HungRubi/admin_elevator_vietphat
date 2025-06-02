@@ -1,6 +1,6 @@
 const Order = require("../model/orders.model");
 const DetailOrder = require("../model/orderDetail.model");
-const {getToday, getYesterday, getStartOfWeek, getStartOfMonth, getStartOfYear, getEndOfMonth, getEndOfYear, getEndOfWeek} = require("../../util/formatTime.util");
+const {getDateRange, getStartOfWeek, getStartOfMonth, getStartOfYear, getEndOfMonth, getEndOfYear, getEndOfWeek} = require("../../util/formatTime.util");
 const moment = require("moment");
 const User = require("../model/user.model");    
 const Product = require("../model/products.model"); 
@@ -65,10 +65,18 @@ class ReportController {
             if(date) {
                 switch(date){
                     case "hôm nay":
-                        query.createdAt = getToday();
+                        const today = getDateRange("today");
+                        query.createdAt = {
+                            $gte: today.start,
+                            $lte: today.end
+                        };
                         break;
                     case "hôm qua":
-                        query.createdAt = getYesterday();
+                        const yesterday = getDateRange("yesterday");
+                        query.createdAt = {
+                            $gte: yesterday.start,
+                            $lte: yesterday.end
+                        };
                         break;
                     case "tuần này":
                         query.createdAt = {

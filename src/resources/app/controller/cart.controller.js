@@ -1,5 +1,6 @@
 const Cart = require('../model/cart.model');
 const Product = require('../model/products.model');
+const mongoose = require("mongoose");
 
 class CartController {
 
@@ -8,6 +9,9 @@ class CartController {
         try {
             const { items } = req.body;
             const userId = req.params.id;
+            if (!mongoose.isValidObjectId(userId)) {
+                return res.status(400).json({ message: 'ID người dùng không hợp lệ' });
+            }
 
             if (!items || items.length === 0) {
                 return res.status(400).json({ message: 'Không có sản phẩm trong giỏ hàng' });

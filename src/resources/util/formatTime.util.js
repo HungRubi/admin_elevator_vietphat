@@ -15,6 +15,25 @@ module.exports = {
         yesterday.setDate(yesterday.getDate() - 1);
         return formatDate(yesterday);
     },
+    getDateRange(type) {
+        const date = new Date();
+        
+        if (type === "yesterday") {
+            date.setDate(date.getDate() - 1);
+        }
+        
+        // Lấy đầu ngày và cuối ngày
+        const startOfDay = new Date(date);
+        startOfDay.setHours(0, 0, 0, 0);
+        
+        const endOfDay = new Date(date);
+        endOfDay.setHours(23, 59, 59, 999);
+        
+        return {
+            start: startOfDay,
+            end: endOfDay
+        };
+    },
     getStartOfWeek() {
         const today = new Date();
         const day = today.getDay();

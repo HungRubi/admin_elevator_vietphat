@@ -22,7 +22,7 @@ app.use(methodOverride('_method'));
 app.use(passport.initialize());
 
 app.use(cors({
-    origin: ["http://localhost:3000", "http://localhost:5173", "http://localhost:5174"],
+    origin: ["http://localhost:3000", "http://localhost:5173", "http://localhost:5174", "https://vmu.com.vn"],
     credentials: true
 }));
 db.connect();
