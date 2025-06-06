@@ -34,6 +34,12 @@ const comments = new mongoose.Schema(
         img: {
             type: String,
         },
+        img_1: {
+            type: String,
+        },
+        img_2: {
+            type: String,
+        },
         video: {
             type: String,
         },

@@ -1,16 +1,14 @@
 const User = require('../model/user.model');
 const Orders = require('../model/orders.model');
 const OrderDetail = require('../model/orderDetail.model');
-const { mutipleMongooseoObject } = require('../../util/mongoose.util');
 const { formatDate } = require('../../util/formatDate.util')
-const { mongooseToObject } = require('../../util/mongoose.util')
 const { importDate } = require('../../util/importDate.util');
-const moment = require('moment');
-const mongoose = require('mongoose');
+
 const Product = require('../model/products.model');
 const Cart = require('../model/cart.model');
 const bcrypt = require('bcrypt');
-const { request, query } = require('express');
+const fs = require('fs');
+const path = require('path');
 class UserController {
     
     /** [GET] /api/user */
@@ -372,6 +370,55 @@ class UserController {
                 message: 'Lỗi khi lấy thống kê khách hàng',
                 error: error.message
             });
+        }
+    }
+
+    /** [PUT] /user/profile/update/:id */
+    async updateProfileUser(req, res) {
+        try{
+            const user_id = req.params.id;
+            const { name, email, phone, birth, avatar } = req.body;
+            const user = await User.findById(user_id);
+            if(!user) {
+                return res.status(404).json({
+                    message: "Bạn chưa đăng nhập!"
+                })
+            }
+            let avatarPath = null;
+
+            if (avatar && avatar.startsWith('data:image')) {
+                const matches = avatar.match(/^data:(image\/\w+);base64,(.+)$/);
+                if (!matches || matches.length !== 3) {
+                    return res.status(400).json({ message: 'Ảnh không hợp lệ!' });
+                }
+
+                const imageBuffer = Buffer.from(matches[2], 'base64');
+                const imageType = matches[1].split('/')[1]; // jpg, png, etc.
+                const fileName = `avatar_${Date.now()}.${imageType}`;
+                const savePath = path.join(process.cwd(), 'uploads', fileName);
+
+                if (!fs.existsSync(path.join(process.cwd(), 'uploads'))) {
+                    fs.mkdirSync(path.join(process.cwd(), 'uploads'));
+                }
+
+                fs.writeFileSync(savePath, imageBuffer);
+                avatarPath = `/uploads/${fileName}`; 
+                user.avatar = avatarPath;
+            }
+            user.birth = birth,
+            user.name = name,
+            user.email = email,
+            user.phone = phone,
+            await user.save();
+            res.status(200).json({
+                user, 
+                message: "Cập nhật hồ sơ thành công"
+            });
+        }catch(error) {
+            console.log(error)
+            res.status(500).json({
+                message: "Lỗi server vui lòng thử lại sau"
+            })
         }
     }
 }

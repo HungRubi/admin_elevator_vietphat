@@ -6,6 +6,34 @@ function formatDate(date) {
 }
 
 module.exports = {
+    getTimeAgo(createdAt) {
+        const now = new Date();
+        const createdTime = new Date(createdAt);
+        const diffInMs = now - createdTime;
+        const diffInSeconds = Math.floor(diffInMs / 1000);
+        const diffInMinutes = Math.floor(diffInSeconds / 60);
+        const diffInHours = Math.floor(diffInMinutes / 60);
+        const diffInDays = Math.floor(diffInHours / 24);
+        const diffInWeeks = Math.floor(diffInDays / 7);
+        const diffInMonths = Math.floor(diffInDays / 30);
+        const diffInYears = Math.floor(diffInDays / 365);
+
+        if (diffInMinutes < 3) {
+            return "Vừa xong";
+        } else if (diffInMinutes < 60) {
+            return `${diffInMinutes} phút trước`;
+        } else if (diffInHours < 24) {
+            return `${diffInHours} giờ trước`;
+        } else if (diffInDays < 7) {
+            return `${diffInDays} ngày trước`;
+        } else if (diffInWeeks < 5) {
+            return `${diffInWeeks} tuần trước`;
+        } else if (diffInMonths < 12) {
+            return `${diffInMonths} tháng trước`;
+        } else {
+            return `${diffInYears} năm trước`;
+        }
+    },
     getToday () {
         const today = new Date();
         return formatDate(today);

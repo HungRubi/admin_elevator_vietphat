@@ -17,14 +17,20 @@ class ReportController {
             function getPreviousPeriod(date) {
                 switch(date) {
                     case "hôm nay": {
-                        const yesterday = new Date();
-                        yesterday.setDate(yesterday.getDate() - 1);
-                        return { start: yesterday, end: yesterday };
+                        const twoDaysAgo = getDateRange(2);
+                        query.createdAt = {
+                            $gte: twoDaysAgo.start,
+                            $lte: twoDaysAgo.end
+                        };
+                        break;
                     }
                     case "hôm qua": {
-                        const twoDaysAgo = new Date();
-                        twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-                        return { start: twoDaysAgo, end: twoDaysAgo };
+                        const threeDaysAgo = getDateRange(4);
+                        query.createdAt = {
+                            $gte: threeDaysAgo.start,
+                            $lte: threeDaysAgo.end
+                        };
+                        break;
                     }
                     case "tuần này": {
                         const startOfThisWeek = new Date(getStartOfWeek());
@@ -55,12 +61,6 @@ class ReportController {
                 }
             }
 
-            // Hàm formatDate nếu cần convert về string hoặc Date object dùng trực tiếp
-            function toDateObj(dateStr) {
-                return new Date(dateStr);
-            }
-
-            // Tạo query cho kỳ này
             let query = {};
             if(date) {
                 switch(date){

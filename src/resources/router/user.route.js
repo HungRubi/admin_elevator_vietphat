@@ -1,8 +1,9 @@
-const express = require('express');
+ const express = require('express');
 const route = express.Router();
 
 const userController = require('../app/controller/user.controller');
 
+route.put('/profile/update/:id',userController.updateProfileUser);   
 route.put('/update/address/:id', userController.updateAddress);   
 route.get('/order/:id', userController.getOrder);   
 route.get('/new', userController.getNewUser);   

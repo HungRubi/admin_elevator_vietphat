@@ -1,6 +1,7 @@
 const { formatDate } = require('../../util/formatDate.util');
 const Notification = require('../model/notification.model');
-
+const User = require('../model/user.model');
+const {getTimeAgo} = require("../../util/formatTime.util")
 class NotificationController {
 
     /** [GET] /notification */
@@ -140,6 +141,66 @@ class NotificationController {
                 message: "Xóa thông báo thành công"
             })
         } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                message: "Lỗi server vui lòng thử lại sau"
+            })
+        }
+    }
+
+    /** [PUT] /notification/read/:id*/
+    async isReadNotification(req, res) {
+        try{
+            const id = req.params.id;
+            await Notification.updateOne({_id: id}, req.body);
+            const {user_id} = req.body;
+            const user = await User.findById(user_id);
+            if(!user) {
+                return res.status(404).json({
+                    message: "Vui lòng đăng nhập để xem thông báo"
+                })
+            }
+            const myNotifi = await Notification
+            .find({user_id: user_id})
+            .sort({createdAt: -1})
+            .lean();
+            const formatNotifi = myNotifi.map(item => ({
+                ...item,
+                timeAgo: getTimeAgo(item.createdAt)
+            }))
+            res.status(200).json({
+                myNotifi: formatNotifi,
+            })
+        }catch(error) {
+            console.log(error);
+            res.status(500).json({
+                message: "Lỗi server vui lòng thử lại sau"
+            })
+        }
+    }
+
+    /** [GET] /notification/all/:id */
+    async getAllNotifiByUser(req, res) {
+        try{
+            const id = req.params.id;
+            const user = await User.findById(id);
+            if(!user) {
+                return res.status(404).json({
+                    message: "Vui lòng đăng nhập để xem thông báo"
+                })
+            }
+            const myNotifi = await Notification
+            .find({user_id: id})
+            .sort({createdAt: -1})
+            .lean();
+            const formatNotifi = myNotifi.map(item => ({
+                ...item,
+                timeAgo: getTimeAgo(item.createdAt)
+            }))
+            res.status(200).json({
+                myNotifi: formatNotifi,
+            })
+        }catch(error){
             console.log(error);
             res.status(500).json({
                 message: "Lỗi server vui lòng thử lại sau"

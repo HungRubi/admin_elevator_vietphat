@@ -4,13 +4,14 @@ const route = express.Router();
 const categoryController = require('../app/controller/category.controller');
 
 /** === PRODUCT === */
-route.get('/product', categoryController.product);
+route.get('/product/get-product/:id', categoryController.getProductByCategory);
 route.get('/product/all', categoryController.getCategoryProduct);
-route.get('/product/:slug', categoryController.getProductCategory);
 route.get('/product/:id/edit', categoryController.editProduct);
 route.post('/product/store', categoryController.storeProduct);
+route.get('/product/:slug', categoryController.getProductCategory);
 route.put('/product/:id', categoryController.updateProduct);
 route.delete('/product/:id', categoryController.destroyProduct);
+route.get('/product', categoryController.product);
 
 /** === DISCOUNT === */
 route.post('/discount/store',categoryController.storeDiscount);

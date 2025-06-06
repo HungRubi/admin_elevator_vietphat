@@ -1,5 +1,6 @@
 const { formatDate } = require('../../util/formatDate.util');
 const Comments = require('../model/comments.model');
+const {saveBase64Image} = require("../../util/convertBase64");
 
 class CommentController {
 
@@ -76,15 +77,36 @@ class CommentController {
                 img,
                 video,
             } = req.body
+            
             const comment = new Comments({
                 user_id,
                 product_id,
                 star,quality,
                 isAccurate,
                 message,
-                img,
                 video,
             })
+            if (img.length > 0 && img[0].startsWith('data:image')) {
+                const savedPath = saveBase64Image(img[0], 'img');
+                if (!savedPath) {
+                    return res.status(400).json({ message: 'Ảnh img không hợp lệ!' });
+                }
+                comment.img = savedPath;
+            }
+            if (img.length > 1 && img[1].startsWith('data:image')) {
+                const savedPath = saveBase64Image(img[1], 'img');
+                if (!savedPath) {
+                    return res.status(400).json({ message: 'Ảnh img không hợp lệ!' });
+                }
+                comment.img_1 = savedPath;
+            }
+            if (img.length > 2 && img[2].startsWith('data:image')) {
+                const savedPath = saveBase64Image(img[2], 'img');
+                if (!savedPath) {
+                    return res.status(400).json({ message: 'Ảnh img không hợp lệ!' });
+                }
+                comment.img_2 = savedPath;
+            }
             await comment.save();
             res.status(200).json({
                 message: 'Đánh giá thành công, cảm ơn quý khách!'

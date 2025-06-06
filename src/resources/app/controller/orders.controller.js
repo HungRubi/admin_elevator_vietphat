@@ -161,7 +161,7 @@ class OdersController {
             const notificationUser = new Notification({
                 user_id: user_id,
                 type: "Thông báo đơn hàng",
-                message: "Bạn vừa đặt hàng thành công. Mã đơn hàng của bạn là: " + order_code,
+                message: `Bạn vừa đặt hàng thành công. Mã đơn hàng của bạn là: ${order_code}`,
                 isRead: false
             });
             await notificationUser.save();
@@ -170,7 +170,7 @@ class OdersController {
                 const notificationAdmin = new Notification({
                     user_id: a._id,
                     type: "Thông báo đơn hàng",
-                    message: "Có đơn hàng mới từ tài khoản: " + userNotificaiton.account + ", với mã đơn hàng: " + order_code,
+                    message: `Có đơn hàng mới từ tài khoản: ${userNotificaiton.account}, mã đơn hàng: ${order_code}`,
                     isRead: false
                 });
                 await notificationAdmin.save();

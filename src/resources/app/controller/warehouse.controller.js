@@ -48,7 +48,7 @@ class WarehouseController {
                     {path: 'supplier'},
                 ]
             })
-            .sort({ [sortField]: sortWarehouse })
+            .sort({updatedAt: -1})
             .lean();
             const formatWarehouses = warehouses.map((warehouse) => ({
                 ...warehouse,
@@ -108,7 +108,6 @@ class WarehouseController {
                     $lte: end
                 };
             }
-            const test = await Warehouse.find(query);
             const warehouses = await Warehouse
             .find(query)
             .populate({

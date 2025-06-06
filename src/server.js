@@ -5,8 +5,10 @@ const methodOverride = require('method-override');
 const cors = require('cors');
 const passport = require('passport');
 const cookieParser = require('cookie-parser')
-const port = 4000;
+const port = process.env.PORT || 4000;
 const app = express();
+const dotenv = require("dotenv");
+const path = require("path")
 
 app.use(cookieParser());
 
@@ -15,7 +17,11 @@ app.use(
         extended: true,
     }),
 );
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+const uploadPath = path.join(__dirname, '..', 'uploads');
+app.use('/uploads', express.static(uploadPath));
 /** method overide */
 app.use(methodOverride('_method'));
 

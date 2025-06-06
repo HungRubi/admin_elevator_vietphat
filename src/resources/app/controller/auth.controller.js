@@ -9,6 +9,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require("dotenv");
 const Notification = require("../model/notification.model");
+const { getTimeAgo } = require('../../util/formatTime.util');
 dotenv.config();
 
 let refreshTokens = [];
@@ -58,7 +59,7 @@ class AuthController {
     }
 
     /** [POST] /auth/login */
-    async login(req, res, next) {
+    async login(req, res) {
         try{
             const user = await User.findOne({account: req.body.account});
             if(!user){
@@ -75,6 +76,154 @@ class AuthController {
             )
             if(!validedPass){
                 return res.status(404).json("Incorrect password")
+            }
+            if(user && validedPass){
+                const accessToken = jwt.sign(
+                    {
+                        id: user._id,
+                        author: user.authour,
+                    },
+                    process.env.JWT_ACCESS_KEY,
+                    {expiresIn: "2h"}
+                );
+                const refreshToken = jwt.sign(
+                    {
+                        id: user._id,
+                        author: user.authour,
+                    },
+                    process.env.JWT_REFRESH_KEY,
+                    {expiresIn: "365d"} 
+                );
+                refreshTokens.push(refreshToken)
+                res.cookie("refreshToken", refreshToken, {
+                    httpOnly: true,
+                    secure: false,
+                    path: "/" ,
+                    sameSite: "strict",
+                })
+                await User.updateOne({ _id: user._id }, { lastLogin: new Date() });
+                const { password, ...userWithoutPassword } = user.toObject();
+                const formatUser = {
+                    ...userWithoutPassword,
+                    format: importDate(user.birth)
+                }
+                const cart = await Cart.find({ userId: user._id });
+
+                const productId = cart.flatMap(item => item.items.map(product => product.productId));
+
+                const product = await Product.find({ _id: { $in: productId } });
+
+                const orders = await Order.find({ user_id: user._id });
+                const orderIds = orders.map(item => item._id);
+
+                // Đếm số đơn hàng thất bại
+                const failedOrdersCount = orders.filter(o => o.status === 'Thất bại').length;
+
+                // Format ngày tạo
+                const formattedOrders = orders.map(order => {
+                return {
+                    ...order.toObject(),
+                    createdAtFormatted: order.createdAt.toLocaleString('vi-VN', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    }),
+                };
+                });
+
+                const orderDetails = await OrderDetail.find({ order_id: { $in: orderIds } });
+                const productIds = orderDetails.map(item => item.product_id);
+                const products = await Product.find({ _id: { $in: productIds } });
+                const notification = await Notification.find({user_id: user._id});
+                // Map nhanh product theo _id
+                const productMap = {};
+                products.forEach(p => {
+                    productMap[p._id.toString()] = p;
+                });
+
+                // Gắn product vào orderDetail
+                const orderDetailsWithProducts = orderDetails.map(detail => {
+                const product = productMap[detail.product_id.toString()];
+                return {
+                    ...detail.toObject(),
+                    product,
+                };
+                });
+
+                // Nhóm orderDetails theo order_id
+                const orderDetailMap = {};
+                orderDetailsWithProducts.forEach(detail => {
+                    const key = detail.order_id.toString();
+                    if (!orderDetailMap[key]) {
+                        orderDetailMap[key] = [];
+                    }
+                    orderDetailMap[key].push(detail);
+                });
+
+                // Gộp order + orderDetails
+                const ordersWithDetails = formattedOrders.map(order => {
+                    return {
+                        ...order,
+                        orderDetails: orderDetailMap[order._id.toString()] || [],
+                    };
+                });
+
+                const myNotifi = await Notification
+                .find({user_id: user._id})
+                .sort({createdAt: -1})
+                .lean();
+                const formatNotifi = myNotifi.map(item => ({
+                    ...item,
+                    timeAgo: getTimeAgo(item.createdAt)
+                }))
+                
+                res.status(200).json({
+                    myNotifi: formatNotifi,
+                    notification,
+                    user: formatUser,
+                    orders: ordersWithDetails,
+                    failedOrdersCount,
+                    cart,
+                    product,
+                    message: "Login successful",
+                    accessToken,
+                })
+            }
+        }catch(error){
+            console.error("🔥 Lỗi khi đăng nhập:", error); // In lỗi ra console
+            res.status(500).json({message: error})
+        }
+    }
+
+    /** [POST] /auth/login/admin */
+    async loginAdmin(req, res) {
+        try{
+            const user = await User.findOne({account: req.body.account});
+            if(!user){
+                return res.status(404).json("Incorrect account")
+            }
+            
+            const validedPass = await bcrypt.compare(
+                req.body.password,
+                user.password
+            )
+            
+            if(!validedPass){
+                return res.status(404).json({
+                    message: "Incorrect password"
+                })
+            }
+            if(user.authour === "customer") {
+                return res.status(404).json({
+                    message: "You're not authenticated"
+                })
+            }
+            if (!user.password.startsWith("$2b$")) {
+                const hashedPassword = await bcrypt.hash(user.password, 10);
+                await User.updateOne({ _id: user._id }, { password: hashedPassword });
+                user.password = hashedPassword;
             }
             if(user && validedPass){
                 const accessToken = jwt.sign(
@@ -235,6 +384,56 @@ class AuthController {
             res.status(200).json("Logout successful");
         }catch(err){
             res.status(500).json(err);
+        }
+    }
+
+    /** [PUT] /auth/password/:id */
+    async changePassword(req, res) {
+        try{
+            const {id} = req.params;
+            const {password, newPassword, confirmPassword} = req.body;
+            const user = await User.findById(id);
+            if(!user) {
+                return res.status(404).json({
+                    message: "Bạn chưa đăng nhập!"
+                })
+            }
+
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (!isMatch) {
+                return res.status(400).json({
+                    message: "Mật khẩu hiện tại không đúng!"
+                });
+            }
+
+            if (newPassword !== confirmPassword) {
+                return res.status(400).json({
+                    message: "Mật khẩu mới và xác nhận mật khẩu không khớp!"
+                });
+            }
+
+            const isSamePassword = await bcrypt.compare(newPassword, user.password);
+            if (isSamePassword) {
+                return res.status(400).json({
+                    message: "Mật khẩu mới không được giống mật khẩu cũ!"
+                });
+            }
+
+            const saltRounds = 10;
+            const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+            user.password = hashedPassword;
+            await user.save();
+
+            return res.status(200).json({
+                message: "Đổi mật khẩu thành công!"
+            });
+
+        }catch(error) {
+            console.log(error);
+            res.status(500).json({
+                message: "Lỗi server vui lòng thử lại sau"
+            })
         }
     }
 }

@@ -46,7 +46,6 @@ class CategoryController{
                 ...type.toObject(),
                 lastUpdate: formatDate(type.updatedAt)
             }));
-    
             const data = {
                 totalPage,
                 categoryProduct: formatType,
@@ -57,6 +56,20 @@ class CategoryController{
     
         } catch (error) {
             res.status(500).json({ message: err });
+        }
+    }
+
+    /** [GET] category/product/get-product/:id */
+    async getProductByCategory (req, res) {
+        try{
+            const id = req.params.id;
+            const products = await Product.find({category: id}).populate("category");
+            res.status(200).json({
+                products
+            })
+        }catch(error) {
+            console.log("Lỗi: ", error)
+            res.status(500).json({ message: "Lỗi server vui lòng thử lại sau" });
         }
     }
 
