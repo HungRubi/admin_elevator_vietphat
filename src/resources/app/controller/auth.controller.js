@@ -23,10 +23,14 @@ class AuthController {
             const {frist,last,email,city,street,day,month,year,account,password, confirm,phone} = req.body;
             const existingUser = await User.findOne({ $or: [{ email }, { account }] });
             if (existingUser) {
-                return res.status(404).json('Account already exists. Please use a different email or username.');
+                return res.status(404).json({
+                    message: "Account already exists. Please use a different email or username."
+                });
             }
             if(password !== confirm){
-                return res.status(404).json("Password and confirm password do not match");
+                return res.status(404).json({
+                    message: "Password and confirm password do not match"
+                });
             }
             const name = `${frist} ${last}`;
             const y = parseInt(year, 10);
@@ -40,6 +44,17 @@ class AuthController {
             const address = `${city}, ${street}`;
 
             const hashPassword = await bcrypt.hash(password, 10);
+
+            const admin = await User.find({ authour: { $in: ['admin', 'employee'] } });
+            admin.forEach(async (a) => {
+                const notificationAdmin = new Notification({
+                    user_id: a._id,
+                    type: "Thông báo khách hàng",
+                    message: `Khách hàng mới vừa được thêm: ${name}-${account}.Hãy kiểm tra thông tin chi tiết và bắt đầu chăm sóc khách hàng này ngay nhé!`,
+                    isRead: false
+                });
+                await notificationAdmin.save();
+            });
 
             const user = new User({
                 account,
@@ -113,7 +128,9 @@ class AuthController {
 
                 const product = await Product.find({ _id: { $in: productId } });
 
-                const orders = await Order.find({ user_id: user._id });
+                const orders = await Order.find({ user_id: user._id })
+                .populate("discount_id")
+                .sort({ createdAt: -1 });
                 const orderIds = orders.map(item => item._id);
 
                 // Đếm số đơn hàng thất bại
@@ -124,11 +141,11 @@ class AuthController {
                 return {
                     ...order.toObject(),
                     createdAtFormatted: order.createdAt.toLocaleString('vi-VN', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
                     }),
                 };
                 });
@@ -180,10 +197,10 @@ class AuthController {
                 }))
                 
                 res.status(200).json({
+                    orders: ordersWithDetails,
                     myNotifi: formatNotifi,
                     notification,
                     user: formatUser,
-                    orders: ordersWithDetails,
                     failedOrdersCount,
                     cart,
                     product,

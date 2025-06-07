@@ -33,7 +33,8 @@ const orders = new mongoose.Schema(
         },
         discount_id: {
             type: mongoose.Schema.Types.ObjectId, 
-            ref: 'discount'
+            ref: 'discount',
+            default: null,
         },
     },
     {

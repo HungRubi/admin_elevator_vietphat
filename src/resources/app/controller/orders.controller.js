@@ -10,6 +10,7 @@ const Warehouse = require("../model/warehouse.model");
 const {formatDate} = require('../../util/formatDate.util');
 const { v4: uuidv4 } = require('uuid');
 const moment = require('moment');
+const mongoose = require('mongoose');
 class OdersController {
     
     /** [GET] /order */
@@ -195,7 +196,9 @@ class OdersController {
             }
 
             await OrderDetail.insertMany(orderDetail);
-            const orders = await Orders.find({ user_id: user_id });
+            const orders = await Orders.find({ user_id: user_id })
+            .populate('discount_id')
+            .sort({ createdAt: -1 });
             const orderIds = orders.map(item => item._id);
 
             const formattedOrders = orders.map(order => {
@@ -290,6 +293,15 @@ class OdersController {
                     };
                 })
             );
+            if(orders.status !== req.body.status) {
+                const notification = new Notification({
+                    user_id: orders.user_id,
+                    type: "Thông báo đơn hàng",
+                    message: `Đơn hàng của bạn đã được cập nhật trạng thái: ${req.body.status}`,
+                    isRead: false
+                });
+                await notification.save();
+            }
             const data = {
                 orderDetailsFormat,
                 orders: formatOrder,
@@ -306,7 +318,10 @@ class OdersController {
     async update(req, res, next) {
         try{
             await Orders.updateOne({_id: req.params.id}, req.body);
-            const orders = await Orders.find({ user_id: req.body.userId });
+            const {userId} = req.body;
+            const orders = await Orders.find({ user_id: userId })
+            .populate("discount_id")
+            .sort({ createdAt: -1 });
             const orderIds = orders.map(item => item._id);
 
             // Format ngày tạo
@@ -434,7 +449,6 @@ class OdersController {
     async details(req, res, next){
         const orderId = req.params.id;
         const detailsOrder = await OrderDetail.find({order_id: orderId});
-        console.log(detailsOrder)
 
         if (!detailsOrder) {
             return res.status(404).send("Order details not found");
@@ -597,7 +611,6 @@ class OdersController {
     /** [DELETE] /orders/details/:id/ */
     async deleteDetails(req, res, next) {
         try{
-            console.log(req.params.id);
             const orderId = req.params.id;
             await Orders.deleteOne({ _id: orderId });
             await OrderDetail.deleteMany({ order_id: orderId })
@@ -609,6 +622,7 @@ class OdersController {
                     { upsert: true, new: true }
                 );
             }
+            
             res.status(200).json({
                 message: 'Xóa đơn hàng thành công',
             })
@@ -813,7 +827,6 @@ class OdersController {
             console.log('Initialized monthlyOrderCounts keys:', initializedKeys);
 
 
-            // Lấy tất cả các đơn hàng trong khoảng thời gian đã định
             const orders = await Orders.find({
                 createdAt: { $gte: startDate, $lte: endDate },
                 status: 'Thành công' // Chỉ đếm đơn hàng thành công

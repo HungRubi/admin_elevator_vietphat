@@ -176,12 +176,8 @@ s
 
             const vnp_SecureHash = req.query.vnp_SecureHash;
 
-            // Tạo checksum
             const hmac = crypto.createHmac('sha512', process.env.VNP_HASH_SECRET.trim());
             const checkSum = hmac.update(signData).digest('hex');
-
-            console.log('CheckSum: ', checkSum);
-            console.log('vnp_SecureHash from query:', vnp_SecureHash);
 
             if (checkSum === vnp_SecureHash) {
             if (req.query.vnp_ResponseCode === "00") {

@@ -189,9 +189,13 @@ class NotificationController {
                     message: "Vui lòng đăng nhập để xem thông báo"
                 })
             }
-            const myNotifi = await Notification
-            .find({user_id: id})
-            .sort({createdAt: -1})
+            const myNotifi = await Notification.find({
+                $or: [
+                    { user_id: id },
+                    { type: "Thông báo hệ thống" }
+                ]
+            })
+            .sort({ createdAt: -1 })
             .lean();
             const formatNotifi = myNotifi.map(item => ({
                 ...item,
@@ -201,6 +205,43 @@ class NotificationController {
                 myNotifi: formatNotifi,
             })
         }catch(error){
+            console.log(error);
+            res.status(500).json({
+                message: "Lỗi server vui lòng thử lại sau"
+            })
+        }
+    }
+
+    /** [GET] /notification/filter */
+    async filterNotification (req, res) {
+        try{
+            console.log(req.query)
+            const { type, startDate, endDate } = req.query;
+            let query = {};
+            if (type && type !== 'undefined') {
+                query.type = new RegExp(`^${type.trim()}$`, 'i');
+            }
+            if (startDate && endDate && startDate !== 'undefined' && endDate !== 'undefined') {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                query.createdAt = {
+                    $gte: start,
+                    $lte: end
+                };
+            }
+            const notifications = await Notification
+            .find(query)
+            .populate("user_id")
+            .lean();
+            const format = notifications.map(item => ({
+                ...item,
+                lastUpdate: formatDate(item.createdAt)
+            }));
+            res.status(200).json({
+                notifications: format
+            });
+        }catch(error) {
             console.log(error);
             res.status(500).json({
                 message: "Lỗi server vui lòng thử lại sau"
