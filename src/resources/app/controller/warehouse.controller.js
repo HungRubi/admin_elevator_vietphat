@@ -97,7 +97,7 @@ class WarehouseController {
             const { status, startDate, endDate } = req.query;
             let query = {};
             if (status && status !== 'undefined') {
-                query.status = status;
+                query.status = new RegExp(`^${status.trim()}$`, 'i');
             }
             if (startDate && endDate && startDate !== 'undefined' && endDate !== 'undefined') {
                 const start = new Date(startDate);
