@@ -20,11 +20,18 @@ class AuthController {
     async register(req, res, next) {
         try{
             console.log(req.body);
-            const {frist,last,email,city,street,day,month,year,account,password, confirm,phone} = req.body;
+            const { frist, first, last, email, city, street, day, month, year, account, password, confirm, phone } = req.body;
+            const firstName = (first || frist || "").trim();
+            const lastName = (last || "").trim();
             const existingUser = await User.findOne({ $or: [{ email }, { account }] });
             if (existingUser) {
                 return res.status(404).json({
                     message: "Account already exists. Please use a different email or username."
+                });
+            }
+            if(!firstName || !lastName){
+                return res.status(400).json({
+                    message: "First name and last name are required"
                 });
             }
             if(password !== confirm){
@@ -32,7 +39,7 @@ class AuthController {
                     message: "Password and confirm password do not match"
                 });
             }
-            const name = `${frist} ${last}`;
+            const name = `${firstName} ${lastName}`;
             const y = parseInt(year, 10);
             const m = parseInt(month, 10) - 1; // Tháng trong JS bắt đầu từ 0
             const d = parseInt(day, 10);
@@ -221,6 +228,11 @@ class AuthController {
             if(!user){
                 return res.status(404).json("Incorrect account")
             }
+            if (!user.password.startsWith("$2b$")) {
+                const hashedPassword = await bcrypt.hash(user.password, 10);
+                await User.updateOne({ _id: user._id }, { password: hashedPassword });
+                user.password = hashedPassword;
+            }
             
             const validedPass = await bcrypt.compare(
                 req.body.password,
@@ -236,11 +248,6 @@ class AuthController {
                 return res.status(404).json({
                     message: "You're not authenticated"
                 })
-            }
-            if (!user.password.startsWith("$2b$")) {
-                const hashedPassword = await bcrypt.hash(user.password, 10);
-                await User.updateOne({ _id: user._id }, { password: hashedPassword });
-                user.password = hashedPassword;
             }
             if(user && validedPass){
                 const accessToken = jwt.sign(
@@ -356,38 +363,44 @@ class AuthController {
         try{
             const refreshToken = req.cookies.refreshToken;
             if(!refreshToken){
-                res.status(401).json("You're not authenticated");
+                return res.status(401).json("You're not authenticated");
             }
-            if(refreshTokens.includes(refreshToken)){
-                res.status(403).json("Refresh token is not vaild")
+            if(!refreshTokens.includes(refreshToken)){
+                return res.status(403).json("Refresh token is not valid");
             }
             jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (err, user) => {
                 if(err) {
-                    res.status(403).json(err);
+                    return res.status(403).json(err);
                 }
-                refreshTokens = refreshTokens.filter((token) => token !== refreshToken)
+                refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
                 const newAccessToken = jwt.sign(
                     {
-                        id: user._id,
-                        author: user.authour,
+                        id: user.id,
+                        author: user.author,
                     },
                     process.env.JWT_ACCESS_KEY,
                     {expiresIn: "2h"} 
                 );
                 const newRefreshToken = jwt.sign(
                     {
-                        id: user._id,
-                        author: user.authour,
+                        id: user.id,
+                        author: user.author,
                     },
                     process.env.JWT_REFRESH_KEY,
                     {expiresIn: "365d"} 
                 );
                 refreshTokens.push(newRefreshToken);
+                res.cookie("refreshToken", newRefreshToken, {
+                    httpOnly: true,
+                    secure: false,
+                    path: "/",
+                    sameSite: "strict",
+                });
                 res.status(200).json({
                     accessToken: newAccessToken,
-                    newRefreshToken: newRefreshToken,
+                    newRefreshToken,
                 });
-            })
+            });
         }catch(err){
             res.status(500).json(err);
         }
@@ -396,8 +409,9 @@ class AuthController {
     /** [POST] /auth/logout */
     async logout(req, res, next) {
         try{
+            const refreshToken = req.cookies.refreshToken;
             res.clearCookie("refreshToken");
-            refreshTokens = refreshTokens.filter(token => token !== req.cookies.refreshToken);
+            refreshTokens = refreshTokens.filter(token => token !== refreshToken);
             res.status(200).json("Logout successful");
         }catch(err){
             res.status(500).json(err);
