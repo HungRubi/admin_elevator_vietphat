@@ -1,19 +1,26 @@
-const express = require("express");
+const express = require('express');
+const rateLimit = require('express-rate-limit');
 const route = express.Router();
 
 const warrantyController = require('../app/controller/warranty.controller');
+const middleware = require('../app/controller/middleware.controller');
 
-route.get("/filter", warrantyController.filterWarranty);
-route.get("/add", warrantyController.add);
-route.post("/store", warrantyController.store);
+const warrantyStaffLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: Math.max(1, Number(process.env.RATE_LIMIT_WARRANTY_STAFF_PER_MINUTE || 120)),
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: 'Quá nhiều yêu cầu, vui lòng thử lại sau.' },
+});
 
-// Các route có tham số /:id để SAU CÙNG
-route.get("/:id", warrantyController.detail);
-route.put("/:id", warrantyController.update);
-route.delete("/:id", warrantyController.delete);
+route.get('/filter', warrantyStaffLimiter, middleware.verifyTokenStaff, warrantyController.filterWarranty);
+route.get('/add', warrantyStaffLimiter, middleware.verifyTokenStaff, warrantyController.add);
+route.post('/store', warrantyStaffLimiter, middleware.verifyTokenStaff, warrantyController.store);
 
-// Route mặc định cũng nên đặt sau cùng
-route.get("/", warrantyController.index);
+route.get('/:id', warrantyStaffLimiter, middleware.verifyTokenStaff, warrantyController.detail);
+route.put('/:id', warrantyStaffLimiter, middleware.verifyTokenStaff, warrantyController.update);
+route.delete('/:id', warrantyStaffLimiter, middleware.verifyTokenStaff, warrantyController.delete);
 
+route.get('/', warrantyStaffLimiter, middleware.verifyTokenStaff, warrantyController.index);
 
 module.exports = route;

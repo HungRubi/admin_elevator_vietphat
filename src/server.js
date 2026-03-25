@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const db = require('./config/db/index');
 const route = require('./resources/router/index.route');
@@ -7,7 +8,6 @@ const passport = require('passport');
 const cookieParser = require('cookie-parser')
 const port = process.env.PORT || 4000;
 const app = express();
-const dotenv = require("dotenv");
 const path = require("path")
 
 app.use(cookieParser());

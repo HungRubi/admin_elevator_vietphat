@@ -1,58 +1,80 @@
-const Order = require("../model/orders.model");
+const mongoose = require('mongoose');
+const Order = require('../model/orders.model');
 const Warranty = require('../model/warranty.model');
-const OrderDetail = require("../model/orderDetail.model");
-const { formatDate } = require("../../util/formatDate.util");
-const { importDate } = require("../../util/importDate.util");
+const OrderDetail = require('../model/orderDetail.model');
+const { formatDate } = require('../../util/formatDate.util');
+const { importDate } = require('../../util/importDate.util');
 const { v4: uuidv4 } = require('uuid');
-const User = require("../model/user.model");
-const Notification = require("../model/notification.model");
-const WareHouse = require("../model/warehouse.model");
-class WarrantyController {
+const User = require('../model/user.model');
+const Notification = require('../model/notification.model');
+const WareHouse = require('../model/warehouse.model');
+const { parseListQuery } = require('../../util/listQuery.util');
 
+const WARRANTY_STATUS = ['đang xử lý', 'chấp thuận', 'bị hủy'];
+const SORT_WARRANTY = [
+    'code',
+    'status',
+    'quantity',
+    'purchase_date',
+    'warranty_date',
+    'createdAt',
+    'updatedAt',
+];
+const SORT_ORDER_ADD = ['createdAt', 'order_date', 'total_price'];
+const MAX_WARRANTY_BATCH = 50;
+const NOTIFICATION_TYPE = 'Thông báo hệ thống';
+
+function escapeRegex(s) {
+    return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function invalidIdResponse(res) {
+    return res.status(400).json({ message: 'Id không hợp lệ' });
+}
+
+async function notifyAdmins(message) {
+    const admins = await User.find({ authour: 'admin' }).select('_id').lean();
+    await Promise.all(
+        admins.map((user) =>
+            new Notification({
+                type: NOTIFICATION_TYPE,
+                message,
+                user_id: user._id,
+            }).save()
+        )
+    );
+}
+
+class WarrantyController {
     /** [GET] /warranty */
-    async index (req, res) {
-        let sortField = req.query.sort || 'updatedAt'; 
-        let sortWarranty = req.query.warranty === 'desc' ? 1 : -1;
+    async index(req, res) {
         try {
-            const searchQuery = req.query.timkiem?.trim() || '';
-            if(searchQuery) {
-                const warranties = await Warranty
-                .find({
-                    $or: [
-                        { code: new RegExp(searchQuery || '', 'i') },
-                    ],
-                })
-                .populate({
-                    path: 'product_id',
-                    populate: {path: 'category'},
-                })
-                .populate('user_id')
-                .populate('order_code')
-                .sort({ [sortField]: sortWarranty })
-                .lean();
-                const formatWarranties = warranties.map((warranty) => ({
-                    ...warranty,
-                    purchaseDate: formatDate(warranty.purchase_date),
-                    warrantyDate: formatDate(warranty.warranty_date),
-                    createTime: formatDate(warranty.createdAt),
-                }));
-                return res.status(200).json({
-                    searchType: true,
-                    searchWarranty: formatWarranties,
-                    currentSort: sortField,
-                    currentWarranty: sortWarranty === 1 ? 'asc' : 'desc',
-                });
-            }
-            const warranties = await Warranty
-            .find()
-            .populate({
-                path: 'product_id',
-                populate: {path: 'category'},
-            })
-            .populate('user_id')
-            .populate('order_code')
-            .sort({ [sortField]: sortWarranty })
-            .lean();
+            const { limit, skip, page, sort, sortField: sf, orderLabel, search } = parseListQuery(req.query, {
+                allowedSortFields: SORT_WARRANTY,
+                defaultSortField: 'updatedAt',
+                defaultOrder: 'desc',
+                defaultLimit: 10,
+            });
+
+            const filter = search
+                ? { code: { $regex: escapeRegex(search), $options: 'i' } }
+                : {};
+
+            const [warranties, total] = await Promise.all([
+                Warranty.find(filter)
+                    .populate({
+                        path: 'product_id',
+                        populate: { path: 'category' },
+                    })
+                    .populate('user_id')
+                    .populate('order_code')
+                    .sort(sort)
+                    .skip(skip)
+                    .limit(limit)
+                    .lean(),
+                Warranty.countDocuments(filter),
+            ]);
+
             const formatWarranties = warranties.map((warranty) => ({
                 ...warranty,
                 purchaseDate: formatDate(warranty.purchase_date),
@@ -60,132 +82,199 @@ class WarrantyController {
                 createTime: formatDate(warranty.createdAt),
             }));
 
-            const totalWarranties = await Warranty.countDocuments();
-            const totalPage = Math.ceil(totalWarranties / 10);
+            const totalPages = Math.max(1, Math.ceil(total / limit));
+
             return res.status(200).json({
-                searchType: false,
+                searchType: Boolean(search),
+                searchWarranty: search ? formatWarranties : undefined,
                 warranties: formatWarranties,
-                currentSort: sortField,
-                currentWarranty: sortWarranty === 1 ? 'asc' : 'desc',
-                totalPage,
+                total,
+                totalPages,
+                page,
+                limit,
+                offset: skip,
+                currentSort: sf,
+                currentWarranty: orderLabel,
             });
         } catch (error) {
             console.error('Error fetching warranty data:', error);
-            res.status(500).json({ message: 'Internal server error' });
+            res.status(500).json({ message: 'Lỗi server khi tải phiếu bảo hành' });
         }
     }
 
-    /** [GET] /warranty/add */
-    async add (req, res) {
-        try{
-            const orders = await Order
-            .find({status: "Thành công"})
-            .populate("user_id")
-            .sort({ createdAt: -1 })
-            .lean();
-            const orderFormat = await Promise.all(
-                orders.map(async (order) => {
-                    const orderDetail = await OrderDetail
-                    .find({ order_id: order._id })
-                    .populate({
-                        path: "product_id",
-                        populate: {
-                            path: "category"
-                        }
-                    })
-                    return {
-                        ...order,
-                        orderDetail,
-                        orderDate: importDate(order.order_date)
-                    }
-                })
-            )
+    /** [GET] /warranty/add — đơn thành công + chi tiết (batch, có phân trang) */
+    async add(req, res) {
+        try {
+            const { limit, skip, page, sort } = parseListQuery(req.query, {
+                allowedSortFields: SORT_ORDER_ADD,
+                defaultSortField: 'createdAt',
+                defaultOrder: 'desc',
+                defaultLimit: 30,
+            });
+
+            const orderFilter = { status: 'Thành công' };
+
+            const [orders, total] = await Promise.all([
+                Order.find(orderFilter).sort(sort).skip(skip).limit(limit).lean(),
+                Order.countDocuments(orderFilter),
+            ]);
+
+            const orderIds = orders.map((o) => o._id);
+            const allDetails =
+                orderIds.length > 0
+                    ? await OrderDetail.find({ order_id: { $in: orderIds } })
+                          .populate({
+                              path: 'product_id',
+                              populate: { path: 'category' },
+                          })
+                          .lean()
+                    : [];
+
+            const detailsByOrder = {};
+            for (const d of allDetails) {
+                const k = d.order_id.toString();
+                if (!detailsByOrder[k]) detailsByOrder[k] = [];
+                detailsByOrder[k].push(d);
+            }
+
+            const orderFormat = orders.map((order) => ({
+                ...order,
+                orderDetail: detailsByOrder[order._id.toString()] || [],
+                orderDate: importDate(order.order_date),
+            }));
+
+            const totalPages = Math.max(1, Math.ceil(total / limit));
+
             res.status(200).json({
                 orders: orderFormat,
-            })
-        }catch(error) {
-            console.log(error);
+                total,
+                totalPages,
+                page,
+                limit,
+                offset: skip,
+            });
+        } catch (error) {
+            console.error(error);
             res.status(500).json({
-                message: "Lỗi server vui lòng thử lại sau"
-            })
+                message: 'Lỗi server vui lòng thử lại sau',
+            });
         }
     }
 
     /** [POST] /warranty/store */
-    async store (req, res) {
-        try{
-            const { 
-                order_code, 
-                user_id, 
-                address, 
-                products, 
-                purchase_date, 
+    async store(req, res) {
+        try {
+            const {
+                order_code,
+                user_id,
+                address,
+                products,
+                purchase_date,
                 warranty_date,
                 description,
                 video,
                 status,
             } = req.body;
-            products.forEach(async (item) => {
+
+            const list = Array.isArray(products) ? products : null;
+            if (!list || list.length === 0 || list.length > MAX_WARRANTY_BATCH) {
+                return res.status(400).json({
+                    message: `products phải là mảng 1–${MAX_WARRANTY_BATCH} phần tử`,
+                });
+            }
+
+            if (!mongoose.isValidObjectId(order_code) || !mongoose.isValidObjectId(user_id)) {
+                return res.status(400).json({ message: 'order_code hoặc user_id không hợp lệ' });
+            }
+
+            const addressT = String(address ?? '').trim();
+            const descriptionT = String(description ?? '').trim();
+            if (!addressT || !descriptionT) {
+                return res.status(400).json({ message: 'Thiếu address hoặc description' });
+            }
+            if (!purchase_date || !warranty_date) {
+                return res.status(400).json({ message: 'Thiếu purchase_date hoặc warranty_date' });
+            }
+            if (!status || !WARRANTY_STATUS.includes(String(status))) {
+                return res.status(400).json({ message: 'status không hợp lệ' });
+            }
+
+            for (const item of list) {
+                const pid = item?.product_id ?? item?._id;
+                const qty = Number(item?.quantity);
+                if (!mongoose.isValidObjectId(pid) || !Number.isFinite(qty) || qty < 1) {
+                    return res.status(400).json({ message: 'product_id hoặc quantity không hợp lệ' });
+                }
+            }
+
+            const orderExists = await Order.exists({ _id: order_code, status: 'Thành công' });
+            if (!orderExists) {
+                return res.status(400).json({ message: 'Đơn hàng không tồn tại hoặc chưa thành công' });
+            }
+
+            for (const item of list) {
+                const pid = item.product_id ?? item._id;
                 const code = uuidv4();
                 const warranty = new Warranty({
                     code,
-                    order_code, 
-                    user_id, 
-                    address,
-                    product_id: item.product_id,
-                    quantity: item.quantity,
-                    purchase_date, 
+                    order_code,
+                    user_id,
+                    address: addressT,
+                    product_id: pid,
+                    quantity: Number(item.quantity),
+                    purchase_date,
                     warranty_date,
-                    description,
-                    video,
+                    description: descriptionT,
+                    video: video != null && video !== '' ? String(video) : undefined,
                     status,
-                })
+                });
                 await warranty.save();
-            })
+            }
 
-            const userAdmin = await User.find({authour: "admin"})
-            userAdmin.forEach(async (user) => {
-                const notifi = new Notification({
-                    type: "Thông báo hệ thống",
-                    message: `${products.length} phiếu bảo hành mới đã được tạo cho đơn hàng ${order_code}`,
-                    user_id: user._id
-                })
-                await notifi.save();
-            })
-            for (const i of products) {
+            const orderRef = await Order.findById(order_code).select('order_code').lean();
+            const orderLabel = orderRef?.order_code || String(order_code);
+
+            await notifyAdmins(`${list.length} phiếu bảo hành mới cho đơn ${orderLabel}`);
+
+            for (const item of list) {
+                const pid = item.product_id ?? item._id;
                 await WareHouse.findOneAndUpdate(
-                    { productId: i.product_id },
-                    { $inc: { stock: -i.quantity } },
+                    { productId: pid },
+                    { $inc: { stock: -Number(item.quantity) } },
                     { upsert: true, new: true }
                 );
             }
+
             res.status(200).json({
-                message: "Thêm phiếu bảo hành thành công"
-            })
-        }catch(error) {
-            console.log(error);
+                message: 'Thêm phiếu bảo hành thành công',
+            });
+        } catch (error) {
+            console.error(error);
             res.status(500).json({
-                message: "Lỗi server vui lòng thử lại sau"
-            })
+                message: 'Lỗi server vui lòng thử lại sau',
+            });
         }
     }
 
     /** [GET] /warranty/:id */
-    async detail (req, res) {
-        try{
+    async detail(req, res) {
+        try {
             const { id } = req.params;
-            const warranty = await Warranty
-            .findById(id)
-            .populate("user_id")
-            .populate("order_code")
-            .populate({
-                path: 'product_id',
-                populate: { path: 'category' }
-            })
-            .lean();
+            if (!mongoose.isValidObjectId(id)) {
+                return invalidIdResponse(res);
+            }
+
+            const warranty = await Warranty.findById(id)
+                .populate('user_id')
+                .populate('order_code')
+                .populate({
+                    path: 'product_id',
+                    populate: { path: 'category' },
+                })
+                .lean();
             if (!warranty) {
                 return res.status(404).json({
-                    message: "Không tìm thấy phiếu bảo hành"
+                    message: 'Không tìm thấy phiếu bảo hành',
                 });
             }
             const formatWarranty = {
@@ -194,19 +283,29 @@ class WarrantyController {
                 warrantyDate: importDate(warranty.warranty_date),
             };
             res.status(200).json({
-                warranty: formatWarranty
+                warranty: formatWarranty,
             });
-        }catch(error) {
-            console.log(error);
+        } catch (error) {
+            console.error(error);
             res.status(500).json({
-                message: "Lỗi server vui lòng thử lại sau"
-            })
+                message: 'Lỗi server vui lòng thử lại sau',
+            });
         }
     }
 
     /** [PUT] /warranty/:id */
-    async update (req, res) {
-        try{
+    async update(req, res) {
+        try {
+            const { id } = req.params;
+            if (!mongoose.isValidObjectId(id)) {
+                return invalidIdResponse(res);
+            }
+
+            const existing = await Warranty.findById(id);
+            if (!existing) {
+                return res.status(404).json({ message: 'Không tìm thấy phiếu bảo hành' });
+            }
+
             const {
                 order_code,
                 user_id,
@@ -218,134 +317,198 @@ class WarrantyController {
                 warranty_date,
                 status,
             } = req.body;
-            const warranty ={
-                order_code,
-                user_id,
-                address,
-                product_id: products._id,
-                quantity: products.quantity,
-                description,
-                video,
-                purchase_date,
-                warranty_date,
-                status,
-            };
-            const { id } = req.params;
-            const warrantyInit = await Warranty.findById(id);
-            await Warranty.findByIdAndUpdate(id, warranty, { new: true });
-            const userAdmin = await User.find({authour: "admin"})
-            userAdmin.forEach(async (user) => {
-                const notifi = new Notification({
-                    type: "Thông báo hệ thống",
-                    message: `Phiếu bảo hành ${warranty.code} đã được cập nhật`,
-                    user_id: user._id
-                })
-                await notifi.save();
-            })
-            const quantityDifference = products.quantity - warrantyInit.quantity;
-            await WareHouse.findOneAndUpdate(
-                { productId: products._id },
-                { $inc: { stock: -quantityDifference } },
-                { upsert: true, new: true }
+
+            const productPayload = products;
+            const newProductRaw = productPayload?.product_id ?? productPayload?._id;
+            const newQty = Number(productPayload?.quantity);
+
+            if (!mongoose.isValidObjectId(order_code) || !mongoose.isValidObjectId(user_id)) {
+                return res.status(400).json({ message: 'order_code hoặc user_id không hợp lệ' });
+            }
+            if (!mongoose.isValidObjectId(newProductRaw) || !Number.isFinite(newQty) || newQty < 1) {
+                return res.status(400).json({ message: 'products.product_id và quantity không hợp lệ' });
+            }
+
+            const addressT = String(address ?? '').trim();
+            const descriptionT = String(description ?? '').trim();
+            if (!addressT || !descriptionT) {
+                return res.status(400).json({ message: 'Thiếu address hoặc description' });
+            }
+            if (!purchase_date || !warranty_date) {
+                return res.status(400).json({ message: 'Thiếu purchase_date hoặc warranty_date' });
+            }
+            if (!status || !WARRANTY_STATUS.includes(String(status))) {
+                return res.status(400).json({ message: 'status không hợp lệ' });
+            }
+
+            const newPid = new mongoose.Types.ObjectId(newProductRaw);
+
+            await Warranty.findByIdAndUpdate(
+                id,
+                {
+                    order_code,
+                    user_id,
+                    address: addressT,
+                    product_id: newPid,
+                    quantity: newQty,
+                    description: descriptionT,
+                    video: video != null && video !== '' ? String(video) : undefined,
+                    purchase_date,
+                    warranty_date,
+                    status,
+                },
+                { new: true, runValidators: true }
             );
+
+            await notifyAdmins(`Phiếu bảo hành ${existing.code} đã được cập nhật`);
+
+            const oldPid = existing.product_id;
+            const oldQty = existing.quantity;
+
+            if (oldPid.toString() === newPid.toString()) {
+                const diff = newQty - oldQty;
+                if (diff !== 0) {
+                    await WareHouse.findOneAndUpdate(
+                        { productId: oldPid },
+                        { $inc: { stock: -diff } },
+                        { upsert: true, new: true }
+                    );
+                }
+            } else {
+                await WareHouse.findOneAndUpdate(
+                    { productId: oldPid },
+                    { $inc: { stock: oldQty } },
+                    { upsert: true, new: true }
+                );
+                await WareHouse.findOneAndUpdate(
+                    { productId: newPid },
+                    { $inc: { stock: -newQty } },
+                    { upsert: true, new: true }
+                );
+            }
+
             res.status(200).json({
-                message: "Cập nhật phiếu bảo hành thành công"
+                message: 'Cập nhật phiếu bảo hành thành công',
             });
-        }catch(error) {
-            console.log(error);
+        } catch (error) {
+            console.error(error);
             res.status(500).json({
-                message: "Lỗi server vui lòng thử lại sau"
-            })
+                message: 'Lỗi server vui lòng thử lại sau',
+            });
         }
     }
 
     /** [DELETE] /warranty/:id */
-    async delete (req, res) {
-        try{
+    async delete(req, res) {
+        try {
             const { id } = req.params;
+            if (!mongoose.isValidObjectId(id)) {
+                return invalidIdResponse(res);
+            }
+
             const warranty = await Warranty.findById(id);
             if (!warranty) {
                 return res.status(404).json({
-                    message: "Không tìm thấy phiếu bảo hành"
+                    message: 'Không tìm thấy phiếu bảo hành',
                 });
             }
             await Warranty.findByIdAndDelete(id);
-            const userAdmin = await User.find({authour: "admin"})
-            userAdmin.forEach(async (user) => {
-                const notifi = new Notification({
-                    type: "Thông báo hệ thống",
-                    message: `Phiếu bảo hành ${warranty.code} đã bị xóa`,
-                    user_id: user._id
-                })
-                await notifi.save();
-            })
-            const notifi = new Notification({
-                type: "Thông báo hệ thống",
+
+            await notifyAdmins(`Phiếu bảo hành ${warranty.code} đã bị xóa`);
+
+            await new Notification({
+                type: NOTIFICATION_TYPE,
                 message: `Phiếu bảo hành ${warranty.code} đã bị xóa`,
-                user_id: warranty.user_id
-            })
-            await notifi.save();
+                user_id: warranty.user_id,
+            }).save();
+
             await WareHouse.findOneAndUpdate(
                 { productId: warranty.product_id },
                 { $inc: { stock: warranty.quantity } },
                 { upsert: true, new: true }
             );
+
             res.status(200).json({
-                message: "Xóa phiếu bảo hành thành công"
+                message: 'Xóa phiếu bảo hành thành công',
             });
-        }catch(error) {
-            console.log(error);
+        } catch (error) {
+            console.error(error);
             res.status(500).json({
-                message: "Lỗi server vui lòng thử lại sau"
-            })
+                message: 'Lỗi server vui lòng thử lại sau',
+            });
         }
     }
 
     /** [GET] /warranty/filter */
     async filterWarranty(req, res) {
         try {
-            console.log(req.query)
             const { status, startDate, endDate } = req.query;
-            let query = {};
-            if (status) {
-                query.status = status;
+
+            const { limit, skip, page, sort, sortField, orderLabel, search } = parseListQuery(req.query, {
+                allowedSortFields: SORT_WARRANTY,
+                defaultSortField: 'updatedAt',
+                defaultOrder: 'desc',
+                defaultLimit: 10,
+            });
+
+            const query = {};
+            if (status && WARRANTY_STATUS.includes(String(status))) {
+                query.status = String(status);
             }
             if (startDate && endDate) {
                 const start = new Date(startDate);
                 const end = new Date(endDate);
-                end.setHours(23, 59, 59, 999); 
-
+                end.setHours(23, 59, 59, 999);
                 query.createdAt = {
                     $gte: start,
-                    $lte: end
+                    $lte: end,
                 };
             }
-            const warranties = await Warranty
-                .find(query)
-                .populate('user_id')
-                .populate({ 
-                    path: 'product_id',
-                    populate: { path: 'category' }
-                })
-                .populate('order_code')
-                .lean();
-            const formatWarranties = warranties.map((warranty) => ({
+            if (search) {
+                query.code = { $regex: escapeRegex(search), $options: 'i' };
+            }
+
+            const [rows, total] = await Promise.all([
+                Warranty.find(query)
+                    .populate('user_id')
+                    .populate({
+                        path: 'product_id',
+                        populate: { path: 'category' },
+                    })
+                    .populate('order_code')
+                    .sort(sort)
+                    .skip(skip)
+                    .limit(limit)
+                    .lean(),
+                Warranty.countDocuments(query),
+            ]);
+
+            const formatWarranties = rows.map((warranty) => ({
                 ...warranty,
                 purchaseDate: formatDate(warranty.purchase_date),
                 warrantyDate: formatDate(warranty.warranty_date),
                 createTime: formatDate(warranty.createdAt),
             }));
+
+            const totalPages = Math.max(1, Math.ceil(total / limit));
+
             res.status(200).json({
-                warranties: formatWarranties
+                warranties: formatWarranties,
+                total,
+                totalPages,
+                page,
+                limit,
+                offset: skip,
+                currentSort: sortField,
+                currentWarranty: orderLabel,
             });
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({
-                message: "Lỗi server vui lòng thử lại sau"
+                message: 'Lỗi server vui lòng thử lại sau',
             });
         }
     }
-
 }
 
 module.exports = new WarrantyController();

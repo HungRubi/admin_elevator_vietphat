@@ -1,23 +1,104 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const route = express.Router();
 
 const ordersController = require('../app/controller/orders.controller');
+const middleware = require('../app/controller/middleware.controller');
 
-route.get('/api/count', ordersController.getOrderLast7Days);
-route.get('/details/:id', ordersController.details);
-route.get('/discount-chart', ordersController.getOrderDiscount);
-route.get('/monthly-chart', ordersController.getMonthlyRevenue);
-route.get('/payment-chart', ordersController.getOrderDiscountSummary);
-route.put('/admin/:id', ordersController.updateOrderAdmin);
-route.post('/store', ordersController.store);
-route.get('/filter', ordersController.filterOrders);
-route.get('/add', ordersController.add);
+const orderStoreLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: Math.max(1, Number(process.env.RATE_LIMIT_ORDER_STORE_PER_MINUTE || 30)),
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: 'Quá nhiều yêu cầu đặt hàng, vui lòng thử lại sau.' },
+});
 
-// Các route động nên để cuối
-route.put('/:id', ordersController.update);
-route.delete('/:id', ordersController.deleteDetails);
-route.get('/:id', ordersController.edit);
-route.get('/', ordersController.index); 
+const orderStaffLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: Math.max(1, Number(process.env.RATE_LIMIT_ORDER_STAFF_PER_MINUTE || 120)),
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: 'Quá nhiều yêu cầu, vui lòng thử lại sau.' },
+});
 
+route.get(
+    '/api/count',
+    orderStaffLimiter,
+    middleware.verifyTokenStaff,
+    ordersController.getOrderLast7Days
+);
+route.get(
+    '/details/:id',
+    orderStaffLimiter,
+    middleware.verifyTokenStaff,
+    ordersController.details
+);
+route.get(
+    '/discount-chart',
+    orderStaffLimiter,
+    middleware.verifyTokenStaff,
+    ordersController.getOrderDiscount
+);
+route.get(
+    '/monthly-chart',
+    orderStaffLimiter,
+    middleware.verifyTokenStaff,
+    ordersController.getMonthlyRevenue
+);
+route.get(
+    '/payment-chart',
+    orderStaffLimiter,
+    middleware.verifyTokenStaff,
+    ordersController.getOrderDiscountSummary
+);
+route.put(
+    '/admin/:id',
+    orderStaffLimiter,
+    middleware.verifyTokenStaff,
+    ordersController.updateOrderAdmin
+);
+route.post(
+    '/store',
+    orderStoreLimiter,
+    middleware.verifyToken,
+    ordersController.store
+);
+route.get(
+    '/filter',
+    orderStaffLimiter,
+    middleware.verifyTokenStaff,
+    ordersController.filterOrders
+);
+route.get(
+    '/add',
+    orderStaffLimiter,
+    middleware.verifyTokenStaff,
+    ordersController.add
+);
+route.get(
+    '/',
+    orderStaffLimiter,
+    middleware.verifyTokenStaff,
+    ordersController.index
+);
+
+route.put(
+    '/:id',
+    orderStaffLimiter,
+    middleware.verifyTokenStaff,
+    ordersController.update
+);
+route.delete(
+    '/:id',
+    orderStaffLimiter,
+    middleware.verifyTokenStaff,
+    ordersController.deleteDetails
+);
+route.get(
+    '/:id',
+    orderStaffLimiter,
+    middleware.verifyTokenStaff,
+    ordersController.edit
+);
 
 module.exports = route;

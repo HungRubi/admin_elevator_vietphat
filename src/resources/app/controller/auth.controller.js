@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { formatDate } = require('../../util/formatDate.util');
 const { importDate } = require('../../util/importDate.util')
 const User = require('../model/user.model');
@@ -12,7 +13,9 @@ const Notification = require("../model/notification.model");
 const { getTimeAgo } = require('../../util/formatTime.util');
 dotenv.config();
 
-let refreshTokens = [];
+function hashRefreshToken(token) {
+    return crypto.createHash('sha256').update(token).digest('hex');
+}
 
 class AuthController {
     
@@ -53,15 +56,16 @@ class AuthController {
             const hashPassword = await bcrypt.hash(password, 10);
 
             const admin = await User.find({ authour: { $in: ['admin', 'employee'] } });
-            admin.forEach(async (a) => {
-                const notificationAdmin = new Notification({
-                    user_id: a._id,
-                    type: "Thông báo khách hàng",
-                    message: `Khách hàng mới vừa được thêm: ${name}-${account}.Hãy kiểm tra thông tin chi tiết và bắt đầu chăm sóc khách hàng này ngay nhé!`,
-                    isRead: false
-                });
-                await notificationAdmin.save();
-            });
+            await Promise.all(
+                admin.map((a) =>
+                    new Notification({
+                        user_id: a._id,
+                        type: "Thông báo khách hàng",
+                        message: `Khách hàng mới vừa được thêm: ${name}-${account}.Hãy kiểm tra thông tin chi tiết và bắt đầu chăm sóc khách hàng này ngay nhé!`,
+                        isRead: false,
+                    }).save()
+                )
+            );
 
             const user = new User({
                 account,
@@ -102,7 +106,7 @@ class AuthController {
             if(user && validedPass){
                 const accessToken = jwt.sign(
                     {
-                        id: user._id,
+                        id: user._id.toString(),
                         author: user.authour,
                     },
                     process.env.JWT_ACCESS_KEY,
@@ -110,20 +114,22 @@ class AuthController {
                 );
                 const refreshToken = jwt.sign(
                     {
-                        id: user._id,
+                        id: user._id.toString(),
                         author: user.authour,
                     },
                     process.env.JWT_REFRESH_KEY,
                     {expiresIn: "365d"} 
                 );
-                refreshTokens.push(refreshToken)
+                await User.updateOne(
+                    { _id: user._id },
+                    { lastLogin: new Date(), refreshTokenHash: hashRefreshToken(refreshToken) }
+                );
                 res.cookie("refreshToken", refreshToken, {
                     httpOnly: true,
-                    secure: false,
+                    secure: process.env.NODE_ENV === 'production',
                     path: "/" ,
                     sameSite: "strict",
                 })
-                await User.updateOne({ _id: user._id }, { lastLogin: new Date() });
                 const { password, ...userWithoutPassword } = user.toObject();
                 const formatUser = {
                     ...userWithoutPassword,
@@ -252,7 +258,7 @@ class AuthController {
             if(user && validedPass){
                 const accessToken = jwt.sign(
                     {
-                        id: user._id,
+                        id: user._id.toString(),
                         author: user.authour,
                     },
                     process.env.JWT_ACCESS_KEY,
@@ -260,20 +266,22 @@ class AuthController {
                 );
                 const refreshToken = jwt.sign(
                     {
-                        id: user._id,
+                        id: user._id.toString(),
                         author: user.authour,
                     },
                     process.env.JWT_REFRESH_KEY,
                     {expiresIn: "365d"} 
                 );
-                refreshTokens.push(refreshToken)
+                await User.updateOne(
+                    { _id: user._id },
+                    { lastLogin: new Date(), refreshTokenHash: hashRefreshToken(refreshToken) }
+                );
                 res.cookie("refreshToken", refreshToken, {
                     httpOnly: true,
-                    secure: false,
+                    secure: process.env.NODE_ENV === 'production',
                     path: "/" ,
                     sameSite: "strict",
                 })
-                await User.updateOne({ _id: user._id }, { lastLogin: new Date() });
                 const { password, ...userWithoutPassword } = user.toObject();
                 const formatUser = {
                     ...userWithoutPassword,
@@ -359,69 +367,91 @@ class AuthController {
     }
 
     /** [POST] /auth/refresh */
-    requestRefreshToken (req, res, next) {
-        try{
+    async requestRefreshToken(req, res) {
+        try {
             const refreshToken = req.cookies.refreshToken;
-            if(!refreshToken){
-                return res.status(401).json("You're not authenticated");
+            if (!refreshToken) {
+                return res.status(401).json({ message: "You're not authenticated" });
             }
-            if(!refreshTokens.includes(refreshToken)){
-                return res.status(403).json("Refresh token is not valid");
+            let decoded;
+            try {
+                decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY);
+            } catch (err) {
+                return res.status(403).json({ message: "Refresh token is not valid" });
             }
-            jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (err, user) => {
-                if(err) {
-                    return res.status(403).json(err);
-                }
-                refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
-                const newAccessToken = jwt.sign(
-                    {
-                        id: user.id,
-                        author: user.author,
-                    },
-                    process.env.JWT_ACCESS_KEY,
-                    {expiresIn: "2h"} 
-                );
-                const newRefreshToken = jwt.sign(
-                    {
-                        id: user.id,
-                        author: user.author,
-                    },
-                    process.env.JWT_REFRESH_KEY,
-                    {expiresIn: "365d"} 
-                );
-                refreshTokens.push(newRefreshToken);
-                res.cookie("refreshToken", newRefreshToken, {
-                    httpOnly: true,
-                    secure: false,
-                    path: "/",
-                    sameSite: "strict",
-                });
-                res.status(200).json({
-                    accessToken: newAccessToken,
-                    newRefreshToken,
-                });
+            const userDoc = await User.findById(decoded.id);
+            const incomingHash = hashRefreshToken(refreshToken);
+            if (!userDoc || userDoc.refreshTokenHash !== incomingHash) {
+                return res.status(403).json({ message: "Refresh token is not valid" });
+            }
+            const newAccessToken = jwt.sign(
+                {
+                    id: userDoc._id.toString(),
+                    author: userDoc.authour,
+                },
+                process.env.JWT_ACCESS_KEY,
+                { expiresIn: "2h" }
+            );
+            const newRefreshToken = jwt.sign(
+                {
+                    id: userDoc._id.toString(),
+                    author: userDoc.authour,
+                },
+                process.env.JWT_REFRESH_KEY,
+                { expiresIn: "365d" }
+            );
+            await User.updateOne(
+                { _id: userDoc._id },
+                { refreshTokenHash: hashRefreshToken(newRefreshToken) }
+            );
+            res.cookie("refreshToken", newRefreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                path: "/",
+                sameSite: "strict",
             });
-        }catch(err){
-            res.status(500).json(err);
+            res.status(200).json({
+                accessToken: newAccessToken,
+            });
+        } catch (err) {
+            res.status(500).json({ message: err.message || "Server error" });
         }
     }
 
     /** [POST] /auth/logout */
-    async logout(req, res, next) {
-        try{
+    async logout(req, res) {
+        try {
             const refreshToken = req.cookies.refreshToken;
-            res.clearCookie("refreshToken");
-            refreshTokens = refreshTokens.filter(token => token !== refreshToken);
-            res.status(200).json("Logout successful");
-        }catch(err){
-            res.status(500).json(err);
+            res.clearCookie("refreshToken", {
+                path: "/",
+                sameSite: "strict",
+            });
+            if (refreshToken) {
+                try {
+                    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY);
+                    await User.updateOne(
+                        { _id: decoded.id },
+                        { $set: { refreshTokenHash: null } }
+                    );
+                } catch {
+                    /* token hết hạn / sai — bỏ qua */
+                }
+            }
+            res.status(200).json({ message: "Logout successful" });
+        } catch (err) {
+            res.status(500).json({ message: err.message || "Server error" });
         }
     }
 
-    /** [PUT] /auth/password/:id */
+    /** [PUT] /auth/password/:id — cần Bearer token, chỉ đổi mật khẩu của chính user */
     async changePassword(req, res) {
         try{
             const {id} = req.params;
+            if (!req.user || String(req.user.id) !== String(id)) {
+                return res.status(403).json({
+                    message: "Không được phép đổi mật khẩu tài khoản khác.",
+                });
+            }
             const {password, newPassword, confirmPassword} = req.body;
             const user = await User.findById(id);
             if(!user) {

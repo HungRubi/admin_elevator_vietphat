@@ -21,6 +21,8 @@ const users = new Schema(
             default: 'customer',
         },
         lastLogin: {type: Date, default: Date.now},
+        /** SHA-256 hex của refresh JWT (một phiên đăng nhập / thiết bị gần nhất) */
+        refreshTokenHash: { type: String, default: null },
     },
     {
         timestamps: true,

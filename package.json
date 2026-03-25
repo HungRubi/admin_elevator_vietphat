@@ -6,6 +6,7 @@
   "scripts": {
     "watch": "sass --watch src/resources/scss/app.scss src/public/css/app.css",
     "start": "nodemon --inspect src/server.js",
+    "smoke": "yarn node scripts/smoke-load.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -26,6 +27,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-handlebars": "^8.0.1",
+    "express-rate-limit": "^8.3.1",
     "express-session": "^1.18.1",
     "jsonwebtoken": "^9.0.2",
     "method-override": "^3.0.0",
@@ -52,5 +54,6 @@
     "webpack": "^5.97.1",
     "webpack-cli": "^6.0.1",
     "webpack-dev-server": "^5.2.0"
-  }
+  },
+  "packageManager": "yarn@4.13.0+sha512.5c20ba010c99815433e5c8453112165e673f1c7948d8d2b267f4b5e52097538658388ebc9f9580656d9b75c5cc996f990f611f99304a2197d4c56d21eea370e7"
 }

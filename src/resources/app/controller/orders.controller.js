@@ -11,78 +11,87 @@ const {formatDate} = require('../../util/formatDate.util');
 const { v4: uuidv4 } = require('uuid');
 const moment = require('moment');
 const mongoose = require('mongoose');
+const { parseListQuery } = require('../../util/listQuery.util');
+
+const SORT_ORDER_FIELDS = [
+    'createdAt',
+    'updatedAt',
+    'order_date',
+    'total_price',
+    'status',
+    'order_code',
+    'payment_method',
+];
+
+async function enrichOrderRows(ordersLean, emptyDiscountLabel) {
+    const label = emptyDiscountLabel || 'Người dùng không sử dụng mã giảm giá';
+    return Promise.all(
+        ordersLean.map(async (order) => {
+            const user = await User.findById(order.user_id);
+            const discount = await Discount.findById(order.discount_id);
+            return {
+                ...order,
+                orderDate: formatDate(order.order_date),
+                lastUpdate: formatDate(order.updatedAt),
+                userName: user ? user.name : 'Unknown',
+                userAvatar: user ? user.avatar : 'Unknown',
+                discountName: discount ? discount.title : label,
+            };
+        })
+    );
+}
+
 class OdersController {
-    
     /** [GET] /order */
     async index(req, res, next) {
-        let sortField = req.query.sort || 'createdAt'; 
-        let sortOrder = req.query.order === 'desc' ? 1 : -1;
-        try{
-            const searchQuery = req.query.timkiem?.trim() || '';
-            if(searchQuery){
-                const orders = await Orders.find({
-                    order_code: { $regex: searchQuery, $options: 'i' }
-                }).sort({ [sortField]: sortOrder }).lean();
-                const orderFormat = await Promise.all(
-                    orders.map(async (order) => {
-                        const user = await User.findById(order.user_id);
-                        const discount = await Discount.findById(order.discount_id);
-                        return {
-                            ...order,
-                            orderDate: formatDate(order.order_date),
-                            lastUpdate: formatDate(order.updatedAt),
-                            userName: user ? user.name : 'Unknown',
-                            userAvatar: user ? user.avatar : 'Unknown',
-                            discountName: discount ? discount.title : 'Unknown'
-                        };
-                    })
-                );
-                const data = {
-                    searchType: true,
-                    searchOrder: orderFormat,
-                    currentSort: sortField,
-                    currentOrder: sortOrder === 1 ? 'asc' : 'desc',
+        try {
+            const { limit, skip, page, sort, sortField, orderLabel, search } = parseListQuery(
+                req.query,
+                {
+                    allowedSortFields: SORT_ORDER_FIELDS,
+                    defaultSortField: 'createdAt',
+                    defaultOrder: 'desc',
+                    defaultLimit: 10,
                 }
-                return res.status(200).json({data})
-            }
-            const orders = await Orders.find()
-                .sort({ [sortField]: sortOrder }) 
-                .lean();
-    
-            const orderFormat = await Promise.all(
-                orders.map(async (order) => {
-                    const user = await User.findById(order.user_id);
-                    const discount = await Discount.findById(order.discount_id);
-                    return {
-                        ...order,
-                        lastUpdate: formatDate(order.updatedAt),
-                        orderDate: formatDate(order.order_date),
-                        userName: user ? user.name : 'Unknown',
-                        userAvatar: user ? user.avatar : 'Unknown', 
-                        discountName: discount ? discount.title : 'Người dùng không sử dụng mã giảm giá'
-                    };
-                })
             );
-            const totalOrder = await Orders.countDocuments();
-            const totalPage = Math.ceil(totalOrder / 10);
-            
+
+            const filter = search
+                ? { order_code: { $regex: search, $options: 'i' } }
+                : {};
+
+            const [rows, total] = await Promise.all([
+                Orders.find(filter).sort(sort).skip(skip).limit(limit).lean(),
+                Orders.countDocuments(filter),
+            ]);
+
+            const orderFormat = await enrichOrderRows(
+                rows,
+                search ? 'Unknown' : 'Người dùng không sử dụng mã giảm giá'
+            );
+            const totalPage = Math.max(1, Math.ceil(total / limit));
+
             const data = {
                 orderFormat,
+                searchType: Boolean(search),
+                searchOrder: search ? orderFormat : undefined,
+                total,
                 totalPage,
-                searchType: false,
+                page,
+                limit,
+                offset: skip,
                 currentSort: sortField,
-                currentOrder: sortOrder === 1 ? 'asc' : 'desc'
-            }
-            res.status(200).json({data});
-        }catch(err){
-            next(err)
+                currentOrder: orderLabel,
+            };
+            res.status(200).json({ data });
+        } catch (err) {
+            next(err);
         }
     }
     
     /** [GET] /orders/add */
     async add(req, res, next) {
         try{
-            const products = await Product.find().populate('category');
+            const products = await Product.find().populate('category').limit(500);
             const users = await User.find({ authour: 'customer' });
             const currentDate = new Date();
             const discounts = await Discount.find({ 
@@ -103,6 +112,21 @@ class OdersController {
     store = async (req, res, next) => {
         try {
             const { user_id, total_price, shipping_address, payment_method, items, status, discount_id } = req.body;
+
+            if (!req.user) {
+                return res.status(401).json({ message: "You're not authenticated" });
+            }
+            const isStaff =
+                req.user.author === "admin" || req.user.author === "employee";
+            if (!isStaff && String(req.user.id) !== String(user_id)) {
+                return res.status(403).json({
+                    message: "Phiên đăng nhập không khớp với user_id đơn hàng.",
+                });
+            }
+
+            if (!items || !Array.isArray(items) || items.length === 0) {
+                return res.status(400).json({ message: 'Danh sách sản phẩm (items) không hợp lệ' });
+            }
 
             // Kiểm tra kho hàng trước khi tạo đơn
             const productIds = items.map(item => item.product_id);
@@ -167,15 +191,18 @@ class OdersController {
             });
             await notificationUser.save();
             const userNotificaiton = await User.findById(user_id);
-            admin.forEach(async (a) => {
-                const notificationAdmin = new Notification({
-                    user_id: a._id,
-                    type: "Thông báo đơn hàng",
-                    message: `Có đơn hàng mới từ tài khoản: ${userNotificaiton.account}, mã đơn hàng: ${order_code}`,
-                    isRead: false
-                });
-                await notificationAdmin.save();
-            });
+            if (userNotificaiton && admin.length > 0) {
+                await Promise.all(
+                    admin.map((a) =>
+                        new Notification({
+                            user_id: a._id,
+                            type: 'Thông báo đơn hàng',
+                            message: `Có đơn hàng mới từ tài khoản: ${userNotificaiton.account}, mã đơn hàng: ${order_code}`,
+                            isRead: false,
+                        }).save()
+                    )
+                );
+            }
 
             const orderDetail = items.map(product => ({
                 order_id: orderId,
@@ -263,24 +290,29 @@ class OdersController {
 
     /** [GET] /order/:id */
     async edit(req, res, next) {
-        try{
+        try {
             const orderId = req.params.id;
-            const orders = await Orders.findById(orderId);
-            const discountId = orders.discount_id;
-            const discount = await Discount.findById(discountId);
-            const detailsOrder = await OrderDetail.find({order_id: orderId});
-            if (!detailsOrder) {
-                return res.status(404).send("Order details not found");
+            if (!mongoose.isValidObjectId(orderId)) {
+                return res.status(400).json({ message: 'ID đơn hàng không hợp lệ' });
             }
+            const orders = await Orders.findById(orderId);
+            if (!orders) {
+                return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
+            }
+            const discountId = orders.discount_id;
+            const discount = discountId ? await Discount.findById(discountId) : null;
+            const detailsOrder = await OrderDetail.find({ order_id: orderId });
             const formatOrder = {
                 ...orders.toObject(),
-                discountName: discount ? discount.title : "Unknown"
+                discountName: discount ? discount.title : 'Unknown',
             };
             const orderDetailsFormat = await Promise.all(
                 detailsOrder.map(async (details) => {
                     const product = await Product.findById(details.product_id);
-                    const discount = await Discount.findById(details.discount_id);
-                    const category = product ? await CategoryProduct.findById(product.category) : null;
+                    const detailDiscount = await Discount.findById(details.discount_id);
+                    const category = product
+                        ? await CategoryProduct.findById(product.category)
+                        : null;
                     return {
                         ...details.toObject(),
                         name: product ? product.name : 'Unknown',
@@ -289,77 +321,101 @@ class OdersController {
                         shipping_cost: product ? product.shipping_cost : 0,
                         category: category ? category.name : 'Unknown',
                         unit: product ? product.unit : 'Unknown',
-                        discount: discount ? discount.title : 'Không có mã giảm giá'
+                        discount: detailDiscount ? detailDiscount.title : 'Không có mã giảm giá',
                     };
                 })
             );
-            if(orders.status !== req.body.status) {
-                const notification = new Notification({
-                    user_id: orders.user_id,
-                    type: "Thông báo đơn hàng",
-                    message: `Đơn hàng của bạn đã được cập nhật trạng thái: ${req.body.status}`,
-                    isRead: false
-                });
-                await notification.save();
-            }
             const data = {
                 orderDetailsFormat,
                 orders: formatOrder,
                 discount: mongooseToObject(discount),
-            }
-            res.status(200).json({data});
-        }catch(err){
-            console.error("❌ Error in edit controller:", err);
-            res.status(500).json({ error: err.message || "Internal Server Error" });
+            };
+            res.status(200).json({ data });
+        } catch (err) {
+            console.error('Error in edit controller:', err);
+            res.status(500).json({ error: err.message || 'Internal Server Error' });
         }
     }
 
     /** [PUT] /order/:id/ */
     async update(req, res, next) {
-        try{
-            await Orders.updateOne({_id: req.params.id}, req.body);
-            const {userId} = req.body;
-            const orders = await Orders.find({ user_id: userId })
-            .populate("discount_id")
-            .sort({ createdAt: -1 });
-            const orderIds = orders.map(item => item._id);
+        try {
+            const orderId = req.params.id;
+            if (!mongoose.isValidObjectId(orderId)) {
+                return res.status(400).json({ message: 'ID đơn hàng không hợp lệ' });
+            }
+            const existing = await Orders.findById(orderId);
+            if (!existing) {
+                return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
+            }
 
-            // Format ngày tạo
-            const formattedOrders = orders.map(order => {
-                return {
-                    ...order.toObject(),
-                    createdAtFormatted: order.createdAt.toLocaleString('vi-VN', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                    }),
-                };
-            });
+            const $set = {};
+            const allowed = [
+                'status',
+                'shipping_address',
+                'payment_method',
+                'total_price',
+                'orderInfor',
+                'code_banking',
+                'discount_id',
+                'order_date',
+            ];
+            for (const key of allowed) {
+                if (req.body[key] !== undefined) {
+                    $set[key] = req.body[key];
+                }
+            }
+            if (Object.keys($set).length === 0) {
+                return res.status(400).json({ message: 'Không có trường hợp lệ để cập nhật' });
+            }
+
+            if ($set.status !== undefined && $set.status !== existing.status) {
+                await new Notification({
+                    user_id: existing.user_id,
+                    type: 'Thông báo đơn hàng',
+                    message: `Đơn hàng của bạn đã được cập nhật trạng thái: ${$set.status}`,
+                    isRead: false,
+                }).save();
+            }
+
+            await Orders.updateOne({ _id: orderId }, { $set });
+
+            const userIdToList = existing.user_id;
+            const orders = await Orders.find({ user_id: userIdToList })
+                .populate('discount_id')
+                .sort({ createdAt: -1 });
+            const orderIds = orders.map((item) => item._id);
+
+            const formattedOrders = orders.map((order) => ({
+                ...order.toObject(),
+                createdAtFormatted: order.createdAt.toLocaleString('vi-VN', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                }),
+            }));
 
             const orderDetails = await OrderDetail.find({ order_id: { $in: orderIds } });
-            const productIds = orderDetails.map(item => item.product_id);
+            const productIds = orderDetails.map((item) => item.product_id);
             const products = await Product.find({ _id: { $in: productIds } });
 
-            // Map nhanh product theo _id
             const productMap = {};
-            products.forEach(p => {
+            products.forEach((p) => {
                 productMap[p._id.toString()] = p;
             });
 
-            // Gắn product vào orderDetail
-            const orderDetailsWithProducts = orderDetails.map(detail => {
-            const product = productMap[detail.product_id.toString()];
+            const orderDetailsWithProducts = orderDetails.map((detail) => {
+                const product = productMap[detail.product_id.toString()];
                 return {
                     ...detail.toObject(),
                     product,
                 };
             });
 
-            // Nhóm orderDetails theo order_id
             const orderDetailMap = {};
-            orderDetailsWithProducts.forEach(detail => {
+            orderDetailsWithProducts.forEach((detail) => {
                 const key = detail.order_id.toString();
                 if (!orderDetailMap[key]) {
                     orderDetailMap[key] = [];
@@ -367,28 +423,25 @@ class OdersController {
                 orderDetailMap[key].push(detail);
             });
 
-            // Gộp order + orderDetails
-            const ordersWithDetails = formattedOrders.map(order => {
-                return {
-                    ...order,
-                    orderDetails: orderDetailMap[order._id.toString()] || [],
-                };
-            });
+            const ordersWithDetails = formattedOrders.map((order) => ({
+                ...order,
+                orderDetails: orderDetailMap[order._id.toString()] || [],
+            }));
+
             res.status(200).json({
-                message: 'Hủy đơn hàng thành công',
-                orders: ordersWithDetails
-            })
-        }catch(error){
-            console.log(error);
-            res.status(500).json({message: "Lỗi hệ thống"});
+                message: 'Cập nhật đơn hàng thành công',
+                orders: ordersWithDetails,
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Lỗi hệ thống' });
         }
-        
     }
 
     /** [PUT] /order/admin/:id */
     async updateOrderAdmin(req, res) {
         try {
-            const { status, items } = req.body;
+            const { items } = req.body;
             const orderId = req.params.id;
 
             const oldOrder = await Orders.findById(orderId);
@@ -397,7 +450,28 @@ class OdersController {
             }
 
             const oldStatus = oldOrder.status;
-            await Orders.updateOne({ _id: orderId }, req.body);
+            const adminAllowed = [
+                'status',
+                'shipping_address',
+                'payment_method',
+                'total_price',
+                'orderInfor',
+                'code_banking',
+                'discount_id',
+                'order_date',
+            ];
+            const $setAdmin = {};
+            for (const key of adminAllowed) {
+                if (req.body[key] !== undefined) {
+                    $setAdmin[key] = req.body[key];
+                }
+            }
+            if (Object.keys($setAdmin).length > 0) {
+                await Orders.updateOne({ _id: orderId }, { $set: $setAdmin });
+            }
+
+            const effectiveStatus =
+                $setAdmin.status !== undefined ? $setAdmin.status : oldOrder.status;
 
             if (items && Array.isArray(items)) {
                 for (const i of items) {
@@ -414,7 +488,7 @@ class OdersController {
                     }
 
                     // Cập nhật stock dựa trên trạng thái
-                    if (oldStatus === "Thất bại" && status !== "Thất bại") {
+                    if (oldStatus === "Thất bại" && effectiveStatus !== "Thất bại") {
                         // Trừ stock
                         if (warehouseItem.stock < i.quantity) {
                             return res.status(400).json({ 
@@ -426,7 +500,7 @@ class OdersController {
                             { $inc: { stock: -i.quantity } },
                             { new: true }
                         );
-                    } else if (oldStatus !== "Thất bại" && status === "Thất bại") {
+                    } else if (oldStatus !== "Thất bại" && effectiveStatus === "Thất bại") {
                         await Warehouse.findOneAndUpdate(
                             { productId: i.product_id },
                             { $inc: { stock: i.quantity } },
@@ -434,8 +508,6 @@ class OdersController {
                         );
                     }
                 }
-            } else {
-                console.log("No items provided or items is not an array");
             }
 
             res.status(200).json({ message: "Cập nhật đơn hàng thành công" });
@@ -446,27 +518,41 @@ class OdersController {
     }
 
     /** [GET] order/details/:id */
-    async details(req, res, next){
-        const orderId = req.params.id;
-        const detailsOrder = await OrderDetail.find({order_id: orderId});
+    async details(req, res, next) {
+        try {
+            const orderId = req.params.id;
+            if (!mongoose.isValidObjectId(orderId)) {
+                return res.status(400).json({ message: 'ID đơn hàng không hợp lệ' });
+            }
+            const orderDoc = await Orders.findById(orderId);
+            if (!orderDoc) {
+                return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
+            }
 
-        if (!detailsOrder) {
-            return res.status(404).send("Order details not found");
+            const detailsOrder = await OrderDetail.find({ order_id: orderId });
+            if (!detailsOrder.length) {
+                return res.status(404).json({ message: 'Không có chi tiết đơn hàng' });
+            }
+
+            const orderDetailsFormat = await Promise.all(
+                detailsOrder.map(async (details) => {
+                    const product = await Product.findById(details.product_id);
+                    return {
+                        ...details.toObject(),
+                        productName: product ? product.name : 'Unknown',
+                        productPrice: product ? product.price : 'Unknown',
+                        productImage: product ? product.thumbnail_main : 'Unknown',
+                    };
+                })
+            );
+
+            res.status(200).json({
+                order: mongooseToObject(orderDoc),
+                orderDetailsFormat,
+            });
+        } catch (err) {
+            next(err);
         }
-
-        const orderDetailsFormat = await Promise.all(
-            detailsOrder.map(async (details) => {
-                const product = await Product.findById(details.product_id);
-                return {
-                    ...details.toObject(),
-                    productName: product ? product.name : 'Unknown',
-                    productPrice: product ? product.price : 'Unknown',
-                    productImage: product ? product.thumbnail_main : 'Unknown',
-                };
-            })
-        );
-
-        res.render('orders/detailOrder', { orderDetailsFormat });
     }
 
     /** [GET] /order/api/count  */
@@ -608,74 +694,91 @@ class OdersController {
         }
     }
 
-    /** [DELETE] /orders/details/:id/ */
+    /** [DELETE] /order/:id */
     async deleteDetails(req, res, next) {
-        try{
+        try {
             const orderId = req.params.id;
-            await Orders.deleteOne({ _id: orderId });
-            await OrderDetail.deleteMany({ order_id: orderId })
-            const orderDetail = await OrderDetail.find({ order_id: orderId });
-            for(const i in orderDetail){
-                await Warehouse.findOneAndUpdate(
-                    { productId: i.product },
-                    { $inc: { stock: -i.quantity } },
-                    { upsert: true, new: true }
-                );
+            if (!mongoose.isValidObjectId(orderId)) {
+                return res.status(400).json({ message: 'ID đơn hàng không hợp lệ' });
             }
-            
+            const existing = await Orders.findById(orderId);
+            if (!existing) {
+                return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
+            }
+
+            const detailsBefore = await OrderDetail.find({ order_id: orderId }).lean();
+            if (existing.status !== 'Thất bại') {
+                for (const d of detailsBefore) {
+                    await Warehouse.findOneAndUpdate(
+                        { productId: d.product_id },
+                        { $inc: { stock: d.quantity } },
+                        { upsert: true, new: true }
+                    );
+                }
+            }
+
+            await OrderDetail.deleteMany({ order_id: orderId });
+            await Orders.deleteOne({ _id: orderId });
+
             res.status(200).json({
                 message: 'Xóa đơn hàng thành công',
-            })
-        }catch(error){
-            console.log(error);
+            });
+        } catch (error) {
+            console.error(error);
             res.status(500).json({
-                message: error
-            })
+                message: 'Lỗi khi xóa đơn hàng',
+            });
         }
     }
 
     /** [GET] /order/filter */
     async filterOrders(req, res) {
         try {
-            console.log(req.query)
-            const { status, payment_method, from_date, to_date } = req.query;
-            let query = {};
-    
+            const { status, payment_method, from_date, to_date, timkiem, q } = req.query;
+            const { limit, skip, page, sort, sortField, orderLabel, search } = parseListQuery(
+                { ...req.query, timkiem: timkiem || q },
+                {
+                    allowedSortFields: SORT_ORDER_FIELDS,
+                    defaultSortField: 'createdAt',
+                    defaultOrder: 'desc',
+                    defaultLimit: 10,
+                }
+            );
+
+            const query = {};
             if (status) {
                 query.status = status;
             }
-    
             if (payment_method) {
                 query.payment_method = payment_method;
             }
-    
             if (from_date && to_date) {
                 query.order_date = {
                     $gte: new Date(from_date),
                     $lte: new Date(to_date),
                 };
             }
-    
-            const orders = await Orders.find(query).sort({createdAt: -1});
-            const orderFormat = await Promise.all(
-                orders.map(async (order) => {
-                    const user = await User.findById(order.user_id);
-                    const discount = await Discount.findById(order.discount_id);
-                    return {
-                        ...order.toObject(),
-                        lastUpdate: formatDate(order.updatedAt),
-                        orderDate: formatDate(order.order_date),
-                        userName: user ? user.name : 'Unknown',
-                        userAvatar: user ? user.avatar : 'Unknown', 
-                        discountName: discount ? discount.title : 'Unknown'
-                    };
-                })
-            );
-            const totalOrder = orderFormat.length;
-            const totalPage = Math.ceil(totalOrder / 10);
+            if (search) {
+                query.order_code = { $regex: search, $options: 'i' };
+            }
+
+            const [rows, total] = await Promise.all([
+                Orders.find(query).sort(sort).skip(skip).limit(limit).lean(),
+                Orders.countDocuments(query),
+            ]);
+
+            const orderFormat = await enrichOrderRows(rows, 'Unknown');
+            const totalPage = Math.max(1, Math.ceil(total / limit));
+
             res.status(200).json({
                 orders: orderFormat,
-                totalPage
+                total,
+                totalPage,
+                page,
+                limit,
+                offset: skip,
+                currentSort: sortField,
+                currentOrder: orderLabel,
             });
         } catch (error) {
             console.error('Error fetching orders:', error);
@@ -693,7 +796,6 @@ class OdersController {
             const orders = await Orders.find({
                 createdAt: { $gte: sevenDaysAgo, $lte: today },
             }).populate('discount_id');
-            console.log(orders)
             let typeCount = {
                 'giảm theo phần trăm': 0,
                 'giảm theo số tiền cố định': 0,
@@ -822,17 +924,10 @@ class OdersController {
             }
 
             // Debug: Kiểm tra tất cả các key đã khởi tạo và số lượng của chúng
-            const initializedKeys = Object.keys(monthlyOrderCounts).sort();
-            console.log('Number of Initialized monthlyOrderCounts keys:', initializedKeys.length);
-            console.log('Initialized monthlyOrderCounts keys:', initializedKeys);
-
-
             const orders = await Orders.find({
                 createdAt: { $gte: startDate, $lte: endDate },
                 status: 'Thành công' // Chỉ đếm đơn hàng thành công
             });
-
-            console.log(`Found ${orders.length} successful orders in the query range.`);
 
             // Đếm số lượng đơn hàng cho mỗi tháng
             orders.forEach(order => {
@@ -843,12 +938,8 @@ class OdersController {
                 // Debug: Kiểm tra từng order và monthKey của nó
                 // console.log(`Processing Order ID: ${order._id}, CreatedAt: ${order.createdAt.toISOString()}, Calculated MonthKey: ${monthKey}`);
 
-                if (monthlyOrderCounts.hasOwnProperty(monthKey)) {
+                if (Object.prototype.hasOwnProperty.call(monthlyOrderCounts, monthKey)) {
                     monthlyOrderCounts[monthKey] += 1;
-                } else {
-                    // Điều này có thể xảy ra nếu một đơn hàng nằm ngoài 12 tháng được khởi tạo
-                    // hoặc nếu logic khởi tạo tháng bị sai.
-                    console.warn(`Order from monthKey (${monthKey}) not found in initialized counts. This order might be outside the 12-month window: ${order._id}`);
                 }
             });
 
@@ -863,8 +954,6 @@ class OdersController {
                         value: monthlyOrderCounts[key]
                     };
                 });
-            
-            console.log('Final chartData sent to frontend (elements:', chartData.length, '):', chartData);
 
             res.status(200).json({ data: chartData });
 
