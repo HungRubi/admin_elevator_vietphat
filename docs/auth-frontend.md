@@ -100,6 +100,20 @@ Xóa cookie refresh và xóa hash refresh trên server.
 - `:id` **phải trùng** `id` trong JWT (chỉ đổi mật khẩu của chính mình).
 - Body: `{ "password": "mật khẩu hiện tại", "newPassword": "...", "confirmPassword": "..." }`
 
+### Cập nhật hồ sơ / địa chỉ (khách & CMS)
+
+Prefix **`/user`** (không nằm trong `/auth`):
+
+| Method | Path | Ai gọi được |
+|--------|------|-------------|
+| `PUT` | `/user/profile/update/:id` | **Customer** chỉ khi `:id` **trùng** `id` trong JWT; **admin** và **employee** có thể cập nhật **bất kỳ** user. Body: `name`, `email`, `phone`, `birth`, `avatar` (base64 ảnh tùy chọn). |
+| `PUT` | `/user/update/address/:id` | Cùng quyền như trên. Body: `{ "address": "..." }`. |
+
+Cả hai dùng **`verifyToken`** + Bearer. Response có **`user`** — shape giống **`GET /auth/me`**: không `password` / `refreshTokenHash`, có **`format`** (chuỗi ngày sinh `YYYY-MM-DD`).  
+`PUT /user/update/address/:id` còn trả **`updatedUser`** trùng nội dung **`user`** (tương thích code cũ dùng tên `updatedUser`).
+
+Chi tiết: [controllers/user.md](controllers/user.md).
+
 ## Gửi access token tới API được bảo vệ
 
 Hai cách server chấp nhận (xem `middleware.controller.js`):
@@ -132,7 +146,7 @@ fetch(`${API_BASE}/cart/update/${cartId}`, {
 ## Phân quyền route (tóm tắt)
 
 - **`verifyToken`**: bất kỳ user đã đăng nhập (có JWT hợp lệ).  
-  Ví dụ: `GET /auth/me`, `PUT /cart/...`, `POST /order/store`, `PUT /notification/read/:id`, `GET /notification/all/:id`, `POST /comment/add`, `PUT /auth/password/:id`.
+  Ví dụ: `GET /auth/me`, `PUT /user/profile/update/:id`, `PUT /user/update/address/:id` (customer chỉ `:id` của mình), `PUT /cart/...`, `POST /order/store`, `PUT /notification/read/:id`, `GET /notification/all/:id`, `POST /comment/add`, `PUT /auth/password/:id`.
 
 - **`verifyTokenStaff`**: chỉ `admin` hoặc `employee`.  
   Ví dụ: `/user/*`, `/report/*`, CRUD kho / nhà cung cấp / phiếu / bảo hành, phần quản trị sản phẩm / danh mục / bài viết / đơn (trừ `POST /order/store` là customer có token).

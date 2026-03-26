@@ -13,8 +13,18 @@ const userStaffLimiter = rateLimit({
     message: { message: 'Quá nhiều yêu cầu, vui lòng thử lại sau.' },
 });
 
-route.put('/profile/update/:id', userStaffLimiter, middleware.verifyTokenStaff, userController.updateProfileUser);
-route.put('/update/address/:id', userStaffLimiter, middleware.verifyTokenStaff, userController.updateAddress);
+route.put(
+    '/profile/update/:id',
+    userStaffLimiter,
+    middleware.verifyToken,
+    userController.updateProfileUser
+);
+route.put(
+    '/update/address/:id',
+    userStaffLimiter,
+    middleware.verifyToken,
+    userController.updateAddress
+);
 route.get('/order/:id', userStaffLimiter, middleware.verifyTokenStaff, userController.getOrder);
 route.get('/new', userStaffLimiter, middleware.verifyTokenStaff, userController.getNewUser);
 route.get('/filter', userStaffLimiter, middleware.verifyTokenStaff, userController.filterUser);

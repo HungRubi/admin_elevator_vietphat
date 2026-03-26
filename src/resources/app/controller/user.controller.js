@@ -28,6 +28,42 @@ function invalidIdResponse(res) {
     return res.status(400).json({ message: 'Id không hợp lệ' });
 }
 
+/**
+ * Customer chỉ được sửa chính mình; admin + employee (CMS) được sửa mọi user.
+ */
+function canEditUserProfile(req, targetUserId) {
+    if (!req.user) {
+        return { ok: false, status: 401, message: "You're not authenticated" };
+    }
+    if (!mongoose.isValidObjectId(targetUserId)) {
+        return { ok: false, status: 400, message: 'Id không hợp lệ' };
+    }
+    const role = req.user.author;
+    if (role === 'admin' || role === 'employee') {
+        return { ok: true };
+    }
+    if (role === 'customer' && String(req.user.id) === String(targetUserId)) {
+        return { ok: true };
+    }
+    return {
+        ok: false,
+        status: 403,
+        message: 'Không được cập nhật thông tin tài khoản khác.',
+    };
+}
+
+/** Đồng bộ shape với `GET /auth/me`: không password / refreshTokenHash, thêm `format` (ngày sinh). */
+function shapeUserForClient(userLean) {
+    if (!userLean) return null;
+    const u = { ...userLean };
+    delete u.password;
+    delete u.refreshTokenHash;
+    return {
+        ...u,
+        format: importDate(u.birth),
+    };
+}
+
 function resolveAuthourOnCreate(reqBodyAuthour, requesterAuthor) {
     const raw = String(reqBodyAuthour || '').trim();
     if (requesterAuthor === 'admin' && AUTHOURS.includes(raw)) {
@@ -107,12 +143,13 @@ class UserController {
         }
     }
 
-    /** [PUT] /user/update/address/:id */
+    /** [PUT] /user/update/address/:id — verifyToken; customer chỉ :id của mình */
     async updateAddress(req, res, next) {
         try {
             const userId = req.params.id;
-            if (!mongoose.isValidObjectId(userId)) {
-                return invalidIdResponse(res);
+            const perm = canEditUserProfile(req, userId);
+            if (!perm.ok) {
+                return res.status(perm.status).json({ message: perm.message });
             }
 
             const address = String(req.body?.address ?? '').trim();
@@ -120,18 +157,22 @@ class UserController {
                 return res.status(400).json({ message: 'Thiếu địa chỉ (address)' });
             }
 
-            const updatedUser = await User.findByIdAndUpdate(
+            const updatedLean = await User.findByIdAndUpdate(
                 userId,
                 { $set: { address } },
                 { new: true, runValidators: true }
-            ).select('-password');
+            )
+                .select('-password -refreshTokenHash')
+                .lean();
 
-            if (!updatedUser) {
+            if (!updatedLean) {
                 return res.status(404).json({ message: 'Người dùng không tồn tại' });
             }
 
+            const user = shapeUserForClient(updatedLean);
             res.status(200).json({
-                updatedUser,
+                user,
+                updatedUser: user,
                 message: 'Cập nhật địa chỉ thành công',
             });
         } catch (err) {
@@ -533,12 +574,13 @@ class UserController {
         }
     }
 
-    /** [PUT] /user/profile/update/:id */
+    /** [PUT] /user/profile/update/:id — verifyToken; customer chỉ :id của mình */
     async updateProfileUser(req, res) {
         try {
             const user_id = req.params.id;
-            if (!mongoose.isValidObjectId(user_id)) {
-                return invalidIdResponse(res);
+            const perm = canEditUserProfile(req, user_id);
+            if (!perm.ok) {
+                return res.status(perm.status).json({ message: perm.message });
             }
 
             const name = String(req.body?.name ?? '').trim();
@@ -594,9 +636,10 @@ class UserController {
             user.phone = phone;
             await user.save();
 
-            const safe = await User.findById(user_id).select('-password').lean();
+            const safe = await User.findById(user_id).select('-password -refreshTokenHash').lean();
+            const shaped = shapeUserForClient(safe);
             res.status(200).json({
-                user: safe,
+                user: shaped,
                 message: 'Cập nhật hồ sơ thành công',
             });
         } catch (error) {

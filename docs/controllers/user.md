@@ -1,42 +1,41 @@
 # API User (`/user`)
 
-Toàn bộ route dùng **`verifyTokenStaff`** (admin hoặc employee).
+## Middleware theo nhóm route
+
+| Nhóm | Middleware | Ghi chú |
+|------|------------|--------|
+| **Cập nhật hồ sơ / địa chỉ** | `verifyToken` | **Customer** chỉ được `:id` **trùng** `id` trong JWT; **admin** và **employee** được cập nhật **mọi** user. |
+| **Còn lại** (danh sách, filter, xóa, tạo user, đơn, thống kê, `GET /:id`) | `verifyTokenStaff` | Chỉ admin hoặc employee. |
 
 ## Rate limit
 
-`RATE_LIMIT_USER_STAFF_PER_MINUTE` (mặc định **120**).
+`RATE_LIMIT_USER_STAFF_PER_MINUTE` (mặc định **120**) áp dụng **mọi** route `/user` (kể cả hai PUT dùng `verifyToken`).
 
-## Bảo mật / nghiệp vụ đã siết
+## Shape `user` sau cập nhật (reducer / `GET /auth/me`)
 
-- **Không trả `password` / hash** trong list, chi tiết, cập nhật (`.select('-password')` hoặc refetch sau `save`).
-- **`PUT /update/address/:id`**: chỉ cập nhật field **`address`** (đã trim), không còn `$set: req.body` (mass assignment).
-- **`POST /store`**: chỉ **admin** mới được gán `authour` khác `customer` (employee tạo user luôn là `customer`). Hỗ trợ thêm typo **`confirm_password`** (cùng ý nghĩa với `comfirm_password`).
-- **`DELETE /:id`**: **employee** không được xóa tài khoản **`employee`** hoặc **`admin`** (403); admin vẫn xóa được.
-- **`PUT /profile/update/:id`**: kiểm tra email trùng user khác; avatar base64 giới hạn **2MB**; `mkdirSync` với `recursive: true`; response user không có password.
+Sau **`PUT /user/update/address/:id`** và **`PUT /user/profile/update/:id`**, field chính là **`user`**:
 
-## `listQuery.util`
+- Object lean, **không** `password`, **không** `refreshTokenHash`.
+- **`format`**: chuỗi ngày sinh qua `importDate` (cùng ý `GET /auth/me`).
 
-`page` / `offset`, `limit` (max 100), `sort`, `order`, `timkiem` / `q`.  
-Legacy: **`user=asc` / `user=desc`**.
+**Địa chỉ:** response gồm **`user`** và (tùy chọn tương thích) **`updatedUser`** — **cùng một object** với `user`. Trước đây chỉ có `updatedUser`; front nên merge theo **`user`**.
 
-### `GET /`
+## `PUT /user/update/address/:id`
 
-Sort: `name` (mặc định), `createdAt`, `updatedAt`, `email`, `phone`, `lastLogin`, `authour`.  
-Response `data`: `formatUser`, `searchUser` (chỉ khi có tìm kiếm — tương thích front cũ), `totalUser`, **`totalPages`**, `page`, `limit`, `offset`, `searchType`, `currentSort`, `currentOrder`.
+- **Quyền:** `verifyToken` + `canEditUserProfile` (customer = self only; admin/employee = any).
+- Body: `{ "address": "..." }` (bắt buộc, đã trim).
+- **200:** `{ "user", "updatedUser" (=== user), "message" }`.
 
-### `GET /filter`
+## `PUT /user/profile/update/:id`
 
-Query: `authour` (enum), `start_date` / `end_date` (cuối ngày `end_date` được set 23:59:59), cùng `listQuery` + tìm theo tên.
+- **Quyền:** như trên.
+- Body: `name`, `email`, `phone` (bắt buộc); `birth`, `avatar` (base64, tối đa 2MB) tùy chọn.
+- **200:** `{ "user", "message" }` — `user` đã qua `shapeUserForClient`.
 
-### `GET /order/:id`
+## Các API khác (staff)
 
-Phân trang `listQuery`; sort: `createdAt`, `updatedAt`, `order_date`, `total_price`, `status`.  
-`failedOrdersCount` là **tổng** đơn thất bại của user (không chỉ trang hiện tại). Thêm `total`, `totalPages`, `page`, `limit`, `offset`.
-
-### `GET /new`
-
-`days` mặc định 7, clamp **1–90**. Khoảng `startDate`/`endDate`: số ngày (inclusive) tính theo lịch, tối đa 90. Trung bình/ngày chia cho đúng `daySpan`.
+- **`POST /store`**, **`DELETE /:id`**, **`GET /`**, **`GET /filter`**, **`GET /:id`**, **`GET /order/:id`**, **`GET /new`**: chỉ **staff**; xem các mục trước trong lịch sử chuẩn hóa.
 
 ## Lỗi
 
-Thông báo 4xx/5xx dùng `message` chuỗi; không còn nhét object lỗi vào JSON.
+Thông báo 4xx/5xx dùng `message` chuỗi.
