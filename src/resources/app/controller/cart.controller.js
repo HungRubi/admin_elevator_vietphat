@@ -45,6 +45,41 @@ function mergeLineIntoCart(cart, { productId, quantity, price }) {
 }
 
 class CartController {
+    /** [GET] /cart/:id — đọc giỏ (cùng shape `cart` + `product` như PUT /update/:id) */
+    getCart = async (req, res) => {
+        try {
+            const userId = req.params.id;
+            const ownerCheck = assertCartOwner(req, userId);
+            if (!ownerCheck.ok) {
+                return res.status(ownerCheck.status).json({ message: ownerCheck.message });
+            }
+            if (!mongoose.isValidObjectId(userId)) {
+                return res.status(400).json({ message: 'ID người dùng không hợp lệ' });
+            }
+
+            let cart = await Cart.findOne({ userId }).lean();
+            if (!cart) {
+                cart = {
+                    userId: new mongoose.Types.ObjectId(userId),
+                    items: [],
+                    totalPrice: 0,
+                };
+            }
+
+            const productsId = (cart.items || []).map((item) => item.productId);
+            const productCart =
+                productsId.length > 0 ? await Product.find({ _id: { $in: productsId } }) : [];
+
+            return res.status(200).json({
+                cart,
+                product: productCart,
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Lỗi server' });
+        }
+    };
+
     /** [PUT] /cart/update/:id */
     updateCart = async (req, res) => {
         try {

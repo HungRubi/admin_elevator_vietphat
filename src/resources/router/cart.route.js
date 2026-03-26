@@ -13,6 +13,16 @@ const cartMutationLimiter = rateLimit({
     message: { message: 'Quá nhiều thao tác giỏ hàng, vui lòng thử lại sau.' },
 });
 
+const cartGetLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: Math.max(1, Number(process.env.RATE_LIMIT_CART_GET_PER_MINUTE || 180)),
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: 'Quá nhiều yêu cầu, vui lòng thử lại sau.' },
+});
+
+router.get('/:id', cartGetLimiter, middleware.verifyToken, CartController.getCart);
+
 router.put(
     '/update/:id',
     cartMutationLimiter,

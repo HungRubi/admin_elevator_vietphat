@@ -25,8 +25,11 @@ Tạo file `.env` ở thư mục gốc (không commit file này):
 | `PORT` | Cổng HTTP (mặc định `4000` nếu không set) |
 | `JWT_ACCESS_KEY` | Secret ký access token (bắt buộc cho login / middleware) |
 | `JWT_REFRESH_KEY` | Secret ký refresh token (cookie) |
+| `JWT_ACCESS_EXPIRES` | (Tùy chọn) Thời hạn access JWT, mặc định `2h` — định dạng [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken#usage) (`15m`, `1h`, …) |
+| `JWT_REFRESH_EXPIRES` | (Tùy chọn) Thời hạn refresh JWT, mặc định `365d` |
 | `RATE_LIMIT_ARTICLE_PER_MINUTE` | (Tùy chọn) Giới hạn GET article / phút / IP (mặc định 120) |
 | `RATE_LIMIT_CART_PER_MINUTE` | (Tùy chọn) Giới hạn PUT cart / phút / IP (mặc định 90) |
+| `RATE_LIMIT_CART_GET_PER_MINUTE` | (Tùy chọn) Giới hạn GET `/cart/:id` / phút / IP (mặc định 180) |
 | `RATE_LIMIT_CATEGORY_PUBLIC_PER_MINUTE` | (Tùy chọn) GET category public / phút / IP (mặc định 120) |
 | `RATE_LIMIT_COMMENT_ADD_PER_MINUTE` | (Tùy chọn) POST comment / phút / IP (mặc định 45) |
 | `RATE_LIMIT_COMMENT_STAFF_PER_MINUTE` | (Tùy chọn) GET comment staff / phút / IP (mặc định 120) |
@@ -65,7 +68,6 @@ Mặc định: `http://localhost:4000` (hoặc `PORT` trong `.env`). Script dùn
 
 | Script | Mô tả |
 |--------|--------|
-| `yarn watch` | Biên dịch SCSS (`sass --watch`) |
 | `yarn test` | Placeholder (chưa có test) |
 | `yarn smoke` | Kiểm tra nhanh: nạp toàn bộ router/controller (không listen); xem `scripts/smoke-load.js` |
 

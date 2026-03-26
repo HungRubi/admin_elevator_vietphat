@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 const { formatDate } = require('../../util/formatDate.util');
 const { importDate } = require('../../util/importDate.util')
 const User = require('../model/user.model');
@@ -13,8 +14,20 @@ const Notification = require("../model/notification.model");
 const { getTimeAgo } = require('../../util/formatTime.util');
 dotenv.config();
 
+/** Thời hạn JWT (jsonwebtoken): ví dụ `2h`, `15m`, `7d`, `365d` */
+const JWT_ACCESS_EXPIRES = String(process.env.JWT_ACCESS_EXPIRES || '2h').trim() || '2h';
+const JWT_REFRESH_EXPIRES = String(process.env.JWT_REFRESH_EXPIRES || '365d').trim() || '365d';
+
 function hashRefreshToken(token) {
     return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+/** Giống payload `cart` + `product` khi `POST /auth/login` (mảng giỏ từ `Cart.find`) */
+async function buildCartAndProductsForUser(userId) {
+    const cart = await Cart.find({ userId });
+    const productId = cart.flatMap((item) => item.items.map((row) => row.productId));
+    const product = await Product.find({ _id: { $in: productId } });
+    return { cart, product };
 }
 
 class AuthController {
@@ -110,7 +123,7 @@ class AuthController {
                         author: user.authour,
                     },
                     process.env.JWT_ACCESS_KEY,
-                    {expiresIn: "2h"}
+                    { expiresIn: JWT_ACCESS_EXPIRES }
                 );
                 const refreshToken = jwt.sign(
                     {
@@ -118,7 +131,7 @@ class AuthController {
                         author: user.authour,
                     },
                     process.env.JWT_REFRESH_KEY,
-                    {expiresIn: "365d"} 
+                    { expiresIn: JWT_REFRESH_EXPIRES } 
                 );
                 await User.updateOne(
                     { _id: user._id },
@@ -135,11 +148,7 @@ class AuthController {
                     ...userWithoutPassword,
                     format: importDate(user.birth)
                 }
-                const cart = await Cart.find({ userId: user._id });
-
-                const productId = cart.flatMap(item => item.items.map(product => product.productId));
-
-                const product = await Product.find({ _id: { $in: productId } });
+                const { cart, product } = await buildCartAndProductsForUser(user._id);
 
                 const orders = await Order.find({ user_id: user._id })
                 .populate("discount_id")
@@ -262,7 +271,7 @@ class AuthController {
                         author: user.authour,
                     },
                     process.env.JWT_ACCESS_KEY,
-                    {expiresIn: "2h"}
+                    { expiresIn: JWT_ACCESS_EXPIRES }
                 );
                 const refreshToken = jwt.sign(
                     {
@@ -270,7 +279,7 @@ class AuthController {
                         author: user.authour,
                     },
                     process.env.JWT_REFRESH_KEY,
-                    {expiresIn: "365d"} 
+                    { expiresIn: JWT_REFRESH_EXPIRES } 
                 );
                 await User.updateOne(
                     { _id: user._id },
@@ -287,11 +296,7 @@ class AuthController {
                     ...userWithoutPassword,
                     format: importDate(user.birth)
                 }
-                const cart = await Cart.find({ userId: user._id });
-
-                const productId = cart.flatMap(item => item.items.map(product => product.productId));
-
-                const product = await Product.find({ _id: { $in: productId } });
+                const { cart, product } = await buildCartAndProductsForUser(user._id);
 
                 const orders = await Order.find({ user_id: user._id });
                 const orderIds = orders.map(item => item._id);
@@ -390,7 +395,7 @@ class AuthController {
                     author: userDoc.authour,
                 },
                 process.env.JWT_ACCESS_KEY,
-                { expiresIn: "2h" }
+                { expiresIn: JWT_ACCESS_EXPIRES }
             );
             const newRefreshToken = jwt.sign(
                 {
@@ -398,7 +403,7 @@ class AuthController {
                     author: userDoc.authour,
                 },
                 process.env.JWT_REFRESH_KEY,
-                { expiresIn: "365d" }
+                { expiresIn: JWT_REFRESH_EXPIRES }
             );
             await User.updateOne(
                 { _id: userDoc._id },
@@ -440,6 +445,33 @@ class AuthController {
             res.status(200).json({ message: "Logout successful" });
         } catch (err) {
             res.status(500).json({ message: err.message || "Server error" });
+        }
+    }
+
+    /** [GET] /auth/me — user hiện tại theo access JWT (chỉ đọc, không ghi DB) */
+    async getMe(req, res) {
+        try {
+            const uid = req.user?.id;
+            if (!uid || !mongoose.isValidObjectId(uid)) {
+                return res.status(403).json({ message: 'Token is not valid' });
+            }
+            const user = await User.findById(uid).select('-password -refreshTokenHash').lean();
+            if (!user) {
+                return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+            }
+            const formatUser = {
+                ...user,
+                format: importDate(user.birth),
+            };
+            const { cart, product } = await buildCartAndProductsForUser(uid);
+            return res.status(200).json({
+                user: formatUser,
+                cart,
+                product,
+            });
+        } catch (err) {
+            console.error(err);
+            return res.status(500).json({ message: 'Lỗi server vui lòng thử lại sau' });
         }
     }
 

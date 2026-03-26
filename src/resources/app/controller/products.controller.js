@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Product = require('../model/products.model');
+const Warehouse = require('../model/warehouse.model');
 const CategoryProduct = require('../model/categoryProduct.model');
 const { importDate } = require('../../util/importDate.util');
 const { createSlug } = require('../../util/createSlug.util');
@@ -44,6 +45,42 @@ const PRODUCT_UPDATE_KEYS = [
 
 const MAX_SELECTED_IDS = 50;
 
+/** Lấy map productId → tồn kho (một dòng warehouse / sản phẩm; nếu không có bản ghi thì không có trong map) */
+async function fetchWarehouseStockMap(productIds) {
+    const idStrs = [...new Set((productIds || []).map((id) => id?.toString()).filter(Boolean))];
+    if (idStrs.length === 0) return new Map();
+    const objectIds = idStrs.map((id) => new mongoose.Types.ObjectId(id));
+    const rows = await Warehouse.find({ productId: { $in: objectIds } })
+        .select('productId stock minimum maximum status')
+        .lean();
+    const map = new Map();
+    for (const w of rows) {
+        map.set(w.productId.toString(), {
+            stock: w.stock,
+            minimum: w.minimum,
+            maximum: w.maximum,
+            status: w.status,
+        });
+    }
+    return map;
+}
+
+function mergeWarehouseStock(plainProduct, stockMap) {
+    const key = plainProduct._id?.toString();
+    const w = key ? stockMap.get(key) : null;
+    return {
+        ...plainProduct,
+        warehouseStock: w ? Number(w.stock) : 0,
+        warehouse: w || null,
+    };
+}
+
+async function attachWarehouseStockToProducts(plainProducts) {
+    if (!plainProducts || plainProducts.length === 0) return plainProducts;
+    const stockMap = await fetchWarehouseStockMap(plainProducts.map((p) => p._id));
+    return plainProducts.map((p) => mergeWarehouseStock(p, stockMap));
+}
+
 class ProductsController {
     /** [GET] /products/admin — staff */
     async index(req, res) {
@@ -71,10 +108,11 @@ class ProductsController {
                 Product.countDocuments(filter),
             ]);
 
-            const productFormat = rows.map((p) => ({
+            const withFormat = rows.map((p) => ({
                 ...p,
                 formatDate: importDate(p.createdAt),
             }));
+            const productFormat = await attachWarehouseStockToProducts(withFormat);
 
             const totalPage = Math.max(1, Math.ceil(total / limit));
 
@@ -116,14 +154,15 @@ class ProductsController {
             const filter = search ? { name: { $regex: search, $options: 'i' } } : {};
 
             const [products, total] = await Promise.all([
-                Product.find(filter).sort(sort).skip(skip).limit(limit).populate('category'),
+                Product.find(filter).sort(sort).skip(skip).limit(limit).populate('category').lean(),
                 Product.countDocuments(filter),
             ]);
 
-            const formatProducts = products.map((p) => ({
-                ...p.toObject(),
+            const withFormat = products.map((p) => ({
+                ...p,
                 formatDate: importDate(p.createdAt),
             }));
+            const formatProducts = await attachWarehouseStockToProducts(withFormat);
 
             const totalPage = Math.max(1, Math.ceil(total / limit));
             const data = {
@@ -154,10 +193,11 @@ class ProductsController {
                 return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
             }
             const categoryProduct = await CategoryProduct.find().limit(500).lean();
-            const formatProduct = {
+            const baseProduct = {
                 ...product.toObject(),
                 lastUpdate: importDate(product.updatedAt),
             };
+            const [formatProduct] = await attachWarehouseStockToProducts([baseProduct]);
             res.status(200).json({
                 data: {
                     category: categoryProduct,
@@ -178,12 +218,26 @@ class ProductsController {
             }
 
             const sampleSize = Math.min(clampLimit(req.query.limit_suggest, 8), 20);
-            const productSuggest = await Product.aggregate([{ $sample: { size: sampleSize } }]);
+            const productSuggestRaw = await Product.aggregate([{ $sample: { size: sampleSize } }]);
 
-            const formatProduct = {
+            const baseProduct = {
                 ...product.toObject(),
                 lastUpdate: importDate(product.updatedAt),
             };
+            const stockMap = await fetchWarehouseStockMap([
+                product._id,
+                ...productSuggestRaw.map((p) => p._id),
+            ]);
+            const formatProduct = mergeWarehouseStock(baseProduct, stockMap);
+            const productSuggest = productSuggestRaw.map((p) =>
+                mergeWarehouseStock(
+                    {
+                        ...p,
+                        formatDate: p.createdAt ? importDate(p.createdAt) : undefined,
+                    },
+                    stockMap
+                )
+            );
 
             const comment = await Comment.find({ product_id: product._id }).populate('user_id');
             const formatComments = comment.map((c) => ({
@@ -231,7 +285,8 @@ class ProductsController {
                 return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
             }
 
-            res.status(200).json({ product });
+            const productWithStock = await attachWarehouseStockToProducts(product);
+            res.status(200).json({ product: productWithStock });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Lỗi server' });
@@ -386,10 +441,11 @@ class ProductsController {
                 Product.countDocuments(query),
             ]);
 
-            const productFormat = products.map((p) => ({
+            const withFormat = products.map((p) => ({
                 ...p,
                 formatDate: importDate(p.createdAt),
             }));
+            const productFormat = await attachWarehouseStockToProducts(withFormat);
 
             const totalPage = Math.max(1, Math.ceil(total / limit));
             res.status(200).json({

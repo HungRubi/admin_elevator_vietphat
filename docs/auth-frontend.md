@@ -8,8 +8,10 @@ Server cần (trong `.env`):
 
 | Biến | Vai trò |
 |------|---------|
-| `JWT_ACCESS_KEY` | Ký / verify access token (thời hạn 2 giờ) |
-| `JWT_REFRESH_KEY` | Ký / verify refresh token (cookie) |
+| `JWT_ACCESS_KEY` | Ký / verify access token (bắt buộc) |
+| `JWT_REFRESH_KEY` | Ký / verify refresh token (cookie, bắt buộc) |
+| `JWT_ACCESS_EXPIRES` | (Tùy chọn) Thời hạn access token — chuỗi `jsonwebtoken`, mặc định **`2h`** (ví dụ `15m`, `1h`, `12h`) |
+| `JWT_REFRESH_EXPIRES` | (Tùy chọn) Thời hạn refresh token — mặc định **`365d`** (ví dụ `30d`, `90d`) |
 | `DATABASE_URL_CONNECTION` | MongoDB |
 | `PORT` | Cổng HTTP (mặc định 4000) |
 
@@ -50,6 +52,24 @@ Payload JWT (access & refresh) gồm:
 ### `POST /auth/login/admin`
 
 Giống login nhưng chỉ cho `employee` / `admin`. Khách `customer` bị từ chối.
+
+### `GET /auth/me`
+
+Lấy **hồ sơ user đang đăng nhập** từ access token (không đọc cookie refresh).
+
+- **Vì sao dùng GET, không POST:** thao tác **chỉ đọc**, **idempotent**, không body — đúng chuẩn REST và dễ cache/tắt cache ở client; với **`Authorization: Bearer`**, rủi ro CSRF thấp hơn so với cookie-only.
+- Header: `Authorization: Bearer <accessToken>` (hoặc header `token` như các route khác).
+- Middleware: `verifyToken` (mọi role: `customer` | `employee` | `admin`).
+- **200**: JSON gồm:
+  - `user`: đã loại `password` và `refreshTokenHash`; có `format` (ngày sinh) như login.
+  - **`cart`**: mảng bản ghi giỏ từ `Cart.find({ userId })` — **cùng shape** `POST /auth/login` (thường 0 hoặc 1 phần tử).
+  - **`product`**: mảng sản phẩm tương ứng các dòng trong các giỏ đó (rỗng nếu giỏ trống).
+- **401 / 403**: thiếu token hoặc JWT không hợp lệ.
+- **404**: user đã xóa khỏi DB nhưng token còn sót.
+
+**Gợi ý SPA:** sau F5 / mở lại app, gọi `GET /auth/me` để khôi phục `user` + **giỏ**; nếu chỉ cần đồng bộ giỏ theo `userId`, có thể dùng thêm **`GET /cart/:userId`** (một object `cart` + `product` giống `PUT /cart/update`) — xem [controllers/cart.md](controllers/cart.md).
+
+**Gợi ý SPA (token):** nếu 403 thì thử `POST /auth/refresh` rồi gọi lại `/me`.
 
 ### `POST /auth/refresh`
 
@@ -112,7 +132,7 @@ fetch(`${API_BASE}/cart/update/${cartId}`, {
 ## Phân quyền route (tóm tắt)
 
 - **`verifyToken`**: bất kỳ user đã đăng nhập (có JWT hợp lệ).  
-  Ví dụ: `PUT /cart/...`, `POST /order/store`, `PUT /notification/read/:id`, `GET /notification/all/:id`, `POST /comment/add`, `PUT /auth/password/:id`.
+  Ví dụ: `GET /auth/me`, `PUT /cart/...`, `POST /order/store`, `PUT /notification/read/:id`, `GET /notification/all/:id`, `POST /comment/add`, `PUT /auth/password/:id`.
 
 - **`verifyTokenStaff`**: chỉ `admin` hoặc `employee`.  
   Ví dụ: `/user/*`, `/report/*`, CRUD kho / nhà cung cấp / phiếu / bảo hành, phần quản trị sản phẩm / danh mục / bài viết / đơn (trừ `POST /order/store` là customer có token).
@@ -134,8 +154,9 @@ fetch(`${API_BASE}/cart/update/${cartId}`, {
 ## Gợi ý triển khai SPA
 
 1. Sau login, lưu `accessToken`; mỗi request API gắn `Authorization`.
-2. Interceptor: nếu response 403 và message token invalid → thử `POST /auth/refresh` một lần rồi retry.
-3. Đăng xuất: gọi `POST /auth/logout`, xóa token phía client, xóa state user.
+2. Reload SPA: có token thì gọi `GET /auth/me` để lấy lại `user`; lỗi token → bước 3.
+3. Interceptor: nếu response 403 và message token invalid → thử `POST /auth/refresh` một lần rồi retry (và có thể gọi lại `/me`).
+4. Đăng xuất: gọi `POST /auth/logout`, xóa token phía client, xóa state user.
 
 ## Base URL
 

@@ -10,5 +10,6 @@ route.post('/login', authController.login);
 route.post('/register', authController.register);
 route.post('/refresh', authController.requestRefreshToken);
 route.post('/logout', authController.logout);
+route.get('/me', middleware.verifyToken, authController.getMe);
 
 module.exports = route
